@@ -17,7 +17,7 @@ async function axe(page, label) {
 }
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
   for (const vp of [{ w: 1440, h: 900, n: 'desk' }, { w: 390, h: 844, n: 'movil' }]) {
     console.log(`\n== Viewport ${vp.w}px ==`);
     const ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, deviceScaleFactor: 2, colorScheme: 'light' });
@@ -27,12 +27,18 @@ async function axe(page, label) {
     page.on('pageerror', e => errors.push(String(e)));
     page.on('request', r => { if (!r.url().startsWith('file:') && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) external.push(r.url()); });
     await page.goto(FILE);
+    await page.waitForSelector('.hero');
+    ok(!(await page.isVisible('.modal')), 'la portada se ve sin modales al entrar');
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: `${SHOTS}/${vp.n}-00-portada.png` });
+    await axe(page, 'portada');
+    await page.click('.hero >> text=Cómo funciona');
     await page.waitForSelector('.modal');
-    ok(await page.isVisible('text=Bienvenido al laboratorio'), 'la bienvenida se abre sola la primera vez');
+    ok(await page.isVisible('text=Bienvenido al laboratorio'), '«Cómo funciona» abre la bienvenida');
     await page.waitForTimeout(400);
     await page.screenshot({ path: `${SHOTS}/${vp.n}-01-bienvenida.png` });
     await axe(page, 'bienvenida');
-    await page.click('text=Empezar el ejercicio 1');
+    await page.click('#modal >> text=Empezar el ejercicio 1');
     await page.waitForTimeout(400);
     ok(await page.evaluate(() => drawerOpen && drawerEx === 0), 'el botón abre el ejercicio 1 (lección 0)');
     await page.screenshot({ path: `${SHOTS}/${vp.n}-02-ejercicio1.png` });
