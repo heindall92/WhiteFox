@@ -16,7 +16,7 @@ function vHero(){
  const used=licensedUsed(),L=lic(),pct=Math.round(done/n*100);
  const stat=(icon,t,v,c,extra='')=>`<div class="hstat"><span class="si" aria-hidden="true">${ic(icon)}</span><div style="min-width:0;flex:1"><p class="st-t">${t}</p><p class="st-v">${v}</p><p class="st-c">${c}</p>${extra}</div></div>`;
  return`<section class="hero" aria-labelledby="hero-t">
-  <div class="hero-art" role="img" aria-label="Persona en la cima de una montaña dentro de un portal azul y violeta al amanecer" style="background-image:url('${HERO_IMG}')"></div>
+  <div class="hero-art" role="img" aria-label="Persona en la cima de una montaña sobre un mar de nubes al amanecer" style="background-image:url('${HERO_IMG}')"></div>
   <div class="hero-tools" role="group" aria-label="Tema"><button aria-pressed="${S.theme!=='dark'}" aria-label="Tema claro" title="Tema claro" onclick="if(S.theme==='dark')toggleTheme()">${ic('sun','sm')}</button><button aria-pressed="${S.theme==='dark'}" aria-label="Tema oscuro" title="Tema oscuro" onclick="if(S.theme!=='dark')toggleTheme()">${ic('moon','sm')}</button></div>
   <div class="hero-txt">
    <p class="eyebrow">${ic('radar','sm')}Laboratorio de gestión de vulnerabilidades · 192.168.56.0/24</p>

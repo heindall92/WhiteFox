@@ -300,13 +300,13 @@ details.hint summary{cursor:pointer;font-weight:600}
  .btn:active,.tcard:active,.coach:active,.ex:active,.trainbtn:active,.iconbtn:active,.side button:active{transform:none!important}
 }
 /* ===== Hero (portada) ===== */
-.hero{position:relative;overflow:hidden;border-radius:22px;background:var(--surface);box-shadow:var(--ring);min-height:400px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);isolation:isolate;margin-bottom:18px}
-.hero-art{position:absolute;inset:0 0 0 30%;z-index:-2;background:var(--surface-3) 68% center/cover no-repeat}
-.hero-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--surface) 0%,color-mix(in srgb,var(--surface) 90%,transparent) 26%,color-mix(in srgb,var(--surface) 45%,transparent) 50%,transparent 78%)}
-.hero-txt{padding:40px 8px 34px 40px;display:flex;flex-direction:column;justify-content:center;gap:16px;max-width:620px}
-.hero{--ha:#123f7a}[data-theme=dark] .hero{--ha:#a9d1fa}
+/* Como en Blue-Jr: texto a la izquierda sobre la tarjeta y la imagen entera y limpia a la derecha, sin velos ni fundidos */
+.hero{--ha:#123f7a;position:relative;overflow:hidden;border-radius:22px;background:var(--surface);box-shadow:var(--ring);min-height:420px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);isolation:isolate;margin-bottom:18px}
+[data-theme=dark] .hero{--ha:#a9d1fa}
+.hero-art{grid-column:2;grid-row:1;margin:12px 12px 12px 0;border-radius:16px;min-height:240px;background:var(--surface-3) 64% center/cover no-repeat;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.hero-txt{grid-column:1;grid-row:1;padding:40px 28px 34px 40px;display:flex;flex-direction:column;justify-content:center;gap:16px;max-width:620px}
 .hero .eyebrow{display:flex;align-items:center;gap:8px;font:600 11.5px/1.2 var(--mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--ha)}
-.hero h1{font-size:clamp(34px,4.6vw,58px);line-height:1.04;letter-spacing:-.02em;font-weight:700;margin:0}
+.hero h1{font-size:clamp(34px,4.2vw,56px);line-height:1.04;letter-spacing:-.02em;font-weight:700;margin:0}
 .hero h1 .l2{display:block;color:var(--ha)}
 .hero h1 .w{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.06em}
 .hero h1 .w>span{display:inline-block;animation:heroWord .6s cubic-bezier(.2,0,0,1) both;animation-delay:calc(var(--i)*70ms)}
@@ -316,13 +316,14 @@ details.hint summary{cursor:pointer;font-weight:600}
 .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
 .btn.lg{min-height:46px;padding:11px 20px;font-size:15px;border-radius:12px}
 .hero-prog{display:grid;gap:7px;max-width:440px}
-.hero-prog .row{display:flex;align-items:center;gap:8px;font:500 12.5px/1.3 var(--mono);color:var(--text-2)}
+.hero-prog .row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;font:500 12.5px/1.3 var(--mono);color:var(--text-2)}
+.hero-prog .row>span{white-space:nowrap}
 .hero-prog .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
 .hero-prog .meter{margin:0;height:8px}
-.hero-tools{position:absolute;top:16px;right:16px;display:flex;gap:6px;padding:4px;border-radius:12px;background:color-mix(in srgb,var(--surface) 78%,transparent);box-shadow:var(--ring);backdrop-filter:blur(8px)}
-.hero-tools button{width:36px;height:36px;border:0;border-radius:9px;background:none;color:var(--text-2);display:grid;place-items:center;cursor:pointer;transition:background-color .15s,color .15s}
-.hero-tools button:hover{color:var(--text)}
-.hero-tools button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:var(--ring)}
+.hero-tools{position:absolute;top:24px;right:24px;display:flex;gap:6px;padding:4px;border-radius:12px;background:rgba(8,24,60,.3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.24);backdrop-filter:blur(8px)}
+.hero-tools button{width:36px;height:36px;border:0;border-radius:9px;background:none;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background-color .15s,color .15s}
+.hero-tools button:hover{background:rgba(255,255,255,.16)}
+.hero-tools button[aria-pressed=true]{background:#fff;color:#0f2547}
 .hstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
 .hstat{background:var(--surface);border-radius:16px;box-shadow:var(--ring);padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
 .hstat .si{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--primary-soft);color:var(--link)}
@@ -333,16 +334,18 @@ details.hint summary{cursor:pointer;font-weight:600}
 .sec-t{display:flex;align-items:center;gap:8px;font-size:16px;margin:0 0 12px}
 @media (max-width:1100px){.hstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:760px){
+ /* Móvil: imagen entera arriba y el texto debajo, sin fundidos */
  .hero{grid-template-columns:1fr;min-height:0}
- .hero-art{position:relative;inset:auto;aspect-ratio:16/9;z-index:0}
- .hero-art::after{background:linear-gradient(180deg,transparent 55%,var(--surface) 100%)}
- .hero-txt{padding:4px 20px 24px;max-width:none}
+ .hero-art{grid-column:1;grid-row:1;margin:10px 10px 0;aspect-ratio:16/9;min-height:0;border-radius:14px;background-position:60% center}
+ .hero-txt{grid-row:2;padding:18px 20px 24px;max-width:none}
+ .hero-tools{top:20px;right:20px}
  .hero .lead{font-size:15px}
  .hero-cta .btn{flex:1 1 auto;justify-content:center}
  .hstats{grid-template-columns:1fr 1fr;gap:10px}
  .hstat{padding:14px}
  .hstat .si{display:none}
 }
+@media (max-width:640px){body.hero-vis .coach{display:none}}
 @media (prefers-reduced-motion:reduce){.hero h1 .w>span{animation:none}}
 </style>
 </head>
@@ -1694,7 +1697,11 @@ function welcome(){
  <div class="w"><div class="ti">${ic('info')}</div><div><b>Si te pierdes</b><p>El recuadro <b>Siguiente paso</b> (abajo a la derecha) te dice qué toca. Los botones ${ic('info','sm')} explican cada término.</p></div></div></div>`,
  `<button class="btn" onclick="closeModal();ev('welcome')">Explorar por mi cuenta</button><button class="btn primary" onclick="closeModal();ev('welcome');toggleDrawer(true,'ex',0)">${ic('play','sm')}Empezar el ejercicio 1</button>`,'wide');}
 let coachHidden=false;
+/* En móvil el recuadro «Siguiente paso» se oculta mientras se ve la portada: ella ya ofrece el mismo botón */
+function heroVis(){const h=document.querySelector('.hero'),r=h&&h.getBoundingClientRect();document.body.classList.toggle('hero-vis',!!r&&r.bottom>innerHeight*.35&&r.top<innerHeight);}
+addEventListener('scroll',heroVis,{capture:true,passive:true});addEventListener('resize',heroVis);
 function renderCoach(){
+ heroVis();
  let el=document.getElementById('coach');
  const i=EXERCISES.findIndex(e=>!exDone(e));
  if(drawerOpen||coachHidden||i<0||document.getElementById('modal').innerHTML){if(el)el.remove();return;}
@@ -1723,7 +1730,7 @@ function vHero(){
  const used=licensedUsed(),L=lic(),pct=Math.round(done/n*100);
  const stat=(icon,t,v,c,extra='')=>`<div class="hstat"><span class="si" aria-hidden="true">${ic(icon)}</span><div style="min-width:0;flex:1"><p class="st-t">${t}</p><p class="st-v">${v}</p><p class="st-c">${c}</p>${extra}</div></div>`;
  return`<section class="hero" aria-labelledby="hero-t">
-  <div class="hero-art" role="img" aria-label="Persona en la cima de una montaña dentro de un portal azul y violeta al amanecer" style="background-image:url('${HERO_IMG}')"></div>
+  <div class="hero-art" role="img" aria-label="Persona en la cima de una montaña sobre un mar de nubes al amanecer" style="background-image:url('${HERO_IMG}')"></div>
   <div class="hero-tools" role="group" aria-label="Tema"><button aria-pressed="${S.theme!=='dark'}" aria-label="Tema claro" title="Tema claro" onclick="if(S.theme==='dark')toggleTheme()">${ic('sun','sm')}</button><button aria-pressed="${S.theme==='dark'}" aria-label="Tema oscuro" title="Tema oscuro" onclick="if(S.theme!=='dark')toggleTheme()">${ic('moon','sm')}</button></div>
   <div class="hero-txt">
    <p class="eyebrow">${ic('radar','sm')}Laboratorio de gestión de vulnerabilidades · 192.168.56.0/24</p>

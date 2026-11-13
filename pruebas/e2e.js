@@ -48,7 +48,16 @@ async function axe(page, label) {
     await page.click('.drawer .tab:has-text("Ejercicios")');
     await page.click('.drawer header button[aria-label="Cerrar"]');
     await page.waitForTimeout(400);
-    ok(await page.isVisible('#coach'), 'el recuadro «Siguiente paso» está visible');
+    if (vp.n === 'desk') {
+      ok(await page.isVisible('#coach'), 'el recuadro «Siguiente paso» está visible');
+    } else {
+      // En móvil se oculta mientras se ve la portada (no tapa sus botones) y vuelve al bajar
+      ok(!(await page.isVisible('#coach')), 'en móvil «Siguiente paso» no tapa la portada');
+      await page.mouse.move(200, 600);
+      for (let k = 0; k < 6; k++) { await page.mouse.wheel(0, 500); await page.waitForTimeout(150); }
+      await page.waitForTimeout(300);
+      ok(await page.isVisible('#coach'), 'en móvil «Siguiente paso» aparece al bajar');
+    }
     await axe(page, 'lista de scans + siguiente paso');
 
     if (vp.n === 'desk') {
