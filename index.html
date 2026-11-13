@@ -1,0 +1,1308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Vuln Scanner Lab · simulador estilo Nessus Essentials</title>
+<style>:root{
+ --bg:#eef1f5;--surface:#ffffff;--surface-2:#f6f8fa;--surface-3:#e9edf2;
+ --text:#141c26;--text-2:#38434f;--text-3:#4a5562;
+ --line:rgba(20,32,48,.10);--line-strong:rgba(20,32,48,.18);
+ --ring:0 0 0 1px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06),0 6px 16px -6px rgba(16,24,40,.10);
+ --ring-hi:0 0 0 1px rgba(16,24,40,.10),0 4px 10px rgba(16,24,40,.08),0 16px 32px -12px rgba(16,24,40,.18);
+ --head:#13202d;--head-2:#1c2c3c;--head-text:#e9eef4;--head-dim:#b9c5d1;
+ --side:#f7f9fb;--side-active:#e3ebf5;
+ --primary:#1f6fc5;--primary-h:#195ea9;--primary-text:#ffffff;--primary-soft:#e4effb;--link:#155ba8;
+ --ok:#2e7d32;--warn:#a65a00;--danger:#b3261e;
+ --crit:#91243e;--high:#dd4b50;--med:#f18c43;--low:#f8c851;--info:#67ace1;
+ --crit-t:#ffffff;--high-t:#ffffff;--med-t:#1d1206;--low-t:#1d1606;--info-t:#071a2a;
+ --focus:0 0 0 3px rgba(31,111,197,.35);
+ --r:10px;--r-sm:7px;--r-lg:14px;
+ --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+ color-scheme:light;
+}
+[data-theme=dark]{
+ --bg:#0f141a;--surface:#171e26;--surface-2:#1c242e;--surface-3:#232d39;
+ --text:#eef2f6;--text-2:#c9d2dc;--text-3:#b4bfcb;
+ --line:rgba(220,230,240,.10);--line-strong:rgba(220,230,240,.18);
+ --ring:0 0 0 1px rgba(255,255,255,.07),0 1px 2px rgba(0,0,0,.4),0 8px 20px -8px rgba(0,0,0,.5);
+ --ring-hi:0 0 0 1px rgba(255,255,255,.10),0 8px 24px rgba(0,0,0,.45);
+ --head:#0a1119;--head-2:#121c27;--side:#131a22;--side-active:#1f2c3b;
+ --primary:#4a97e8;--primary-h:#62a6ee;--primary-text:#061322;--primary-soft:#16263a;--link:#8cc0f5;
+ --ok:#7ccf80;--warn:#f0b35a;--danger:#ff8a80;
+ --focus:0 0 0 3px rgba(74,151,232,.45);
+ color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+h1,h2,h3,h4{margin:0;line-height:1.25;text-wrap:balance;font-weight:600}
+p{text-wrap:pretty}
+a{color:var(--link)}
+button,input,select,textarea{font:inherit;color:inherit}
+.num,td.num,.tab .count{font-variant-numeric:tabular-nums}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+svg.i.sm{width:15px;height:15px}
+:focus-visible{outline:none;box-shadow:var(--focus);border-radius:6px}
+
+/* Layout */
+.app{display:grid;grid-template-rows:auto auto 1fr;height:100vh}
+.topbar{display:flex;align-items:center;gap:6px;background:var(--head);color:var(--head-text);height:54px;padding:0 14px 0 16px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:22px;font-weight:650;letter-spacing:.2px;white-space:nowrap}
+.brand .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(140deg,#2c8be0,#1a4f8a);display:grid;place-items:center;color:#fff}
+.brand small{display:block;font-weight:500;color:var(--head-dim);font-size:11px;letter-spacing:.3px}
+.topnav{display:flex;height:100%}
+.topnav button{background:none;border:0;color:var(--head-dim);padding:0 16px;height:100%;cursor:pointer;font-weight:550;position:relative;transition:color .15s}
+.topnav button:hover{color:#fff}
+.topnav button[aria-current=true]{color:#fff}
+.topnav button[aria-current=true]::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:#4a97e8}
+.topbar .spacer{flex:1}
+.iconbtn{background:none;border:0;color:var(--head-dim);width:40px;height:40px;border-radius:9px;display:grid;place-items:center;cursor:pointer;transition:background-color .15s,color .15s}
+.iconbtn:hover{background:var(--head-2);color:#fff}
+.trainbtn{display:flex;align-items:center;gap:8px;background:var(--head-2);color:#fff;border:0;border-radius:9px;padding:8px 12px;cursor:pointer;font-weight:550;box-shadow:0 0 0 1px rgba(255,255,255,.08);transition:background-color .15s}
+.trainbtn:hover{background:#243649}
+.trainbtn .pill{background:#2c8be0;color:#fff;border-radius:20px;padding:0 8px;font-size:12px}
+.user{display:flex;align-items:center;gap:8px;color:var(--head-dim);font-size:13px;margin-left:6px}
+.avatar{width:30px;height:30px;border-radius:50%;background:#2a3c50;color:#fff;display:grid;place-items:center;font-weight:600;font-size:12px}
+.disclaimer{background:var(--surface-3);color:var(--text-2);font-size:12px;padding:5px 16px;display:flex;gap:8px;align-items:center}
+.body{display:grid;grid-template-columns:232px 1fr;min-height:0}
+.side{background:var(--side);padding:18px 10px;overflow:auto;box-shadow:1px 0 0 var(--line)}
+.side h6{margin:16px 10px 6px;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-3);font-weight:650}
+.side h6:first-child{margin-top:0}
+.side button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:9px 10px;border-radius:8px;color:var(--text-2);cursor:pointer;text-align:left;font-weight:500;transition:background-color .15s,color .15s}
+.side button:hover{background:var(--surface-3);color:var(--text)}
+.side button[aria-current=true]{background:var(--side-active);color:var(--text);font-weight:600}
+.side button .count{margin-left:auto;font-size:12px;color:var(--text-3)}
+.side .community{margin:22px 6px 0;padding:12px;border-radius:var(--r);background:var(--surface);box-shadow:var(--ring);font-size:12.5px;color:var(--text-2)}
+.side .community b{color:var(--text)}
+.meter{height:6px;border-radius:6px;background:var(--surface-3);overflow:hidden;margin-top:8px}
+.meter>i{display:block;height:100%;background:var(--primary);border-radius:6px;transition:width .3s}
+main{overflow:auto;padding:22px 26px 60px;min-width:0}
+
+/* Page header */
+.ph{display:flex;align-items:flex-end;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.ph h1{font-size:22px}
+.ph .crumb{font-size:12.5px;color:var(--text-3);margin-bottom:4px}
+.ph .crumb a{cursor:pointer;text-decoration:none}
+.ph .crumb a:hover{text-decoration:underline}
+.ph .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:8px;padding:8px 14px;min-height:36px;cursor:pointer;font-weight:550;background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line-strong),0 1px 2px rgba(16,24,40,.05);transition:background-color .15s,box-shadow .15s,scale .1s;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn:active{scale:.96}
+.btn.primary{background:var(--primary);color:var(--primary-text);box-shadow:0 1px 2px rgba(16,24,40,.15)}
+.btn.primary:hover{background:var(--primary-h)}
+.btn.ghost{background:none;box-shadow:none;color:var(--link)}
+.btn.ghost:hover{background:var(--primary-soft)}
+.btn.danger{color:var(--danger)}
+.btn.sm{padding:5px 10px;min-height:30px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.dd{position:relative;display:inline-block}
+.menu{position:absolute;right:0;top:calc(100% + 6px);min-width:220px;background:var(--surface);border-radius:var(--r);box-shadow:var(--ring-hi);padding:6px;z-index:40;display:none}
+.menu.open{display:block;animation:pop .14s ease-out}
+.menu button{display:flex;width:100%;align-items:center;gap:8px;background:none;border:0;padding:8px 10px;border-radius:7px;cursor:pointer;text-align:left}
+.menu button:hover{background:var(--surface-2)}
+@keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Cards / tables */
+.card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--ring)}
+.card.pad{padding:18px 20px}
+.toolbar{display:flex;align-items:center;gap:10px;padding:12px 14px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface-2);border-radius:8px;padding:0 10px;box-shadow:inset 0 0 0 1px var(--line);min-width:240px;height:36px}
+.search input{border:0;background:none;outline:none;width:100%;height:100%}
+.search:focus-within{box-shadow:inset 0 0 0 1px var(--primary),var(--focus)}
+table.t{width:100%;border-collapse:collapse}
+.t th{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);font-weight:650;text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;user-select:none}
+.t th.sort{cursor:pointer}
+.t th.sort:hover{color:var(--text)}
+.t td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.t tr:last-child td{border-bottom:0}
+.t tbody tr.click{cursor:pointer;transition:background-color .12s}
+.t tbody tr.click:hover{background:var(--surface-2)}
+.t td.muted,.muted{color:var(--text-2)}
+.t td.name{font-weight:550}
+.empty{padding:40px;text-align:center;color:var(--text-2)}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;border-radius:20px;padding:2px 9px;background:var(--surface-3);color:var(--text-2);font-weight:550;white-space:nowrap}
+.tag.ok{background:rgba(46,125,50,.14);color:var(--ok)}
+.tag.run{background:var(--primary-soft);color:var(--link)}
+.tag.warn{background:rgba(166,90,0,.14);color:var(--warn)}
+
+/* Severity */
+.sev{display:inline-flex;align-items:center;justify-content:center;min-width:74px;border-radius:5px;padding:2px 8px;font-size:12px;font-weight:650;letter-spacing:.2px}
+.sev.critical{background:var(--crit);color:var(--crit-t)}.sev.high{background:var(--high);color:var(--high-t)}
+.sev.medium{background:var(--med);color:var(--med-t)}.sev.low{background:var(--low);color:var(--low-t)}.sev.info{background:var(--info);color:var(--info-t)}
+.sev.mixed{background:linear-gradient(90deg,var(--crit),var(--high));color:#fff}
+.recast{font-size:11px;color:var(--text-3);margin-left:6px}
+.bar{display:flex;height:22px;border-radius:5px;overflow:hidden;min-width:240px;background:var(--surface-3)}
+.bar span{display:grid;place-items:center;font-size:11.5px;font-weight:650;min-width:0}
+.bar .critical{background:var(--crit);color:#fff}.bar .high{background:var(--high);color:#fff}.bar .medium{background:var(--med);color:var(--med-t)}.bar .low{background:var(--low);color:var(--low-t)}.bar .info{background:var(--info);color:var(--info-t)}
+.vpr{font-weight:650;font-variant-numeric:tabular-nums}
+.chip-ex{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--danger);font-weight:600}
+
+/* Results layout */
+.results{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+.tabs{display:flex;gap:2px;padding:0 10px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;padding:12px 12px 11px;cursor:pointer;color:var(--text-2);font-weight:550;position:relative;display:flex;gap:7px;align-items:center;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab[aria-selected=true]{color:var(--text)}
+.tab[aria-selected=true]::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--primary)}
+.tab .count{background:var(--surface-3);border-radius:20px;padding:0 7px;font-size:12px;color:var(--text-2)}
+.details dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:13px}
+.details dt{color:var(--text-2)}
+.details dd{margin:0;font-weight:550;word-break:break-word}
+.details h3{font-size:14px;margin-bottom:10px}
+.donutwrap{display:flex;align-items:center;gap:16px;margin-top:6px}
+.legend{display:grid;gap:4px;font-size:12.5px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+.side-stack{display:grid;gap:14px}
+
+/* Plugin detail */
+.pd{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+.pd section{margin-bottom:18px}
+.pd h4{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);margin-bottom:6px}
+.pd pre{font:12.5px/1.5 var(--mono);background:var(--surface-2);padding:12px 14px;border-radius:9px;white-space:pre-wrap;margin:6px 0 0;box-shadow:inset 0 0 0 1px var(--line)}
+.out-h{font-size:12.5px;color:var(--text-2);margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+.out-h b{color:var(--text)}
+.note{background:var(--primary-soft);border-radius:var(--r);padding:12px 14px;font-size:13.5px;color:var(--text)}
+.note b{color:var(--link)}
+
+/* Forms */
+.form{display:grid;gap:14px;max-width:720px}
+.field{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:start}
+.field>label{padding-top:8px;font-weight:550;color:var(--text-2)}
+.field .hint{font-size:12.5px;color:var(--text-2);margin-top:4px}
+.in,select.in,textarea.in{width:100%;background:var(--surface);border:0;border-radius:8px;padding:8px 10px;min-height:36px;box-shadow:inset 0 0 0 1px var(--line-strong);transition:box-shadow .15s}
+.in:focus{outline:none;box-shadow:inset 0 0 0 1px var(--primary),var(--focus)}
+textarea.in{min-height:80px;resize:vertical;font-family:var(--mono);font-size:13px}
+.check{display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0}
+.check input{width:16px;height:16px;accent-color:var(--primary)}
+.editor{display:grid;grid-template-columns:200px 1fr;gap:0;min-height:460px}
+.enav{padding:14px 10px;box-shadow:1px 0 0 var(--line)}
+.enav h6{margin:12px 8px 4px;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-3)}
+.enav button{display:block;width:100%;text-align:left;background:none;border:0;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--text-2);font-weight:500}
+.enav button:hover{background:var(--surface-2)}
+.enav button[aria-current=true]{background:var(--side-active);color:var(--text);font-weight:600}
+.epane{padding:20px 24px}
+.epane h3{font-size:16px;margin-bottom:14px}
+.subtabs{display:flex;gap:2px;padding:0 14px;border-bottom:1px solid var(--line)}
+.err{color:var(--danger);font-size:13px;margin-top:6px}
+
+/* Templates */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.tcard{background:var(--surface);border:0;border-radius:var(--r-lg);box-shadow:var(--ring);padding:18px 16px;text-align:left;cursor:pointer;display:grid;gap:8px;transition:box-shadow .18s,transform .18s}
+.tcard:hover{box-shadow:var(--ring-hi);transform:translateY(-1px)}
+.tcard .ti{width:44px;height:44px;border-radius:12px;background:var(--primary-soft);color:var(--link);display:grid;place-items:center}
+.tcard .ti svg.i{width:24px;height:24px}
+.tcard b{font-size:14.5px}
+.tcard p{margin:0;font-size:12.5px;color:var(--text-2)}
+.tcard.locked{cursor:not-allowed;opacity:.62}
+.tcard .lock{font-size:11px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.sect-t{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin:20px 0 10px;font-weight:650}
+
+/* Progress */
+.prog{height:6px;border-radius:6px;background:var(--surface-3);overflow:hidden;width:120px;display:inline-block;vertical-align:middle;margin-right:8px}
+.prog i{display:block;height:100%;background:var(--primary);transition:width .4s linear}
+
+/* Modal */
+.scrim{position:fixed;inset:0;background:rgba(8,14,22,.45);display:grid;place-items:center;z-index:60;animation:fade .15s ease-out}
+.modal{background:var(--surface);border-radius:16px;box-shadow:var(--ring-hi);width:min(560px,92vw);max-height:88vh;overflow:auto}
+.modal header{padding:18px 22px 4px;display:flex;align-items:center}
+.modal header h2{font-size:17px}
+.modal .mb{padding:14px 22px}
+.modal footer{padding:12px 22px 18px;display:flex;justify-content:flex-end;gap:8px}
+.modal .field{grid-template-columns:150px 1fr}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* Training drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,96vw);background:var(--surface);box-shadow:var(--ring-hi);z-index:50;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,0,0,1)}
+.drawer.open{transform:none}
+.drawer header{padding:16px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 0 var(--line)}
+.drawer header h2{font-size:16px}
+.drawer .db{overflow:auto;padding:16px 18px 40px;flex:1}
+.ex-list{display:grid;gap:8px}
+.ex{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:0;border-radius:12px;box-shadow:var(--ring);padding:12px 14px;cursor:pointer;text-align:left;width:100%;transition:box-shadow .15s}
+.ex:hover{box-shadow:var(--ring-hi)}
+.ex .n{width:28px;height:28px;border-radius:50%;background:var(--surface-3);display:grid;place-items:center;font-weight:650;font-size:12.5px;flex:none;color:var(--text-2)}
+.ex.done .n{background:var(--ok);color:#fff}
+.ex .lvl{font-size:11.5px;color:var(--text-2);font-weight:600}
+.ex b{display:block;font-size:14px}
+.st{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:9px;background:var(--surface-2);font-size:13px;margin:6px 0}
+.st.ok{background:rgba(46,125,50,.13);color:var(--ok);font-weight:600}
+.quiz{display:grid;gap:6px;margin-top:8px}
+.quiz label{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border-radius:9px;box-shadow:inset 0 0 0 1px var(--line-strong);cursor:pointer}
+.quiz label:hover{background:var(--surface-2)}
+.quiz label.right{box-shadow:inset 0 0 0 2px var(--ok)}
+.quiz label.wrong{box-shadow:inset 0 0 0 2px var(--danger)}
+.quiz input{margin-top:3px;accent-color:var(--primary)}
+.steps{margin:6px 0 0;padding-left:20px;color:var(--text-2)}
+.steps li{margin:3px 0}
+details.hint{background:var(--surface-2);border-radius:9px;padding:8px 12px;margin:6px 0}
+details.hint summary{cursor:pointer;font-weight:600}
+.ovprog{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ovprog .meter{flex:1;margin:0;height:8px}
+.toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;z-index:80;pointer-events:none}
+.toast{background:var(--head);color:#fff;padding:10px 16px;border-radius:10px;box-shadow:var(--ring-hi);z-index:80;font-size:13.5px;animation:pop .18s ease-out;display:flex;gap:8px;align-items:center}
+.filters{padding:12px 14px;display:grid;gap:8px;background:var(--surface-2);box-shadow:inset 0 1px 0 var(--line),inset 0 -1px 0 var(--line)}
+.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.frow select,.frow input{width:auto;min-width:150px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat{padding:14px 16px}
+.stat b{font-size:24px;display:block;font-variant-numeric:tabular-nums}
+.stat span{color:var(--text-2);font-size:12.5px}
+@media (max-width:1100px){.results,.pd{grid-template-columns:1fr}.body{grid-template-columns:64px 1fr}.side h6,.side .lbl,.side .count,.side .community{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="topbar" id="top"></header>
+ <div class="disclaimer" role="note"><svg class="i sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Herramienta de estudio no oficial, sin afiliación con Tenable. Funciona 100% offline: sin conexiones, sin telemetría. Hosts y hallazgos ficticios de laboratorio.</div>
+ <div class="body"><nav class="side" id="side" aria-label="Sidebar"></nav><main id="main"></main></div>
+</div>
+<aside class="drawer" id="drawer" aria-label="Entrenamiento"></aside>
+<div id="modal"></div>
+<script>"use strict";
+/* ===== Datos del laboratorio (ficticios / representativos) ===== */
+const SEV = ['Info','Low','Medium','High','Critical'];
+const SEVKEY = ['info','low','medium','high','critical'];
+const CRED = { ssh:{user:'auditor',pass:'Lab2026!'}, win:{user:'svc_nessus',pass:'Lab2026!',domain:'LAB'} };
+
+/* Catálogo de plugins. IDs, puntuaciones y textos son representativos para estudio. */
+const PLUGINS = {};
+function P(id,o){ o.id=id; PLUGINS[id]=o; }
+const V30 = 'CVSS:3.0/';
+P(97833,{name:'MS17-010: Security Update for Microsoft Windows SMB Server (4013389) (ETERNALBLUE) (WannaCry) (uncredentialed check)',family:'Windows',sev:4,cvss:8.1,vector:V30+'AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H',vpr:9.7,epss:0.943,exploit:true,ease:'Exploits are available',cve:['CVE-2017-0143','CVE-2017-0144','CVE-2017-0145','CVE-2017-0146','CVE-2017-0147','CVE-2017-0148'],mskb:['4013389'],pub:'2017/03/14',ppub:'2017/03/14',vpub:'2017/03/14',type:'remote',
+ syn:'The remote Windows host is affected by multiple vulnerabilities.',
+ desc:'The remote Windows host is affected by multiple remote code execution vulnerabilities in Microsoft Server Message Block 1.0 (SMBv1) due to improper handling of certain requests. An unauthenticated, remote attacker can exploit these vulnerabilities, via a specially crafted packet, to execute arbitrary code. ETERNALBLUE is one of several exploits disclosed in 2017 and was used by the WannaCry ransomware.',
+ sol:'Apply the applicable security update from Microsoft Security Bulletin MS17-010. Disable SMBv1 where possible. Note: the host also runs an unsupported operating system; plan its migration.',
+ see:['https://learn.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010','https://nvd.nist.gov/vuln/detail/CVE-2017-0144'],
+ rem:'Apply MS17-010 (KB4012212 / KB4012215) and disable SMBv1',
+ drivers:{age:'730 days +',cvss_impact:'5.9',maturity:'High',product:'Very High',threat_recency:'No recorded events',threat_intensity:'Low',sources:'Mainstream Media, Security Research'},
+ note:'EternalBlue: explotable sin autenticación por SMB (445/tcp). Usado por WannaCry. Prioridad máxima aunque el CVSS sea 8.1: VPR muy alto porque hay exploits públicos y explotación real.'});
+P(108797,{name:'Unsupported Windows OS (remote)',family:'Windows',sev:4,cvss:10.0,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H',vpr:null,epss:null,exploit:false,cve:[],pub:'2018/04/03',vpub:'2020/01/14',type:'remote',
+ syn:'The remote OS or service pack is no longer supported.',
+ desc:'The remote version of Microsoft Windows is either missing a service pack or is no longer supported. As a result, it is likely to contain security vulnerabilities. Lack of support implies that no new security patches for the product will be released by the vendor.',
+ sol:'Upgrade to a supported version of Windows.',see:['https://learn.microsoft.com/en-us/lifecycle/products/'],rem:'Upgrade to a supported version of Windows (Windows Server 2008 R2 is end of life)',
+ note:'Los plugins de "Unsupported" llevan CVSS 10 por convención pero no tienen VPR. En gestión de riesgo se tratan como deuda técnica: migración o aislamiento + excepción documentada.'});
+P(140657,{name:'Netlogon Elevation of Privilege Vulnerability (Zerologon) (Remote)',family:'Windows',sev:4,cvss:10.0,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H',vpr:9.5,epss:0.972,exploit:true,ease:'Exploits are available',cve:['CVE-2020-1472'],mskb:['4565349'],pub:'2020/09/14',ppub:'2020/08/11',vpub:'2020/08/11',type:'remote',
+ syn:'The remote domain controller is affected by an elevation of privilege vulnerability.',
+ desc:'An elevation of privilege vulnerability exists when an attacker establishes a vulnerable Netlogon secure channel connection to a domain controller using the Netlogon Remote Protocol (MS-NRPC). An unauthenticated attacker on the network could obtain domain administrator privileges.',
+ sol:'Apply the August 2020 (or later) security updates and enforce secure RPC for Netlogon.',see:['https://msrc.microsoft.com/update-guide/vulnerability/CVE-2020-1472','https://www.cisa.gov/known-exploited-vulnerabilities-catalog'],rem:'Apply latest cumulative update on domain controllers (Netlogon secure RPC enforcement)',
+ drivers:{age:'730 days +',cvss_impact:'6.0',maturity:'High',product:'Very High',threat_recency:'181 to 365 days',threat_intensity:'Low',sources:'CISA KEV, Security Research'},
+ note:'Zerologon en un controlador de dominio = compromiso total del dominio. Está en el catálogo KEV de CISA.'});
+P(156014,{name:'Apache Log4Shell RCE detection via callback correlation (Direct Check HTTP)',family:'Web Servers',sev:4,cvss:10.0,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H',vpr:9.9,epss:0.975,exploit:true,ease:'Exploits are available',cve:['CVE-2021-44228'],pub:'2021/12/11',ppub:'2021/12/10',vpub:'2021/12/09',type:'remote',
+ syn:'The remote web server is affected by a remote code execution vulnerability.',
+ desc:'The remote web server contains a Java application that uses a vulnerable version of Apache Log4j 2 (Log4Shell). The scanner sent a JNDI lookup string in an HTTP header and received a callback, confirming that untrusted input is evaluated by the logging library and can lead to remote code execution.',
+ sol:'Upgrade Apache Log4j to 2.17.1 or later, or apply the vendor-supplied patch for the affected application.',see:['https://logging.apache.org/log4j/2.x/security.html','https://nvd.nist.gov/vuln/detail/CVE-2021-44228'],rem:'Upgrade Apache Log4j to 2.17.1 or later',
+ drivers:{age:'730 days +',cvss_impact:'6.0',maturity:'High',product:'Very High',threat_recency:'0 to 7 days',threat_intensity:'Very High',sources:'CISA KEV, Mainstream Media, Social Media'},
+ note:'Detección directa: el escáner recibió el callback, así que no es una comprobación por versión (baja probabilidad de falso positivo).'});
+P(156032,{name:'Apache Log4j 2.x < 2.16.0 RCE (Nix)',family:'Misc.',sev:4,cvss:10.0,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H',vpr:9.9,epss:0.975,exploit:true,ease:'Exploits are available',cve:['CVE-2021-44228','CVE-2021-45046'],pub:'2021/12/14',ppub:'2021/12/13',vpub:'2021/12/09',type:'local',
+ syn:'A package installed on the remote host is affected by a remote code execution vulnerability.',
+ desc:'The version of Apache Log4j on the remote host is 2.x prior to 2.16.0. It is, therefore, affected by remote code execution vulnerabilities in JNDI lookup handling. Local check: the scanner found the vulnerable JAR on disk using the provided credentials.',
+ sol:'Upgrade to Apache Log4j version 2.17.1 or later.',see:['https://logging.apache.org/log4j/2.x/security.html'],rem:'Upgrade Apache Log4j to 2.17.1 or later'});
+P(153884,{name:'Apache 2.4.49 < 2.4.51 Path Traversal Vulnerability',family:'Web Servers',sev:4,cvss:9.8,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',vpr:9.4,epss:0.974,exploit:true,ease:'Exploits are available',cve:['CVE-2021-42013'],pub:'2021/10/08',ppub:'2021/10/07',vpub:'2021/10/07',type:'remote',
+ syn:'The remote web server is affected by a path traversal vulnerability.',
+ desc:'The version of Apache httpd installed on the remote host is prior to 2.4.51. It is, therefore, affected by a flaw in path normalization that can allow an attacker to map URLs to files outside the expected document root and, if CGI is enabled, execute code.',
+ sol:'Upgrade to Apache version 2.4.51 or later.',see:['https://httpd.apache.org/security/vulnerabilities_24.html'],rem:'Upgrade to Apache HTTP Server 2.4.51 or later',
+ drivers:{age:'730 days +',cvss_impact:'5.9',maturity:'High',product:'Very High',threat_recency:'31 to 120 days',threat_intensity:'Low',sources:'CISA KEV, Security Research'}});
+P(153584,{name:'Apache 2.4.49 < 2.4.50 Multiple Vulnerabilities',family:'Web Servers',sev:3,cvss:7.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N',vpr:7.3,epss:0.971,exploit:true,ease:'Exploits are available',cve:['CVE-2021-41773','CVE-2021-41524'],pub:'2021/10/05',ppub:'2021/10/04',vpub:'2021/10/04',type:'remote',
+ syn:'The remote web server is affected by multiple vulnerabilities.',
+ desc:'The version of Apache httpd installed on the remote host is 2.4.49. It is affected by a path traversal and file disclosure vulnerability (CVE-2021-41773) and a NULL pointer dereference in HTTP/2 handling (CVE-2021-41524).',
+ sol:'Upgrade to Apache version 2.4.51 or later.',see:['https://httpd.apache.org/security/vulnerabilities_24.html'],rem:'Upgrade to Apache HTTP Server 2.4.51 or later'});
+P(179072,{name:'OpenSSH < 9.3p2 Vulnerability',family:'Misc.',sev:4,cvss:9.8,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',vpr:5.9,epss:0.12,exploit:false,ease:'No known exploits are available',cve:['CVE-2023-38408'],pub:'2023/07/20',ppub:'2023/07/19',vpub:'2023/07/19',type:'remote',paranoid:true,
+ syn:'The SSH server running on the remote host is affected by a vulnerability.',
+ desc:'According to its banner, the version of OpenSSH running on the remote host is prior to 9.3p2. It is, therefore, affected by a remote code execution vulnerability in ssh-agent forwarding (PKCS#11). Note that Nessus has not tested for this issue but has instead relied only on the application\'s self-reported version number.',
+ sol:'Upgrade to OpenSSH version 9.3p2 or later, or apply the distribution security update.',see:['https://www.openssh.com/txt/release-9.3p2'],rem:'Apply the distribution OpenSSH security update (verify backports)',
+ drivers:{age:'366 to 730 days',cvss_impact:'5.9',maturity:'Unproven',product:'High',threat_recency:'No recorded events',threat_intensity:'Very Low',sources:'No recorded events'},
+ note:'Comprobación SOLO por banner ("self-reported version number"). Ubuntu/Debian/RHEL aplican backports: el banner sigue diciendo 8.2p1 pero el paquete está parcheado. Un escaneo con credenciales verifica el paquete real.'});
+P(100634,{name:'Redis Server Unprotected by Password Authentication',family:'Databases',sev:4,cvss:9.8,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',vpr:7.4,epss:0.81,exploit:true,ease:'Exploits are available',cve:[],pub:'2017/06/06',vpub:'2015/11/09',type:'remote',
+ syn:'A Redis server is not protected by password authentication.',
+ desc:'The Redis server running on the remote host is not protected by password authentication. A remote attacker can exploit this to gain unauthorized access to the server, read or modify data and, in some configurations, write files to disk.',
+ sol:'Enable the requirepass directive (or ACLs) and bind the service to trusted interfaces only.',see:['https://redis.io/docs/latest/operate/oss_and_stack/management/security/'],rem:'Enable Redis authentication and restrict network exposure',
+ note:'Este servicio escucha en un puerto NO estándar (16379). Solo aparece si el escaneo usa "Port scan (all ports)".'});
+P(158090,{name:'Samba 4.13.x < 4.13.17 Multiple Vulnerabilities (CVE-2021-44142)',family:'Misc.',sev:4,cvss:9.9,vector:V30+'AV:N/AC:L/PR:L/UI:N/S:C/C:H/I:H/A:H',vpr:8.4,epss:0.62,exploit:true,ease:'Exploits are available',cve:['CVE-2021-44142'],pub:'2022/02/01',ppub:'2022/01/31',vpub:'2022/01/31',type:'remote',
+ syn:'The remote Samba server is affected by multiple vulnerabilities.',
+ desc:'The version of Samba running on the remote host is 4.13.x prior to 4.13.17. It is affected by an out-of-bounds heap read/write vulnerability in the vfs_fruit module that can allow remote code execution as root.',
+ sol:'Upgrade to Samba version 4.13.17 or later.',see:['https://www.samba.org/samba/security/CVE-2021-44142.html'],rem:'Upgrade Samba to 4.13.17 or later'});
+P(41028,{name:'SNMP Agent Default Community Name (public)',family:'SNMP',sev:3,cvss:7.3,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L',vpr:5.2,epss:0.02,exploit:false,ease:'No known exploits are available',cve:['CVE-1999-0517'],pub:'2002/11/25',vpub:'1998/11/02',type:'remote',
+ syn:'The community name of the remote SNMP server can be guessed.',
+ desc:'It is possible to obtain the default community name of the remote SNMP server. An attacker may use this information to gain more knowledge about the remote host, or to change the configuration of the remote system (if the default community allows such modifications).',
+ sol:'Disable the SNMP service on the remote host if you do not use it. Either filter incoming UDP packets going to this port, or change the default community string.',see:['https://www.cisa.gov/'],rem:'Change SNMP community string or migrate to SNMPv3; filter UDP/161',
+ note:'Caso típico de aceptación temporal de riesgo: impresora de planta que el fabricante no permite reconfigurar hasta la próxima ventana de mantenimiento.'});
+P(42873,{name:'SSL Medium Strength Cipher Suites Supported (SWEET32)',family:'General',sev:3,cvss:7.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N',vpr:6.1,epss:0.08,exploit:false,cve:['CVE-2016-2183'],pub:'2009/11/23',vpub:'2016/08/24',type:'remote',
+ syn:'The remote service supports the use of medium strength SSL ciphers.',
+ desc:'The remote host supports the use of SSL ciphers that offer medium strength encryption, including 3DES (64-bit block ciphers), which are susceptible to the SWEET32 birthday attack.',
+ sol:'Reconfigure the affected application if possible to avoid use of medium strength ciphers.',see:['https://sweet32.info/'],rem:'Harden TLS configuration (disable 3DES/RC4, TLS 1.0/1.1)'});
+P(187201,{name:'KB5034122: Windows 10 Version 21H2 / 22H2 Security Update (January 2024)',family:'Windows : Microsoft Bulletins',sev:3,cvss:8.8,vector:V30+'AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H',vpr:7.4,epss:0.05,exploit:false,cve:['CVE-2024-20653','CVE-2024-20674','CVE-2024-20700'],mskb:['5034122'],pub:'2024/01/09',ppub:'2024/01/09',vpub:'2024/01/09',type:'local',
+ syn:'The remote Windows host is affected by multiple vulnerabilities.',
+ desc:'The remote Windows host is missing security update 5034122. It is, therefore, affected by multiple vulnerabilities including remote code execution and security feature bypass issues. Local check performed through authenticated registry and file version enumeration.',
+ sol:'Apply Security Update 5034122 or the latest cumulative update.',see:['https://support.microsoft.com/help/5034122'],rem:'Apply latest Windows 10 cumulative update'});
+P(187099,{name:'Google Chrome < 120.0.6099.129 Vulnerability',family:'Windows',sev:3,cvss:8.8,vector:V30+'AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H',vpr:9.2,epss:0.42,exploit:true,ease:'Exploits are available',cve:['CVE-2023-7024'],pub:'2023/12/20',ppub:'2023/12/20',vpub:'2023/12/20',type:'local',
+ syn:'A web browser installed on the remote Windows host is affected by a vulnerability.',
+ desc:'The version of Google Chrome installed on the remote Windows host is prior to 120.0.6099.129. It is, therefore, affected by a heap buffer overflow in WebRTC. Google is aware that an exploit for this issue exists in the wild.',
+ sol:'Upgrade to Google Chrome version 120.0.6099.129 or later.',see:['https://chromereleases.googleblog.com/'],rem:'Upgrade Google Chrome to the latest version',
+ drivers:{age:'0 to 30 days',cvss_impact:'5.9',maturity:'Functional',product:'Very High',threat_recency:'0 to 7 days',threat_intensity:'High',sources:'CISA KEV, Security Research'},
+ note:'Explotado activamente ("in the wild") y en KEV. CVSS 8.8 (High) pero VPR 9.2: por amenaza real va por delante de muchos "Critical" teóricos.'});
+P(212011,{name:'7-Zip < 24.07 Integer Underflow (CVE-2024-11477)',family:'Windows',sev:3,cvss:7.8,vector:V30+'AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H',vpr:6.7,epss:0.03,exploit:false,cve:['CVE-2024-11477'],pub:'2024/11/26',ppub:'2024/11/19',vpub:'2024/11/19',type:'local',
+ syn:'An application installed on the remote Windows host is affected by a code execution vulnerability.',
+ desc:'The version of 7-Zip installed on the remote Windows host is prior to 24.07. It is affected by an integer underflow in Zstandard decompression that can lead to code execution when a user opens a crafted archive.',
+ sol:'Upgrade to 7-Zip version 24.07 or later.',see:['https://www.7-zip.org/history.txt'],rem:'Upgrade 7-Zip to 24.07 or later'});
+P(186530,{name:'Ubuntu 20.04 LTS : Linux kernel vulnerabilities (USN-6534-1)',family:'Ubuntu Local Security Checks',sev:3,cvss:7.8,vector:V30+'AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H',vpr:6.7,epss:0.01,exploit:false,cve:['CVE-2023-31085','CVE-2023-39189','CVE-2023-42754'],pub:'2023/12/05',ppub:'2023/12/05',vpub:'2023/08/31',type:'local',
+ syn:'The remote Ubuntu host is missing one or more security updates.',
+ desc:'The remote Ubuntu 20.04 LTS host has a package installed that is affected by multiple vulnerabilities as referenced in the USN-6534-1 advisory (local privilege escalation and denial of service in the Linux kernel).',
+ sol:'Update the affected kernel package and reboot.',see:['https://ubuntu.com/security/notices/USN-6534-1'],rem:'Apply Ubuntu kernel updates (USN-6534-1) and reboot'});
+P(161800,{name:'CentOS 7 : openssl (CESA-2022:4899)',family:'CentOS Local Security Checks',sev:3,cvss:7.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H',vpr:4.4,epss:0.01,exploit:false,cve:['CVE-2022-0778'],pub:'2022/06/02',ppub:'2022/06/01',vpub:'2022/03/15',type:'local',
+ syn:'The remote CentOS Linux host is missing a security update.',
+ desc:'The remote CentOS Linux 7 host has openssl packages installed that are affected by an infinite loop in BN_mod_sqrt() when parsing certificates (CVE-2022-0778).',
+ sol:'Update the affected openssl packages.',see:['https://www.openssl.org/news/secadv/20220315.txt'],rem:'Update OpenSSL packages (CentOS 7 is end of life: plan migration)'});
+P(57608,{name:'SMB Signing not required',family:'Misc.',sev:2,cvss:5.3,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N',vpr:null,epss:null,exploit:false,cve:[],pub:'2012/01/19',vpub:'2012/01/17',type:'remote',
+ syn:'Signing is not required on the remote SMB server.',
+ desc:'Signing is not required on the remote SMB server. An unauthenticated, remote attacker can exploit this to conduct man-in-the-middle attacks (for example NTLM relay) against the SMB server.',
+ sol:'Enforce message signing in the host\'s configuration. On Windows, this is found in the policy setting \'Microsoft network server: Digitally sign communications (always)\'.',see:['https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/overview-server-message-block-signing'],rem:'Enforce SMB signing via GPO (Digitally sign communications - always)',
+ note:'Hallazgo muy frecuente en redes Windows. Se corrige masivamente por GPO, por eso en Remediations aparece agrupado con varios hosts.'});
+P(26928,{name:'SSL Weak Cipher Suites Supported',family:'Service detection',sev:2,cvss:5.9,vector:V30+'AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N',vpr:null,epss:null,exploit:false,cve:[],pub:'2007/10/08',vpub:'1999/01/01',type:'remote',
+ syn:'The remote service supports the use of weak SSL ciphers.',
+ desc:'The remote host supports the use of SSL ciphers that offer weak encryption (export-grade or RC4/DES suites).',
+ sol:'Reconfigure the affected application, if possible, to avoid the use of weak ciphers.',see:['https://ssl-config.mozilla.org/'],rem:'Harden TLS configuration (disable 3DES/RC4, TLS 1.0/1.1)'});
+P(104743,{name:'TLS Version 1.0 Protocol Detection',family:'Service detection',sev:2,cvss:6.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N',vpr:null,epss:null,exploit:false,cve:[],pub:'2017/11/22',vpub:'1999/01/01',type:'remote',
+ syn:'The remote service encrypts traffic using an older version of TLS.',
+ desc:'The remote service accepts connections encrypted using TLS 1.0. TLS 1.0 has a number of cryptographic design flaws and has been deprecated (RFC 8996).',
+ sol:'Enable support for TLS 1.2 and 1.3, and disable support for TLS 1.0.',see:['https://datatracker.ietf.org/doc/html/rfc8996'],rem:'Harden TLS configuration (disable 3DES/RC4, TLS 1.0/1.1)'});
+P(157288,{name:'TLS Version 1.1 Deprecated Protocol',family:'Service detection',sev:2,cvss:6.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N',vpr:null,epss:null,exploit:false,cve:[],pub:'2022/04/04',vpub:'2006/04/01',type:'remote',
+ syn:'The remote service encrypts traffic using an older version of TLS.',desc:'The remote service accepts connections encrypted using TLS 1.1, which is deprecated.',sol:'Enable support for TLS 1.2 and/or 1.3, and disable support for TLS 1.1.',see:['https://datatracker.ietf.org/doc/html/rfc8996'],rem:'Harden TLS configuration (disable 3DES/RC4, TLS 1.0/1.1)'});
+P(57582,{name:'SSL Self-Signed Certificate',family:'General',sev:2,cvss:6.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N',vpr:null,exploit:false,cve:[],pub:'2012/01/17',vpub:'1995/01/01',type:'remote',
+ syn:'The SSL certificate chain for this service ends in an unrecognized self-signed certificate.',desc:'The X.509 certificate chain for this service is not signed by a recognized certificate authority. This nullifies the use of SSL as someone could establish a man-in-the-middle attack against the remote host.',sol:'Purchase or generate a proper SSL certificate for this service.',see:[],rem:'Replace self-signed certificates with certificates from the internal CA'});
+P(51192,{name:'SSL Certificate Cannot Be Trusted',family:'General',sev:2,cvss:6.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N',vpr:null,exploit:false,cve:[],pub:'2010/12/15',vpub:'1995/01/01',type:'remote',
+ syn:'The SSL certificate for this service cannot be trusted.',desc:'The server\'s X.509 certificate cannot be trusted: the chain does not end in a known certificate authority, or the certificate has expired.',sol:'Purchase or generate a proper SSL certificate for this service.',see:[],rem:'Replace self-signed certificates with certificates from the internal CA'});
+P(11213,{name:'HTTP TRACE / TRACK Methods Allowed',family:'Web Servers',sev:2,cvss:5.3,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N',vpr:4.0,exploit:true,cve:['CVE-2003-1567','CVE-2004-2320'],pub:'2003/01/23',vpub:'2003/01/20',type:'remote',
+ syn:'Debugging functions are enabled on the remote web server.',desc:'The remote web server supports the TRACE and/or TRACK methods. TRACE and TRACK are HTTP methods that are used to debug web server connections.',sol:'Disable these HTTP methods (TraceEnable off).',see:['https://owasp.org/www-community/attacks/Cross_Site_Tracing'],rem:'Disable HTTP TRACE/TRACK and harden web server headers'});
+P(42263,{name:'Unencrypted Telnet Server',family:'Misc.',sev:2,cvss:6.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N',vpr:null,exploit:false,cve:[],pub:'2009/10/27',vpub:'1983/01/01',type:'remote',
+ syn:'The remote Telnet server transmits traffic in cleartext.',desc:'The remote host is running a Telnet server over an unencrypted channel. Credentials and commands can be eavesdropped.',sol:'Disable the Telnet service and use SSH instead.',see:[],rem:'Disable Telnet/FTP cleartext services'});
+P(10079,{name:'Anonymous FTP Enabled',family:'FTP',sev:2,cvss:5.3,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:['CVE-1999-0497'],pub:'1999/06/22',vpub:'1993/07/01',type:'remote',
+ syn:'Anonymous logins are allowed on the remote FTP server.',desc:'The remote FTP server allows anonymous logins. A remote attacker may connect and read files that are accessible to the anonymous user.',sol:'Disable anonymous FTP if it is not required.',see:[],rem:'Disable Telnet/FTP cleartext services'});
+P(18405,{name:'Microsoft Windows Remote Desktop Protocol Server Man-in-the-Middle Weakness',family:'Windows',sev:2,cvss:6.5,vector:V30+'AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N',vpr:4.9,exploit:false,cve:['CVE-2005-1794'],pub:'2005/06/01',vpub:'2005/05/28',type:'remote',
+ syn:'It may be possible to get access to the remote host.',desc:'The remote version of RDP is vulnerable to a man-in-the-middle attack because it does not authenticate the server identity when setting encryption keys.',sol:'Force the use of SSL as a transport layer for this service, and enable Network Level Authentication.',see:[],rem:'Require NLA and TLS for RDP'});
+P(58453,{name:'Terminal Services Doesn\'t Use Network Level Authentication (NLA) Only',family:'Misc.',sev:2,cvss:4.8,vector:V30+'AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:N',vpr:null,exploit:false,cve:[],pub:'2012/03/23',vpub:'2012/03/23',type:'remote',
+ syn:'The remote Terminal Services doesn\'t use Network Level Authentication only.',desc:'The remote Terminal Services is not configured to use Network Level Authentication (NLA) only.',sol:'Enable Network Level Authentication (NLA) on the remote RDP server.',see:[],rem:'Require NLA and TLS for RDP'});
+P(90317,{name:'SSH Weak Algorithms Supported',family:'Misc.',sev:2,cvss:4.3,vector:V30+'AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:[],pub:'2016/04/04',vpub:'2011/01/01',type:'remote',
+ syn:'The remote SSH server is configured to allow weak encryption algorithms or no algorithm at all.',desc:'Nessus has detected that the remote SSH server is configured to use the Arcfour stream cipher or no cipher at all.',sol:'Contact the vendor or consult product documentation to remove the weak ciphers.',see:[],rem:'Harden SSH configuration (ciphers, MACs, KEX)'});
+P(12085,{name:'Apache Tomcat Default Files',family:'Web Servers',sev:2,cvss:5.3,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:[],pub:'2004/03/02',vpub:'2004/01/01',type:'remote',
+ syn:'The remote web server contains default files.',desc:'The default error page, default index page, example JSPs and/or example servlets are installed on the remote Apache Tomcat server.',sol:'Delete the default index page and remove the example JSP and servlets.',see:[],rem:'Remove Tomcat default/example content'});
+P(85582,{name:'Web Application Potentially Vulnerable to Clickjacking',family:'Web Servers',sev:2,cvss:4.3,vector:V30+'AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N',vpr:null,exploit:false,cve:[],pub:'2015/08/22',vpub:'2009/01/01',type:'web',
+ syn:'The remote web server may fail to mitigate a class of web application vulnerabilities.',desc:'The remote web server does not set an X-Frame-Options response header or a Content-Security-Policy frame-ancestors directive in all content responses.',sol:'Return the X-Frame-Options or Content-Security-Policy (frame-ancestors) HTTP header with the page\'s response.',see:['https://owasp.org/www-community/attacks/Clickjacking'],rem:'Disable HTTP TRACE/TRACK and harden web server headers'});
+P(40984,{name:'Browsable Web Directories',family:'CGI abuses',sev:2,cvss:5.3,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:[],pub:'2009/09/15',vpub:'2009/01/01',type:'web',
+ syn:'Some directories on the remote web server are browsable.',desc:'Multiple Nessus plugins identified directories on the web server that are browsable (directory listing enabled).',sol:'Make sure that browsable directories do not leak confidential information or give access to sensitive resources (Options -Indexes).',see:[],rem:'Disable HTTP TRACE/TRACK and harden web server headers'});
+P(39466,{name:'CGI Generic XSS (quick test)',family:'CGI abuses : XSS',sev:2,cvss:6.1,vector:V30+'AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N',vpr:null,exploit:true,cve:[],pub:'2009/06/19',vpub:'2009/01/01',type:'web',
+ syn:'The remote web server is prone to cross-site scripting attacks.',desc:'The remote web server hosts CGI scripts that fail to adequately sanitize request strings with malicious JavaScript. By leveraging this issue, an attacker may be able to execute arbitrary HTML and script code in a user\'s browser.',sol:'Restrict access to the vulnerable application. Contact the vendor for a patch or upgrade.',see:['https://owasp.org/www-community/attacks/xss/'],rem:'Fix input validation / output encoding in app01 web application'});
+P(84502,{name:'HSTS Missing From HTTPS Server',family:'Web Servers',sev:2,cvss:6.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N',vpr:null,exploit:false,cve:[],pub:'2015/07/02',vpub:'2012/11/19',type:'web',
+ syn:'The remote web server is not enforcing HSTS.',desc:'The remote HTTPS server does not send the HTTP Strict-Transport-Security header.',sol:'Configure the remote web server to use HSTS.',see:['https://datatracker.ietf.org/doc/html/rfc6797'],rem:'Disable HTTP TRACE/TRACK and harden web server headers'});
+P(42057,{name:'Web Server Allows Password Auto-Completion',family:'Web Servers',sev:1,cvss:3.1,vector:V30+'AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:[],pub:'2009/10/07',vpub:'2009/01/01',type:'web',
+ syn:'The \'autocomplete\' attribute is not disabled on password fields.',desc:'The remote web server contains at least one HTML form field that has an input of type \'password\' where \'autocomplete\' is not set to \'off\'.',sol:'Add the attribute \'autocomplete=off\' to these fields.',see:[],rem:'Fix input validation / output encoding in app01 web application'});
+P(70658,{name:'SSH Server CBC Mode Ciphers Enabled',family:'Misc.',sev:1,cvss:3.7,vector:V30+'AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:['CVE-2008-5161'],pub:'2013/10/28',vpub:'2008/11/24',type:'remote',
+ syn:'The SSH server is configured to use Cipher Block Chaining.',desc:'The SSH server is configured to support Cipher Block Chaining (CBC) encryption. This may allow an attacker to recover the plaintext message from the ciphertext.',sol:'Disable CBC mode cipher encryption, and enable CTR or GCM cipher mode encryption.',see:[],rem:'Harden SSH configuration (ciphers, MACs, KEX)'});
+P(71049,{name:'SSH Weak MAC Algorithms Enabled',family:'Misc.',sev:1,cvss:2.6,vector:V30+'AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:[],pub:'2013/11/22',vpub:'2013/11/22',type:'remote',
+ syn:'The remote SSH server is configured to allow MD5 and 96-bit MAC algorithms.',desc:'The remote SSH server is configured to allow either MD5 or 96-bit MAC algorithms, both of which are considered weak.',sol:'Contact the vendor or consult product documentation to disable MD5 and 96-bit MAC algorithms.',see:[],rem:'Harden SSH configuration (ciphers, MACs, KEX)'});
+P(153953,{name:'SSH Weak Key Exchange Algorithms Enabled',family:'Misc.',sev:1,cvss:3.7,vector:V30+'AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N',vpr:null,exploit:false,cve:[],pub:'2021/10/13',vpub:'2015/01/01',type:'remote',
+ syn:'The remote SSH server is configured to allow weak key exchange algorithms.',desc:'The remote SSH server is configured to allow key exchange algorithms which are considered weak (diffie-hellman-group1-sha1, diffie-hellman-group-exchange-sha1).',sol:'Contact the vendor or consult product documentation to disable the weak algorithms.',see:['https://datatracker.ietf.org/doc/html/rfc9142'],rem:'Harden SSH configuration (ciphers, MACs, KEX)'});
+P(10114,{name:'ICMP Timestamp Request Remote Date Disclosure',family:'General',sev:1,cvss:null,vector:'',vpr:null,exploit:false,cve:['CVE-1999-0524'],pub:'1999/08/01',vpub:'1995/01/01',type:'remote',
+ syn:'It is possible to determine the exact time set on the remote host.',desc:'The remote host answers to an ICMP timestamp request. This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.',sol:'Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).',see:[],rem:'Filter ICMP timestamp requests at host firewall'});
+/* Informativos */
+const INFO = (id,name,family,syn,desc)=>P(id,{name,family,sev:0,cvss:null,vector:'',vpr:null,exploit:false,cve:[],pub:'2005/01/01',type:'remote',syn,desc,sol:'n/a',see:[]});
+INFO(19506,'Nessus Scan Information','Settings','This plugin displays information about the Nessus scan.','This plugin displays, for each tested host, information about the scan itself: plugin feed version, type of scan, scan policy used, scanner IP, port range, whether credentialed checks were performed, and so on.');
+INFO(11219,'Nessus SYN scanner','Port scanners','It is possible to determine which TCP ports are open.','This plugin is a SYN \'half-open\' port scanner. It shall be reasonably quick even against a firewalled target.');
+INFO(22964,'Service Detection','Service detection','The remote service could be identified.','Nessus was able to identify the remote service by its banner or by looking at the error message it sends when it receives an HTTP request.');
+INFO(11936,'OS Identification','General','It is possible to guess the remote operating system.','Using a combination of remote probes (TCP/IP, SMB, HTTP, NTP, SNMP, etc.), it is possible to guess the name of the remote operating system in use.');
+INFO(10287,'Traceroute Information','General','It was possible to obtain traceroute information.','Makes a traceroute to the remote host.');
+INFO(45590,'Common Platform Enumeration (CPE)','General','It was possible to enumerate CPE names that matched on the remote system.','By using information obtained from a Nessus scan, this plugin reports CPE (Common Platform Enumeration) matches for various hardware and software products found on a host.');
+INFO(10180,'Ping the remote host','Port scanners','It was possible to identify the status of the remote host (alive or dead).','Nessus was able to determine if the remote host is alive using one or more of the following ping types: ARP ping, TCP ping, ICMP ping.');
+INFO(110723,'Target Credential Status by Authentication Protocol - No Credentials Provided','Settings','Nessus was able to find common ports used for local checks, however, no credentials were provided in the scan policy.','Nessus was not able to successfully authenticate directly to the remote target on an available authentication protocol. Nessus was able to connect to the remote port and identify that the service running on the port supports an authentication protocol, but no credentials were provided. Local checks (patch levels, installed software) were not performed.');
+INFO(141118,'Target Credential Status by Authentication Protocol - Valid Credentials Provided','Settings','Valid credentials were provided for an available authentication protocol.','Nessus was able to determine that valid credentials were provided for an authentication protocol available on the remote target because it was able to successfully authenticate directly to the remote target using that authentication protocol at least once.');
+INFO(104410,'Target Credential Status by Authentication Protocol - Failure for Provided Credentials','Settings','Nessus was unable to log in to the detected authentication protocol, using the provided credentials, in order to perform credentialed checks.','Nessus failed to authenticate to the remote target using the provided credentials. Check username, password, domain and that the account has the required privileges (for Windows: local administrator, remote registry; for SSH: sudo/root).');
+INFO(117887,'OS Security Patch Assessment Available','Settings','Nessus was able to log in to the remote host using the provided credentials and enumerate OS security patch levels.','Nessus was able to determine OS security patch levels by logging into the remote host and running commands to determine the version of the operating system and its components.');
+INFO(10107,'HTTP Server Type and Version','Web Servers','A web server is running on the remote host.','This plugin attempts to determine the type and the version of the remote web server.');
+INFO(10267,'SSH Server Type and Version Information','Service detection','An SSH server is listening on this port.','It is possible to obtain information about the remote SSH server by sending an empty authentication request.');
+INFO(10785,'Microsoft Windows SMB NativeLanManager Remote System Information Disclosure','Windows','It was possible to obtain information about the remote operating system.','Nessus was able to obtain the remote operating system name and version (Windows and/or Samba) by sending an authentication request to port 139 or 445.');
+INFO(96982,'Server Message Block (SMB) Protocol Version 1 Enabled (uncredentialed check)','Windows','The remote Windows host supports the SMBv1 protocol.','The remote Windows host supports Server Message Block Protocol version 1 (SMBv1). Microsoft recommends that users discontinue the use of SMBv1 due to the lack of security features.');
+INFO(56984,'SSL / TLS Versions Supported','General','The remote service encrypts communications.','This plugin detects which SSL and TLS versions are supported by the remote service for encrypting communications.');
+INFO(25220,'TCP/IP Timestamps Supported','General','The remote service implements TCP timestamps.','The remote host implements TCP timestamps, as defined by RFC1323. A side effect is that the uptime of the remote host can sometimes be computed.');
+INFO(22869,'Software Enumeration (SSH)','General','It was possible to enumerate installed software on the remote host via SSH.','Nessus was able to list the software installed on the remote host by calling the appropriate command (e.g. dpkg -l, rpm -qa).');
+INFO(178102,'Microsoft Windows Installed Software Version Enumeration','Windows','Enumerates installed software versions.','This plugin enumerates the installed software version by interrogating the file version and registry using the provided credentials.');
+INFO(10397,'Microsoft Windows SMB LanMan Pipe Server Listing Disclosure','Windows','It is possible to obtain network information.','It was possible to obtain the browse list of the remote Windows system by sending a request to the LANMAN pipe.');
+
+/* Inventario del laboratorio */
+const HOSTS = [
+ {ip:'192.168.56.1',fqdn:'gw.lab.local',os:'pfSense 2.7 (FreeBSD)',kind:'device',mac:'08:00:27:3A:10:01',ports:['53/udp','443/tcp'],
+  f:[['net',57582,'443/tcp'],['net',51192,'443/tcp']]},
+ {ip:'192.168.56.10',fqdn:'dc01.lab.local',os:'Microsoft Windows Server 2019 Standard',kind:'windows',mac:'08:00:27:3A:10:0A',ports:['53/tcp','88/tcp','135/tcp','139/tcp','389/tcp','445/tcp','636/tcp','3268/tcp','3389/tcp'],
+  f:[['net',140657,'445/tcp'],['net',57608,'445/tcp'],['net',10785,'445/tcp'],['net',10114,'0/icmp']]},
+ {ip:'192.168.56.20',fqdn:'fs-legacy.lab.local',os:'Microsoft Windows Server 2008 R2 Standard Service Pack 1',kind:'windows',mac:'08:00:27:3A:10:14',ports:['135/tcp','139/tcp','445/tcp','3389/tcp'],
+  f:[['net',97833,'445/tcp'],['net',108797,'0/tcp'],['net',57608,'445/tcp'],['net',18405,'3389/tcp'],['net',58453,'3389/tcp'],['net',104743,'3389/tcp'],['net',96982,'445/tcp'],['net',10785,'445/tcp'],['net',10397,'445/tcp'],['net',10114,'0/icmp']]},
+ {ip:'192.168.56.30',fqdn:'web01.lab.local',os:'Linux Kernel 5.4 on Ubuntu 20.04 (focal)',kind:'linux',mac:'08:00:27:3A:10:1E',ports:['22/tcp','80/tcp','443/tcp'],
+  f:[['net',153884,'80/tcp'],['net',153584,'80/tcp'],['banner',179072,'22/tcp'],['net',42873,'443/tcp'],['net',26928,'443/tcp'],['net',104743,'443/tcp'],['net',157288,'443/tcp'],['net',11213,'80/tcp'],['net',71049,'22/tcp'],['web',85582,'443/tcp'],['web',40984,'80/tcp'],['web',84502,'443/tcp'],['local',186530,'0/tcp'],['net',10107,'80/tcp'],['net',10267,'22/tcp'],['net',56984,'443/tcp']]},
+ {ip:'192.168.56.40',fqdn:'app01.lab.local',os:'Linux Kernel 5.10 on Debian 11 (bullseye)',kind:'linux',mac:'08:00:27:3A:10:28',ports:['22/tcp','8080/tcp','8443/tcp'],
+  f:[['net',156014,'8080/tcp'],['local',156032,'0/tcp'],['net',12085,'8080/tcp'],['net',57582,'8443/tcp'],['net',51192,'8443/tcp'],['net',26928,'8443/tcp'],['web',39466,'8080/tcp'],['web',85582,'8080/tcp'],['web',42057,'8080/tcp'],['net',10107,'8080/tcp'],['net',10267,'22/tcp'],['net',56984,'8443/tcp']]},
+ {ip:'192.168.56.50',fqdn:'prn-planta2.lab.local',os:'HP LaserJet printer (embedded)',kind:'device',mac:'08:00:27:3A:10:32',ports:['23/tcp','80/tcp','161/udp','443/tcp','9100/tcp'],
+  f:[['net',41028,'161/udp'],['net',42263,'23/tcp'],['net',57582,'443/tcp'],['net',51192,'443/tcp'],['net',10114,'0/icmp'],['net',10107,'80/tcp']]},
+ {ip:'192.168.56.60',fqdn:'db01.lab.local',os:'Linux Kernel 3.10 on CentOS Linux release 7',kind:'linux',mac:'08:00:27:3A:10:3C',ports:['22/tcp','5432/tcp'],extraPorts:['16379/tcp'],
+  f:[['allports',100634,'16379/tcp'],['net',90317,'22/tcp'],['net',70658,'22/tcp'],['net',71049,'22/tcp'],['net',153953,'22/tcp'],['local',161800,'0/tcp'],['net',10267,'22/tcp']]},
+ {ip:'192.168.56.70',fqdn:'ws-rrhh-01.lab.local',os:'Microsoft Windows 10 Pro 22H2',kind:'windows',mac:'08:00:27:3A:10:46',ports:['135/tcp','139/tcp','445/tcp'],
+  f:[['net',57608,'445/tcp'],['local',187201,'445/tcp'],['local',187099,'445/tcp'],['local',212011,'445/tcp'],['net',10785,'445/tcp']]},
+ {ip:'192.168.56.80',fqdn:'nas-backup.lab.local',os:'Linux Kernel 5.10 (Samba 4.13.13)',kind:'linux',mac:'08:00:27:3A:10:50',ports:['21/tcp','22/tcp','139/tcp','445/tcp'],
+  f:[['net',158090,'445/tcp'],['net',10079,'21/tcp'],['net',57608,'445/tcp'],['net',10267,'22/tcp']]}
+];
+const OUTPUTS = {
+ 97833:'\nSending a specially crafted transaction request to the SMBv1 server\nreturned STATUS_INSUFF_SERVER_RESOURCES, indicating the host is missing\nthe MS17-010 patch.\n',
+ 108797:'\nThe following Windows version is installed and not supported:\n\n  Microsoft Windows Server 2008 R2 Standard Service Pack 1\n  End of extended support : 2020/01/14\n',
+ 140657:'\nNessus was able to bypass Netlogon authentication by sending\nNetrServerAuthenticate3 requests with a zeroed client credential\n(1 attempt out of 2000 succeeded).\n',
+ 156014:'\nNessus was able to exploit CVE-2021-44228 using the following request :\n\nGET / HTTP/1.1\nHost: 192.168.56.40:8080\nUser-Agent: ${jndi:ldap://<scanner>:1389/nessus}\n\nA callback was received from 192.168.56.40 to the scanner.\n',
+ 156032:'\n  Path              : /opt/hr-portal/lib/log4j-core-2.14.1.jar\n  Installed version : 2.14.1\n  Fixed version     : 2.16.0\n',
+ 153884:'\n  URL               : http://192.168.56.30/\n  Installed version : 2.4.49\n  Fixed version     : 2.4.51\n',
+ 153584:'\n  URL               : http://192.168.56.30/\n  Installed version : 2.4.49\n  Fixed version     : 2.4.50\n',
+ 179072:'\n  Version source    : SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.11\n  Installed version : 8.2p1\n  Fixed version     : 9.3p2\n',
+ 100634:'\nNessus was able to run the INFO command without authentication:\n\n  redis_version:5.0.7\n  role:master\n  connected_clients:3\n',
+ 158090:'\n  Installed version : 4.13.13\n  Fixed version     : 4.13.17\n',
+ 41028:'\nThe remote SNMP server replies to the following default community\nstrings :\n\n  public\n',
+ 42873:'\n  Medium Strength Ciphers (> 64-bit and < 112-bit key, or 3DES)\n\n    Name                          Code      KEX   Auth  Encryption  MAC\n    DES-CBC3-SHA                  0x00,0x0A RSA   RSA   3DES-CBC(168) SHA1\n',
+ 187201:'\nThe remote host is missing one of the following rollup KBs :\n  - 5034122\n\n  - C:\\Windows\\system32\\ntoskrnl.exe has not been patched.\n    Remote version : 10.0.19041.3693\n    Should be      : 10.0.19041.3930\n',
+ 187099:'\n  Path              : C:\\Program Files\\Google\\Chrome\\Application\n  Installed version : 119.0.6045.160\n  Fixed version     : 120.0.6099.129\n',
+ 212011:'\n  Path              : C:\\Program Files\\7-Zip\\\n  Installed version : 23.01\n  Fixed version     : 24.07\n',
+ 186530:'\n  - linux-image-5.4.0-150-generic\n    Installed : 5.4.0-150.167\n    Fixed     : 5.4.0-169.187\n',
+ 161800:'\n  Remote package installed : openssl-1.0.2k-21.el7_9\n  Should be                : openssl-1.0.2k-25.el7_9\n',
+ 57608:'\nNo output recorded.\n',
+ 26928:'\n  Low Strength Ciphers (<= 64-bit key)\n    Name                 Code      KEX  Auth Encryption MAC\n    EXP-RC4-MD5          0x00,0x03 RSA  RSA  RC4(40)    MD5\n',
+ 104743:'\nTLSv1 is enabled and the server supports at least one cipher.\n',
+ 157288:'\nTLSv1.1 is enabled and the server supports at least one cipher.\n',
+ 10079:'\nThe contents of the remote FTP root are :\n  drwxr-xr-x  backups\n  -rw-r--r--  README.txt\n',
+ 11213:'\nTo disable these methods, add the following lines for each virtual\nhost in your configuration file :\n\n    TraceEnable off\n',
+ 42263:'\nNessus collected the following banner from the remote Telnet server :\n------------------------------ snip ------------------------------\nHP JetDirect\nPassword is not set\n------------------------------ snip ------------------------------\n',
+};
+
+/* ===== Utilidades ===== */
+const $=(s,el=document)=>el.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICONS={
+ radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12l5.5-5.5"/>',
+ folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+ layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+ trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+ file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+ flag:'<path d="M5 21V4h11l-2 4 2 4H5"/>',
+ gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 3l1.6 2.3 2.7-.7.7 2.7L19.3 9 18 11.5l1.3 2.5-2.3 1.7-.7 2.7-2.7-.7L12 21l-1.6-2.3-2.7.7-.7-2.7L4.7 15 6 12.5 4.7 10 7 8.3l.7-2.7 2.7.7z"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',play:'<path d="M7 4.5l12 7.5-12 7.5z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1.5"/>',
+ download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',filter:'<path d="M4 5h16l-6 8v5l-4 2v-7z"/>',
+ chevD:'<path d="M6 9l6 6 6-6"/>',chevL:'<path d="M15 6l-6 6 6 6"/>',chevR:'<path d="M9 6l6 6-6 6"/>',
+ moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>',
+ book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',
+ info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',bell:'<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
+ shield:'<path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>',
+ key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/>',target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+ sliders:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+ list:'<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>',server:'<rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/><path d="M8 7.5h.01M8 16.5h.01"/>'
+};
+const ic=(n,c='')=>`<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const sevTag=(s,extra='')=>`<span class="sev ${SEVKEY[s]}">${SEV[s]}${extra}</span>`;
+const fmt1=v=>v==null||v===''?'-':Number(v).toFixed(1);
+function fmtDate(t){if(!t)return'N/A';const d=new Date(t),n=new Date();const time=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+ if(d.toDateString()===n.toDateString())return'Today at '+time;return d.toLocaleDateString('en-US',{month:'long',day:'numeric'})+' at '+time;}
+function fmtElapsed(ms){const m=Math.max(1,Math.round(ms/60000));return m<60?m+' minutes':Math.floor(m/60)+' hours '+(m%60)+' min';}
+const today=()=>new Date().toISOString().slice(0,10);
+
+/* ===== Estado ===== */
+const KEY='vslab-nessus-v1';
+let S;
+function fresh(){return{v:1,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',seq:10,scans:[],policies:[],rules:[],events:{},prog:{},quiz:{},
+ settings:{proxyHost:'',proxyPort:'',smtpHost:'',smtpPort:'25',smtpFrom:'',maxHosts:'5',maxChecks:'5',uiTimeout:'30',pwdMin:'8',caCert:''},speed:2,view:{top:'scans',page:'scans',folder:'my'}}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1)return s;}catch(e){}return null;}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const uid=()=>++S.seq;
+
+/* ===== Objetivos (targets) ===== */
+const ipToN=ip=>ip.split('.').reduce((a,b)=>a*256+(+b),0);
+const nToIp=n=>[n>>>24&255,n>>>16&255,n>>>8&255,n&255].join('.');
+const isIp=s=>/^(\d{1,3}\.){3}\d{1,3}$/.test(s)&&s.split('.').every(x=>+x<=255);
+function parseTargets(txt){
+ const toks=String(txt||'').split(/[\s,;]+/).filter(Boolean);const ips=new Set();const errors=[];
+ for(const t of toks){
+  let m;
+  if(isIp(t)){ips.add(t);continue;}
+  if((m=t.match(/^((?:\d{1,3}\.){3}\d{1,3})\/(\d{1,2})$/))&&isIp(m[1])&&+m[2]>=16&&+m[2]<=32){
+   const bits=+m[2],base=ipToN(m[1])&(bits===0?0:(~0<<(32-bits))>>>0),size=2**(32-bits);
+   for(let i=0;i<size;i++){const n=(base+i)>>>0;if(size>2&&(i===0||i===size-1))continue;ips.add(nToIp(n));}continue;}
+  if((m=t.match(/^((?:\d{1,3}\.){3})(\d{1,3})-(\d{1,3})$/))&&+m[2]<=+m[3]&&+m[3]<=255){for(let i=+m[2];i<=+m[3];i++)ips.add(m[1]+i);continue;}
+  if((m=t.match(/^((?:\d{1,3}\.){3}\d{1,3})-((?:\d{1,3}\.){3}\d{1,3})$/))&&isIp(m[1])&&isIp(m[2])){const a=ipToN(m[1]),b=ipToN(m[2]);if(b>=a&&b-a<65536){for(let n=a;n<=b;n++)ips.add(nToIp(n));continue;}}
+  const h=HOSTS.find(h=>h.fqdn===t.toLowerCase()||h.fqdn.split('.')[0]===t.toLowerCase());
+  if(h){ips.add(h.ip);continue;}
+  errors.push(t);
+ }
+ return{ips:[...ips],errors};
+}
+
+/* ===== Plantillas ===== */
+const TEMPLATES=[
+ {id:'discovery',name:'Host Discovery',cat:'Discovery',icon:'target',desc:'A simple scan to discover live hosts and open ports.'},
+ {id:'basic',name:'Basic Network Scan',cat:'Vulnerabilities',icon:'radar',desc:'A full system scan suitable for any host.'},
+ {id:'advanced',name:'Advanced Scan',cat:'Vulnerabilities',icon:'sliders',desc:'Configure a scan without using any recommendations.'},
+ {id:'webapp',name:'Web Application Tests',cat:'Vulnerabilities',icon:'globe',desc:'Scan for published and unknown web vulnerabilities.'},
+ {id:'patch',name:'Credentialed Patch Audit',cat:'Vulnerabilities',icon:'key',desc:'Authenticate to hosts and enumerate missing updates.'}
+];
+const LOCKED=[['Audit Cloud Infrastructure','Compliance'],['Policy Compliance Auditing','Compliance'],['SCAP and OVAL Auditing','Compliance'],['Internal PCI Network Scan','Compliance'],['MDM Config Audit','Compliance'],['Offline Config Audit','Compliance']];
+const tpl=id=>TEMPLATES.find(t=>t.id===id);
+const FAMILIES=[...new Set(Object.values(PLUGINS).map(p=>p.family))].sort();
+function defaultSettings(t){return{targets:'',desc:'',folder:'my',
+ discovery:t==='discovery'?'hostenum':'common',assessment:t==='webapp'?'webknown':'default',accuracy:'normal',maxHosts:'30',
+ schedule:{enabled:false,freq:'Weekly',start:today()+'T22:00',day:'MO'},notify:'',families:Object.fromEntries(FAMILIES.map(f=>[f,true]))};}
+function defaultCreds(){return{ssh:{method:'password',user:'',pass:'',elev:'Nothing'},win:{method:'password',user:'',pass:'',domain:''}};}
+
+/* ===== Motor de resultados ===== */
+function credStatus(scan,kind){
+ const c=scan.creds||defaultCreds();
+ if(kind==='linux'){const s=c.ssh;if(!s.user)return'none';return(s.method==='password'&&s.user===CRED.ssh.user&&s.pass===CRED.ssh.pass)?'ok':'fail';}
+ if(kind==='windows'){const w=c.win;if(!w.user)return'none';const u=w.user.replace(/^lab\\/i,'').toLowerCase();return(u===CRED.win.user&&w.pass===CRED.win.pass)?'ok':'fail';}
+ return'none';
+}
+function genResults(scan,ips){
+ const t=scan.template,st=scan.settings,hosts=[];
+ const alive=HOSTS.filter(h=>ips.includes(h.ip));
+ for(const h of alive){
+  const items=[],add=(pid,port,out)=>{if(!PLUGINS[pid])return;if(t==='advanced'&&st.families&&st.families[PLUGINS[pid].family]===false)return;items.push({pid,port,out:out??OUTPUTS[pid]??''});};
+  const allPorts=st.discovery==='all';
+  const ports=h.ports.concat(allPorts&&h.extraPorts?h.extraPorts:[]);
+  add(10180,'0/icmp','\nThe remote host is up\nThe host replied to an ARP who-is query.\n');
+  if(t==='discovery'){
+   ports.forEach(p=>add(11219,p,'\nPort '+p.split('/')[0]+'/'+p.split('/')[1]+' was found to be open\n'));
+   if(st.discovery==='osid'||st.discovery==='hostenum')add(11936,'0/tcp','\nRemote operating system : '+h.os+'\nConfidence level : 95\nMethod : MLSinFP\n');
+   add(19506,'0/tcp',scanInfo(scan,h,'none'));
+   hosts.push(mkHost(h,items));continue;
+  }
+  const cs=credStatus(scan,h.kind);
+  const credOk=cs==='ok';
+  if(t!=='patch'){
+   ports.forEach(p=>add(11219,p,'\nPort '+p+' was found to be open\n'));
+   add(22964,ports[0]);add(11936,'0/tcp','\nRemote operating system : '+h.os+'\nConfidence level : '+(credOk?100:95)+'\nMethod : '+(credOk?'LinuxDistribution / SMB':'MLSinFP')+'\n');
+   add(10287,'0/udp','\nFor your information, here is the traceroute from 192.168.56.5 to '+h.ip+' :\n192.168.56.5\n'+h.ip+'\n');
+   add(45590,'0/tcp');add(25220,'0/tcp');
+  }
+  for(const [cond,pid,port] of h.f){
+   const p=PLUGINS[pid];
+   if(t==='patch'){if(cond==='local'&&credOk)add(pid,port);continue;}
+   if(t==='webapp'){const webFam=['Web Servers','CGI abuses','CGI abuses : XSS','General','Service detection'];
+     if(cond==='web'||(cond==='net'&&webFam.includes(p.family)))add(pid,port);continue;}
+   if(cond==='net')add(pid,port);
+   else if(cond==='banner'){if(!credOk&&!(st.accuracy==='avoid'&&p.paranoid))add(pid,port);}
+   else if(cond==='local'){if(credOk)add(pid,port);}
+   else if(cond==='web'){if(st.assessment!=='default')add(pid,port);}
+   else if(cond==='allports'){if(allPorts)add(pid,port);}
+  }
+  if(h.kind!=='device'){
+   if(cs==='ok'){add(141118,h.kind==='windows'?'445/tcp':'22/tcp','\nCredential validated for '+(h.kind==='windows'?'SMB : '+scan.creds.win.user:'SSH : '+scan.creds.ssh.user)+'\nLocal checks were enabled.\n');add(117887,'0/tcp');add(h.kind==='windows'?178102:22869,'0/tcp');}
+   else if(cs==='fail')add(104410,h.kind==='windows'?'445/tcp':'22/tcp','\nNessus was unable to log into the target via '+(h.kind==='windows'?'SMB':'SSH')+' (authentication failure).\nCheck the username / password / domain.\n');
+   else add(110723,'0/tcp','\nSSH and/or SMB was detected on port '+(h.kind==='windows'?'445':'22')+'.\nNo credentials were provided.\n');
+  }
+  add(19506,'0/tcp',scanInfo(scan,h,cs));
+  hosts.push(mkHost(h,items,cs));
+ }
+ return hosts;
+}
+function scanInfo(scan,h,cs){return`\nInformation about this scan : \n\nScanner : Vuln Scanner Lab (simulador)\nPlugin feed version : 202611130412\nScan type : Normal\nScan name : ${scan.name}\nScan policy used : ${tpl(scan.template).name}\nScanner IP : 192.168.56.5\nPort scanner(s) : nessus_syn_scanner\nPort range : ${scan.settings.discovery==='all'?'all':'default'}\nPing RTT : 1.204 ms\nThorough tests : no\nCredentialed checks : ${cs==='ok'?'yes':'no'}\nPatch management checks : None\nCGI scanning : ${scan.settings.assessment!=='default'?'enabled':'disabled'}\nReport verbosity : 1\nSafe checks : yes\nScan Start Date : ${new Date().toISOString().slice(0,16).replace('T',' ')}\n`;}
+function mkHost(h,items,cs){return{ip:h.ip,fqdn:h.fqdn,os:h.os,mac:h.mac,kind:h.kind,cred:cs||'none',items};}
+
+/* Reglas de plugins + vista efectiva */
+function ruleFor(ip,pid){const d=today();return S.rules.find(r=>+r.pid===+pid&&(!r.host||r.host===ip)&&(!r.exp||r.exp>=d));}
+function effItems(run){
+ const out=[];if(!run||!run.hosts)return out;
+ for(const h of run.hosts)for(const it of h.items){const p=PLUGINS[it.pid];const r=ruleFor(h.ip,it.pid);
+  if(r&&r.sev==='hide')continue;const sev=r?+r.sev:p.sev;out.push({h,it,p,sev,orig:p.sev,recast:!!r&&+r.sev!==p.sev});}
+ return out;
+}
+function counts(items){const c=[0,0,0,0,0];items.forEach(x=>c[x.sev]++);return c;}
+
+/* ===== Estado de interfaz (no persistente) ===== */
+const UI={filters:[],match:'all',search:'',groups:true,sort:{k:'sev',d:-1},filterOpen:false,draft:null,menu:null,hsort:{k:'ip',d:1}};
+const FFIELDS={sev:'Severity',family:'Plugin Family',pid:'Plugin ID',name:'Plugin Name',cve:'CVE',vpr:'VPR Score',cvss:'CVSS v3.0 Base Score',exploit:'Exploit Available',host:'Host'};
+function fOps(f){if(['vpr','cvss'].includes(f))return[['gt','is more than'],['lt','is less than'],['eq','is equal to']];if(['name','cve'].includes(f))return[['contains','contains'],['ncontains','does not contain']];return[['eq','is equal to'],['neq','is not equal to']];}
+function fMatch(x,f){
+ const p=x.p;let v;
+ switch(f.field){
+  case'sev':v=x.sev===+f.value;break;case'family':v=p.family===f.value;break;case'pid':v=String(p.id)===String(f.value).trim();break;
+  case'host':v=x.h.ip===String(f.value).trim();break;case'exploit':v=String(!!p.exploit)===f.value;break;
+  case'name':v=p.name.toLowerCase().includes(String(f.value).toLowerCase());break;
+  case'cve':v=(p.cve||[]).some(c=>c.toLowerCase().includes(String(f.value).toLowerCase()));break;
+  case'vpr':case'cvss':{const n=f.field==='vpr'?p.vpr:p.cvss;if(n==null)return false;const t=parseFloat(f.value);
+   if(f.op==='gt')return n>t;if(f.op==='lt')return n<t;return n===t;}
+ }
+ if(f.op==='neq'||f.op==='ncontains')return!v;return v;
+}
+function applyFilters(items){
+ let r=items;const fs=UI.filters.filter(f=>f.value!==''&&f.value!=null);
+ if(fs.length)r=r.filter(x=>UI.match==='all'?fs.every(f=>fMatch(x,f)):fs.some(f=>fMatch(x,f)));
+ const q=UI.search.trim().toLowerCase();
+ if(q)r=r.filter(x=>x.p.name.toLowerCase().includes(q)||String(x.p.id).includes(q)||(x.p.cve||[]).join(' ').toLowerCase().includes(q)||x.h.ip.includes(q));
+ return r;
+}
+function groupKey(p){
+ if(/^SSL|^TLS/.test(p.name))return'SSL (Multiple Issues)';
+ if(/^SSH /.test(p.name))return'SSH (Multiple Issues)';
+ if(/^Apache 2\.4/.test(p.name))return'Apache HTTP Server (Multiple Issues)';
+ if(/^Target Credential Status|^OS Security Patch/.test(p.name))return'Credentialed Checks (Multiple Issues)';
+ if(/^Microsoft Windows (SMB|Remote)|^Server Message Block/.test(p.name))return'Microsoft Windows (Multiple Issues)';
+ return null;
+}
+function aggregate(items){
+ const m=new Map();
+ for(const x of items){let a=m.get(x.p.id);if(!a){a={p:x.p,sev:x.sev,count:0,hosts:new Set(),recast:false};m.set(x.p.id,a);}
+  a.count++;a.hosts.add(x.h.ip);a.sev=Math.max(a.sev,x.sev);a.recast=a.recast||x.recast;}
+ return[...m.values()];
+}
+function sortRows(rows){
+ const {k,d}=UI.sort;const val=r=>k==='sev'?r.sev*100+(r.p?.vpr??r.vpr??0):k==='name'?(r.p?r.p.name:r.name).toLowerCase():k==='family'?(r.p?r.p.family:r.family):k==='count'?r.count:k==='vpr'?(r.p?r.p.vpr:r.vpr)??-1:k==='cvss'?(r.p?r.p.cvss:r.cvss)??-1:k==='epss'?(r.p?r.p.epss:r.epss)??-1:0;
+ return rows.sort((a,b)=>{const A=val(a),B=val(b);return(A>B?1:A<B?-1:0)*d;});
+}
+
+/* ===== Gráfico donut ===== */
+function donut(c,size=120){
+ const tot=c.reduce((a,b)=>a+b,0);const R=size/2-12,C=2*Math.PI*R;let off=0;
+ const cols=['var(--info)','var(--low)','var(--med)','var(--high)','var(--crit)'];
+ let segs='';if(tot){for(let i=4;i>=0;i--){if(!c[i])continue;const len=c[i]/tot*C;segs+=`<circle r="${R}" cx="${size/2}" cy="${size/2}" fill="none" stroke="${cols[i]}" stroke-width="18" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 ${size/2} ${size/2})"/>`;off+=len;}}
+ else segs=`<circle r="${R}" cx="${size/2}" cy="${size/2}" fill="none" stroke="var(--surface-3)" stroke-width="18"/>`;
+ return`<div class="donutwrap"><svg width="${size}" height="${size}" role="img" aria-label="Vulnerabilities by severity">${segs}<text x="50%" y="50%" text-anchor="middle" dy=".35em" font-size="18" font-weight="650" fill="currentColor">${tot}</text></svg>
+ <div class="legend">${[4,3,2,1,0].map(i=>`<div><i style="background:${cols[i]}"></i>${SEV[i]} <b class="num">${c[i]}</b></div>`).join('')}</div></div>`;
+}
+function sevBar(c){const tot=c.reduce((a,b)=>a+b,0)||1;return`<div class="bar">${[4,3,2,1,0].map(i=>c[i]?`<span class="${SEVKEY[i]}" style="width:${Math.max(c[i]/tot*100,7)}%" title="${SEV[i]}: ${c[i]}">${c[i]}</span>`:'').join('')}</div>`;}
+
+/* ===== Eventos de entrenamiento ===== */
+function ev(name){if(!S.events[name]){S.events[name]=Date.now();save();setTimeout(checkExercises,50);}}
+function toast(msg,icon='check'){let box=document.getElementById('toasts');if(!box){box=document.createElement('div');box.id='toasts';box.className='toasts';box.setAttribute('role','status');document.body.appendChild(box);}while(box.children.length>=3)box.firstChild.remove();const t=document.createElement('div');t.className='toast';t.innerHTML=ic(icon)+'<span>'+msg+'</span>';box.appendChild(t);setTimeout(()=>t.remove(),3200);}
+
+/* ===== Navegación ===== */
+function go(v){UI.menu=null;Object.assign(S.view,v);if(v.page&&v.page!=='scan'){S.view.host=null;S.view.plugin=null;S.view.group=null;}save();render();$('main').scrollTop=0;}
+function openScan(id,tab='hosts'){UI.filters=[];UI.search='';UI.filterOpen=false;UI.groups=true;UI.sort={k:'sev',d:-1};go({top:'scans',page:'scan',scan:id,tab,host:null,plugin:null,group:null});}
+const curScan=()=>S.scans.find(s=>s.id===S.view.scan);
+function curRun(s){if(!s||!s.runs.length)return null;return s.runs.find(r=>r.id===s.cur)||s.runs[s.runs.length-1];}
+function visibleHosts(run){if(!run)return[];if(run.status==='running'||run.status==='paused'||run.status==='canceled'){const n=Math.floor(run.hosts.length*run.progress/100);return run.hosts.slice(0,n);}return run.hosts;}
+function runView(run){return run?{...run,hosts:visibleHosts(run)}:null;}
+
+/* ===== Render principal ===== */
+function render(){
+ document.documentElement.dataset.theme=S.theme;
+ renderTop();renderSide();
+ const p=S.view.page;let h='';
+ try{
+ if(p==='scans')h=vScans();else if(p==='templates')h=vTemplates();else if(p==='editor')h=vEditor();
+ else if(p==='scan')h=vScan();else if(p==='policies')h=vPolicies();else if(p==='rules')h=vRules();else if(p==='settings')h=vSettings();
+ }catch(e){console.error(e);h='<div class="card pad">Error de vista: '+esc(e.message)+'</div>';}
+ $('main').innerHTML=h;
+ if(UI.menu){const m=document.getElementById(UI.menu);if(m)m.classList.add('open');}
+ renderDrawer();
+}
+function renderTop(){
+ const done=EXERCISES.filter(e=>exDone(e)).length;
+ $('#top').innerHTML=`<div class="brand"><div class="mark">${ic('radar')}</div><div>Vuln Scanner Lab<small>simulador estilo Nessus Essentials</small></div></div>
+ <nav class="topnav" aria-label="Main"><button aria-current="${S.view.top==='scans'}" onclick="go({top:'scans',page:'scans',folder:'my'})">Scans</button><button aria-current="${S.view.top==='settings'}" onclick="go({top:'settings',page:'settings',sub:S.view.sub||'about'})">Settings</button></nav>
+ <div class="spacer"></div>
+ <button class="trainbtn" onclick="toggleDrawer(true)" aria-label="Abrir modo entrenamiento">${ic('book')}Entrenamiento <span class="pill num">${done}/${EXERCISES.length}</span></button>
+ <button class="iconbtn" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro" title="Tema claro/oscuro">${ic(S.theme==='dark'?'sun':'moon')}</button>
+ <button class="iconbtn" aria-label="Notifications" onclick="toast('No new notifications','bell')">${ic('bell')}</button>
+ <div class="user"><div class="avatar">YR</div><span>yoandy</span></div>`;
+}
+function renderSide(){
+ const v=S.view;const b=(cond,act,icon,label,count='')=>`<button aria-current="${cond}" onclick="${act}">${ic(icon)}<span class="lbl">${label}</span>${count!==''?`<span class="count num">${count}</span>`:''}</button>`;
+ if(v.top==='settings'){
+  const s=v.sub||'about';
+  $('#side').innerHTML=`<h6>Settings</h6>${b(s==='about',"go({sub:'about'})",'info','About')}${b(s==='advanced',"go({sub:'advanced'})",'sliders','Advanced')}${b(s==='proxy',"go({sub:'proxy'})",'globe','Proxy Server')}${b(s==='smtp',"go({sub:'smtp'})",'bell','SMTP Server')}${b(s==='ca',"go({sub:'ca'})",'shield','Custom CA')}${b(s==='pwd',"go({sub:'pwd'})",'lock','Password Mgmt')}
+  <h6>Accounts</h6>${b(s==='account',"go({sub:'account'})",'user','My Account')}<h6>Laboratorio</h6>${b(s==='lab',"go({sub:'lab'})",'book','Simulador')}`;
+  return;
+ }
+ const my=S.scans.filter(s=>s.folder==='my').length,tr=S.scans.filter(s=>s.folder==='trash').length;
+ const used=licensedUsed();
+ $('#side').innerHTML=`<h6>Folders</h6>${b(v.page==='scans'&&v.folder==='my',"go({page:'scans',folder:'my'})",'folder','My Scans',my)}${b(v.page==='scans'&&v.folder==='all',"go({page:'scans',folder:'all'})",'layers','All Scans',S.scans.length-tr)}${b(v.page==='scans'&&v.folder==='trash',"go({page:'scans',folder:'trash'})",'trash','Trash',tr)}
+ <h6>Resources</h6>${b(v.page==='policies'||(v.page==='templates'&&v.mode==='policy'),"go({page:'policies'})",'file','Policies',S.policies.length)}${b(v.page==='rules',"go({page:'rules'})",'flag','Plugin Rules',S.rules.length)}
+ <div class="community"><b>Nessus Essentials (sim.)</b><br>Licensed hosts: <span class="num">${used}</span> / 16<div class="meter"><i style="width:${Math.min(100,used/16*100)}%"></i></div></div>`;
+}
+function licensedUsed(){const set=new Set();S.scans.forEach(s=>{if(s.template==='discovery')return;s.runs.forEach(r=>{if(r.status!=='running')(r.hosts||[]).forEach(h=>set.add(h.ip));});});return set.size;}
+function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';ev('theme');save();render();}
+function dd(id,label,items,cls='btn'){return`<div class="dd"><button class="${cls}" onclick="event.stopPropagation();toggleMenu('${id}')" aria-haspopup="menu">${label} ${ic('chevD','sm')}</button><div class="menu" id="${id}" role="menu">${items.map(([t,a,dis])=>`<button role="menuitem" ${dis?'disabled style="opacity:.5"':''} onclick="UI.menu=null;${a}">${t}</button>`).join('')}</div></div>`;}
+function toggleMenu(id){UI.menu=UI.menu===id?null:id;document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));if(UI.menu)document.getElementById(id).classList.add('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.dd')&&UI.menu){UI.menu=null;document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));}});
+
+/* ===== Vista: lista de scans ===== */
+function statusCell(s){
+ const r=curRun(s);
+ if(!r)return`<span class="tag">${ic('clock','sm')}Never run</span>`;
+ if(r.status==='running')return`<span class="prog"><i data-prog="${s.id}" style="width:${r.progress}%"></i></span><span class="tag run">Running</span>`;
+ if(r.status==='paused')return`<span class="tag warn">${ic('pause','sm')}Paused</span>`;
+ if(r.status==='canceled')return`<span class="tag warn">${ic('stop','sm')}Canceled</span>`;
+ return`<span class="tag ok">${ic('check','sm')}Completed</span> <span class="muted">${fmtDate(r.end)}</span>`;
+}
+function vScans(){
+ const f=S.view.folder||'my';const list=S.scans.filter(s=>f==='all'?s.folder!=='trash':s.folder===f);
+ const title=f==='my'?'My Scans':f==='all'?'All Scans':'Trash';
+ const rows=list.map(s=>{const r=curRun(s);const running=r&&(r.status==='running'||r.status==='paused');
+  return`<tr class="click" onclick="openScan(${s.id})"><td class="name">${esc(s.name)}<div class="muted" style="font-weight:400;font-size:12.5px">${esc(tpl(s.template).name)}${s.policyId?' · policy: '+esc((S.policies.find(p=>p.id===s.policyId)||{}).name||''):''}</div></td>
+  <td class="muted">${s.settings.schedule.enabled?ic('clock','sm')+' '+s.settings.schedule.freq:'On Demand'}</td><td>${statusCell(s)}</td>
+  <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">${f==='trash'?`<button class="btn sm" onclick="restoreScan(${s.id})">Restore</button>`:
+   running?`<button class="btn sm" onclick="pauseScan(${s.id})" aria-label="Pause">${ic(r.status==='paused'?'play':'pause','sm')}</button> <button class="btn sm" onclick="stopScan(${s.id})" aria-label="Stop">${ic('stop','sm')}</button>`:
+   `<button class="btn sm" onclick="launch(${s.id})" aria-label="Launch">${ic('play','sm')}</button> <button class="btn sm" onclick="trashScan(${s.id})" aria-label="Move to Trash">${ic('trash','sm')}</button>`}</td></tr>`;}).join('');
+ return`<div class="ph"><div><h1>${title}</h1></div><div class="actions">
+ ${f==='trash'&&list.length?`<button class="btn danger" onclick="emptyTrash()">Empty Trash</button>`:''}
+ <button class="btn" onclick="toast('Import: este simulador no importa archivos .nessus','info')">Import</button>
+ <button class="btn primary" onclick="go({page:'templates',mode:'scan',ttab:'scanner'})">${ic('plus')}New Scan</button></div></div>
+ <div class="card">${list.length?`<div class="toolbar"><span class="muted"><b class="num">${list.length}</b> Scans</span></div><table class="t"><thead><tr><th>Name</th><th>Schedule</th><th>Last Modified</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:
+ `<div class="empty">${f==='trash'?'This folder is empty.':`This folder is empty. <a href="#" onclick="go({page:'templates',mode:'scan',ttab:'scanner'});return false">Create a new scan.</a><p class="muted">¿Primera vez? Abre <b>Entrenamiento</b> arriba a la derecha y empieza por el ejercicio 1.</p>`}</div>`}</div>`;
+}
+function trashScan(id){const s=S.scans.find(x=>x.id===id);s.folder='trash';save();toast('Scan moved to Trash');render();}
+function restoreScan(id){S.scans.find(x=>x.id===id).folder='my';save();render();}
+function emptyTrash(){S.scans=S.scans.filter(s=>s.folder!=='trash');save();render();}
+
+/* ===== Vista: plantillas ===== */
+function vTemplates(){
+ const pol=S.view.mode==='policy',tab=S.view.ttab||'scanner';
+ const card=t=>`<button class="tcard" onclick="newDraft('${t.id}')"><div class="ti">${ic(t.icon)}</div><b>${t.name}</b><p>${t.desc}</p></button>`;
+ const locked=LOCKED.map(([n])=>`<div class="tcard locked" aria-disabled="true"><div class="ti">${ic('lock')}</div><b>${n}</b><span class="lock">Upgrade · no incluido en Essentials</span></div>`).join('');
+ const user=S.policies.map(p=>`<button class="tcard" onclick="newDraft('${p.template}',${p.id})"><div class="ti">${ic('file')}</div><b>${esc(p.name)}</b><p>User defined · ${tpl(p.template).name}</p></button>`).join('');
+ return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'${pol?'policies':'scans'}'})">${ic('chevL','sm')} Back to ${pol?'Policies':'My Scans'}</a></div><h1>${pol?'Policy Templates':'Scan Templates'}</h1></div></div>
+ ${pol?'':`<div class="tabs" style="margin-bottom:14px;padding:0"><button class="tab" aria-selected="${tab==='scanner'}" onclick="go({ttab:'scanner'})">Scanner</button><button class="tab" aria-selected="${tab==='user'}" onclick="go({ttab:'user'})">User Defined <span class="count">${S.policies.length}</span></button></div>`}
+ ${tab==='user'&&!pol?(user?`<div class="tgrid">${user}</div>`:`<div class="card empty">No user defined templates. Create one in <a href="#" onclick="go({page:'policies'});return false">Policies</a>.</div>`):
+ `<div class="sect-t">Discovery</div><div class="tgrid">${TEMPLATES.filter(t=>t.cat==='Discovery').map(card).join('')}</div>
+ <div class="sect-t">Vulnerabilities</div><div class="tgrid">${TEMPLATES.filter(t=>t.cat==='Vulnerabilities').map(card).join('')}</div>
+ <div class="sect-t">Compliance</div><div class="tgrid">${locked}</div>`}`;
+}
+
+/* ===== Editor de scan / policy ===== */
+function newDraft(tid,policyId){
+ const pol=S.view.mode==='policy';const P0=policyId?S.policies.find(p=>p.id===policyId):null;
+ UI.draft={kind:pol?'policy':'scan',template:tid,policyId:policyId||null,name:'',settings:P0?JSON.parse(JSON.stringify(P0.settings)):defaultSettings(tid),creds:P0?JSON.parse(JSON.stringify(P0.creds)):defaultCreds(),sec:'general',top:'settings',cc:'ssh',err:''};
+ if(P0)UI.draft.settings.targets='';
+ go({page:'editor'});
+}
+function editScan(id){const s=S.scans.find(x=>x.id===id);UI.draft={kind:'scan',id,template:s.template,policyId:s.policyId,name:s.name,settings:JSON.parse(JSON.stringify(s.settings)),creds:JSON.parse(JSON.stringify(s.creds)),sec:'general',top:'settings',cc:'ssh',err:''};go({page:'editor'});}
+function editPolicy(id){const s=S.policies.find(x=>x.id===id);UI.draft={kind:'policy',id,template:s.template,name:s.name,settings:JSON.parse(JSON.stringify(s.settings)),creds:JSON.parse(JSON.stringify(s.creds)),sec:'general',top:'settings',cc:'ssh',err:''};go({page:'editor',mode:'policy'});}
+function D(path,val){const ks=path.split('.');let o=UI.draft;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=val;}
+function dsec(s){UI.draft.sec=s;render();}
+function dtop(t){UI.draft.top=t;render();}
+const sel=(path,val,opts)=>`<select class="in" onchange="D('${path}',this.value)">${opts.map(o=>Array.isArray(o)?o:[o,o]).map(([v,l])=>`<option value="${esc(v)}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+const inp=(path,val,type='text',ph='')=>`<input class="in" type="${type}" value="${esc(val)}" placeholder="${esc(ph)}" oninput="D('${path}',this.value)" autocomplete="off">`;
+const fld=(label,ctrl,hint='')=>`<div class="field"><label>${label}</label><div>${ctrl}${hint?`<div class="hint">${hint}</div>`:''}</div></div>`;
+function vEditor(){
+ const d=UI.draft;if(!d){S.view.page='scans';return vScans();}
+ const t=tpl(d.template),st=d.settings,pol=d.kind==='policy',disc=d.template==='discovery';
+ const secs=[['BASIC',[['general','General'],['schedule','Schedule'],['notify','Notifications']]],['DISCOVERY',[['discovery','Scan Type']]]];
+ if(!disc)secs.push(['ASSESSMENT',[['assessment','General']]]);
+ secs.push(['REPORT',[['report','Output']]],['ADVANCED',[['advanced','General']]]);
+ let pane='';
+ if(d.top==='settings'){
+  if(d.sec==='general')pane=`<h3>General</h3><div class="form">${fld('Name',inp('name',d.name,'text',pol?'Política semanal':'Mi primer scan'))}${fld('Description',`<textarea class="in" style="font-family:inherit" oninput="D('settings.desc',this.value)">${esc(st.desc)}</textarea>`)}
+   ${pol?'':fld('Folder',sel('settings.folder',st.folder,[['my','My Scans']]))+fld('Targets',`<textarea class="in" id="targets" placeholder="Example: 192.168.56.1-10, 192.168.56.0/24, web01.lab.local" oninput="D('settings.targets',this.value)">${esc(st.targets)}</textarea>`,'Admite IP, rangos (192.168.56.1-20), CIDR (/24) y nombres del lab. Red del laboratorio: <b>192.168.56.0/24</b>.')+fld('Upload Targets',`<input type="file" accept=".txt,.csv" onchange="uploadTargets(this)">`,'Archivo .txt local (no se envía a ningún sitio).')}</div>`;
+  else if(d.sec==='schedule')pane=`<h3>Schedule</h3><div class="form">${fld('Enable Schedule',`<label class="check"><input type="checkbox" ${st.schedule.enabled?'checked':''} onchange="D('settings.schedule.enabled',this.checked);render()"> Enabled</label>`)}
+   ${st.schedule.enabled?fld('Frequency',sel('settings.schedule.freq',st.schedule.freq,['Once','Daily','Weekly','Monthly','Yearly']))+fld('Starts',inp('settings.schedule.start',st.schedule.start,'datetime-local'))+fld('Repeat On',sel('settings.schedule.day',st.schedule.day,[['MO','Monday'],['TU','Tuesday'],['WE','Wednesday'],['TH','Thursday'],['FR','Friday'],['SA','Saturday'],['SU','Sunday']]))+fld('Timezone',`<input class="in" value="Europe/Madrid" disabled>`)+`<div class="note">En el simulador la programación queda guardada pero no se ejecuta sola; usa <b>Launch</b> para lanzarlo.</div>`:''}</div>`;
+  else if(d.sec==='notify')pane=`<h3>Notifications</h3><div class="form">${fld('Email Recipient(s)',inp('settings.notify',st.notify,'text','soc@empresa.example'),'Requiere SMTP Server en Settings. Simulado: no se envía ningún correo.')}</div>`;
+  else if(d.sec==='discovery'){const opts=disc?[['hostenum','Host enumeration'],['osid','OS Identification'],['common','Port scan (common ports)'],['all','Port scan (all ports)']]:[['common','Port scan (common ports)'],['all','Port scan (all ports)']];
+   pane=`<h3>Discovery</h3><div class="form">${fld('Scan Type',sel('settings.discovery',st.discovery,opts),disc?'Host enumeration: hosts vivos. OS Identification: añade sistema operativo. Port scan: puertos abiertos.':'<b>common</b>: ~4.700 puertos habituales (rápido). <b>all</b>: 1-65535 (más lento, encuentra servicios en puertos no estándar).')}</div>`;}
+  else if(d.sec==='assessment')pane=`<h3>Assessment</h3><div class="form">${fld('Scan Type',sel('settings.assessment',st.assessment,[['default','Default'],['webknown','Scan for known web vulnerabilities'],['weball','Scan for all web vulnerabilities (complex)']]),'Las opciones web activan el rastreo (crawling) de aplicaciones y los plugins CGI.')}
+   ${d.template==='advanced'?fld('Accuracy',sel('settings.accuracy',st.accuracy,[['normal','Normal'],['avoid','Avoid potential false alarms'],['paranoid','Show potential false alarms (paranoid)']]),'Override normal accuracy. "Avoid" oculta comprobaciones solo por banner; ojo: también puede ocultar riesgos reales.'):''}</div>`;
+  else if(d.sec==='report')pane=`<h3>Report</h3><div class="form">${fld('Processing',`<label class="check"><input type="checkbox" checked disabled> Override normal verbosity: Normal</label><label class="check"><input type="checkbox" checked disabled> Show missing patches that have been superseded</label>`)}${fld('Output',`<label class="check"><input type="checkbox" checked disabled> Allow users to edit scan results</label><label class="check"><input type="checkbox" checked disabled> Display hosts that respond to ping</label>`)}</div>`;
+  else if(d.sec==='advanced')pane=`<h3>Advanced</h3><div class="form">${fld('Scan Type',sel('settings.adv','Default',['Default','Scan low bandwidth links','Custom']))}${fld('Max simultaneous hosts per scan',inp('settings.maxHosts',st.maxHosts,'number'),'Más hosts simultáneos = escaneo más rápido pero más carga en la red.')}</div>`;
+ }else if(d.top==='credentials'){
+  const c=d.creds;
+  const cats=`<div class="enav"><h6>Host</h6><button aria-current="${d.cc==='ssh'}" onclick="UI.draft.cc='ssh';render()">SSH ${c.ssh.user?'· 1':''}</button><button aria-current="${d.cc==='win'}" onclick="UI.draft.cc='win';render()">Windows ${c.win.user?'· 1':''}</button><button disabled style="opacity:.55">SNMPv3</button><h6>Miscellaneous</h6><button disabled style="opacity:.55">VMware vCenter SOAP API</button><h6>Database</h6><button disabled style="opacity:.55">Database</button></div>`;
+  let cp='';
+  if(d.cc==='ssh')cp=`<h3>SSH</h3><div class="form">${fld('Authentication method',sel('creds.ssh.method',c.ssh.method,[['password','password'],['publickey','public key'],['certificate','certificate'],['kerberos','Kerberos']]))}${fld('Username',inp('creds.ssh.user',c.ssh.user))}${fld('Password (unsafe!)',inp('creds.ssh.pass',c.ssh.pass,'password'))}${fld('Elevate privileges with',sel('creds.ssh.elev',c.ssh.elev,['Nothing','sudo','su','su+sudo']))}</div>`;
+  else cp=`<h3>Windows</h3><div class="form">${fld('Authentication method',sel('creds.win.method',c.win.method,[['password','Password'],['kerberos','Kerberos'],['lm','LM Hash'],['ntlm','NTLM Hash']]))}${fld('Username',inp('creds.win.user',c.win.user))}${fld('Password',inp('creds.win.pass',c.win.pass,'password'))}${fld('Domain',inp('creds.win.domain',c.win.domain))}${fld('Global Credential Settings',`<label class="check"><input type="checkbox" checked disabled> Never send credentials in the clear</label><label class="check"><input type="checkbox" checked disabled> Start the Remote Registry service during the scan</label>`)}</div>`;
+  return edWrap(d,t,pol,`<div class="editor">${cats}<div class="epane">${cp}<div class="note" style="margin-top:16px">${ic('info','sm')} Cuentas del laboratorio (ficticias): SSH <b>${CRED.ssh.user}</b> / <b>${CRED.ssh.pass}</b> · Windows <b>${CRED.win.domain}\\${CRED.win.user}</b> / <b>${CRED.win.pass}</b>. En un entorno real se usan cuentas de servicio dedicadas y se guardan en un gestor de secretos.</div></div></div>`);
+ }else if(d.top==='plugins'){
+  return edWrap(d,t,pol,`<div class="toolbar"><span class="muted">Activa o desactiva familias de plugins. Desactivar familias reduce tiempo y ruido, pero también cobertura.</span><span style="margin-left:auto"></span><button class="btn sm" onclick="Object.keys(UI.draft.settings.families).forEach(k=>UI.draft.settings.families[k]=true);render()">Enable All</button><button class="btn sm" onclick="Object.keys(UI.draft.settings.families).forEach(k=>UI.draft.settings.families[k]=false);render()">Disable All</button></div>
+  <table class="t"><thead><tr><th>Status</th><th>Plugin Family</th><th>Total</th></tr></thead><tbody>${FAMILIES.map(f=>`<tr><td><label class="check"><input type="checkbox" ${st.families[f]!==false?'checked':''} onchange="UI.draft.settings.families['${f}']=this.checked"> ${st.families[f]!==false?'Enabled':'Disabled'}</label></td><td>${esc(f)}</td><td class="num muted">${Object.values(PLUGINS).filter(p=>p.family===f).length}</td></tr>`).join('')}</tbody></table>`);
+ }
+ const nav=`<div class="enav">${secs.map(([h,items])=>`<h6>${h}</h6>`+items.map(([k,l])=>`<button aria-current="${d.sec===k}" onclick="dsec('${k}')">${l}</button>`).join('')).join('')}</div>`;
+ return edWrap(d,t,pol,`<div class="editor">${nav}<div class="epane">${pane}</div></div>`);
+}
+function edWrap(d,t,pol,inner){
+ const disc=d.template==='discovery';
+ return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'${pol?'policies':'scans'}'})">${ic('chevL','sm')} Back to ${pol?'Policies':'My Scans'}</a></div><h1>${d.id?'Edit':'New'} ${pol?'Policy':'Scan'} / ${t.name}</h1></div></div>
+ <div class="card"><div class="subtabs"><button class="tab" aria-selected="${d.top==='settings'}" onclick="dtop('settings')">Settings</button>${disc?'':`<button class="tab" aria-selected="${d.top==='credentials'}" onclick="dtop('credentials')">Credentials</button>`}${d.template==='advanced'?`<button class="tab" aria-selected="${d.top==='plugins'}" onclick="dtop('plugins')">Plugins</button>`:''}</div>
+ ${inner}
+ <div class="toolbar" style="box-shadow:0 -1px 0 var(--line)">${d.err?`<span class="err">${esc(d.err)}</span>`:''}<span style="margin-left:auto"></span><button class="btn" onclick="go({page:'${pol?'policies':'scans'}'})">Cancel</button>
+ <button class="btn primary" onclick="saveDraft(false)">Save</button>${pol?'':dd('m-save','Launch',[['Save & Launch','saveDraft(true)']])}</div></div>`;
+}
+function uploadTargets(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{UI.draft.settings.targets=(UI.draft.settings.targets?UI.draft.settings.targets+'\n':'')+String(r.result).trim();render();};r.readAsText(f);}
+function saveDraft(andLaunch){
+ const d=UI.draft;d.err='';
+ if(!d.name.trim()){d.err='Name is required.';render();return;}
+ if(d.kind==='policy'){
+  if(d.id){Object.assign(S.policies.find(p=>p.id===d.id),{name:d.name.trim(),settings:d.settings,creds:d.creds,mod:Date.now()});}
+  else S.policies.push({id:uid(),name:d.name.trim(),template:d.template,settings:d.settings,creds:d.creds,mod:Date.now()});
+  save();toast('Policy saved');go({page:'policies'});return;
+ }
+ const pt=parseTargets(d.settings.targets);
+ if(!d.settings.targets.trim()){d.err='Targets are required.';d.sec='general';d.top='settings';render();return;}
+ if(pt.errors.length){d.err='Invalid target(s): '+pt.errors.join(', ');d.sec='general';d.top='settings';render();return;}
+ let s;
+ if(d.id){s=S.scans.find(x=>x.id===d.id);Object.assign(s,{name:d.name.trim(),settings:d.settings,creds:d.creds,mod:Date.now()});}
+ else{s={id:uid(),name:d.name.trim(),template:d.template,policyId:d.policyId,settings:d.settings,creds:d.creds,folder:'my',runs:[],cur:null,mod:Date.now()};S.scans.push(s);}
+ save();UI.draft=null;
+ if(andLaunch){go({page:'scans',folder:'my'});launch(s.id);}else{toast('Scan saved');go({page:'scans',folder:'my'});}
+}
+
+/* ===== Ejecución simulada ===== */
+function launch(id,custom){
+ const s=S.scans.find(x=>x.id===id);const pt=parseTargets(custom||s.settings.targets);
+ if(pt.errors.length||!pt.ips.length){modal('Unable to launch',`<p>Invalid targets: ${esc(pt.errors.join(', ')||'(empty)')}</p>`);return;}
+ if(s.template!=='discovery'&&pt.ips.length>16){
+  ev('licenseBlocked');
+  modal('License limit exceeded',`<p><b>${pt.ips.length}</b> targets requested. Your Nessus Essentials license allows scanning up to <b>16 IP addresses</b>.</p><div class="note"><b>Consejo:</b> los escaneos de <b>Host Discovery</b> no consumen licencia. Primero descubre qué hosts están vivos y después lanza el escaneo de vulnerabilidades solo contra esas IPs (p. ej. <code>192.168.56.10, 192.168.56.20, 192.168.56.30</code>).</div>`);return;}
+ const r=S.scans.find(x=>x.id===id).runs.find(r=>r.status==='running'||r.status==='paused');if(r){toast('Scan already running','info');return;}
+ const hosts=genResults(s,pt.ips);
+ const alive=hosts.length,base=s.template==='discovery'?5:4+alive*1.1;
+ const run={id:uid(),start:Date.now(),end:null,status:'running',progress:0,dur:base,simMs:(s.template==='discovery'?2:6+alive*3.5)*60000*(s.settings.discovery==='all'?2.2:1),ips:pt.ips.length,hosts,custom:!!custom,
+  cred:{ssh:s.creds.ssh.user?credStatus(s,'linux'):'none',win:s.creds.win.user?credStatus(s,'windows'):'none'}};
+ s.runs.push(run);s.cur=run.id;s.mod=Date.now();save();toast('Scan launched: '+esc(s.name),'play');render();
+}
+function pauseScan(id){const r=curRun(S.scans.find(x=>x.id===id));if(!r)return;r.status=r.status==='paused'?'running':'paused';save();render();}
+function stopScan(id){const s=S.scans.find(x=>x.id===id),r=curRun(s);if(!r)return;r.status='canceled';r.end=Date.now();r.hosts=visibleHosts(r);r.progress=100;save();toast('Scan canceled','stop');render();}
+setInterval(()=>{
+ let changed=false,finished=false;
+ for(const s of S.scans)for(const r of s.runs){
+  if(r.status!=='running')continue;changed=true;
+  r.progress=Math.min(100,r.progress+100*(0.25/r.dur)*(S.speed||2)/2);
+  if(r.progress>=100){r.status='completed';r.end=r.start+r.simMs;r.realEnd=Date.now();finished=true;toast('Scan completed: '+esc(s.name));
+   if(s.template==='discovery')ev('discoveryDone');}
+ }
+ if(!changed)return;
+ if(finished){save();render();checkExercises();return;}
+ const ae=document.activeElement;const typing=ae&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName);
+ document.querySelectorAll('[data-prog]').forEach(el=>{const s=S.scans.find(x=>x.id===+el.dataset.prog);const r=curRun(s);if(r)el.style.width=r.progress+'%';});
+ if(!typing&&S.view.page==='scan')render();
+},250);
+
+/* ===== Vista de resultados ===== */
+function vScan(){
+ const s=curScan();if(!s){S.view.page='scans';return vScans();}
+ const run=runView(curRun(s));const v=S.view;
+ const items=effItems(run);const fitems=applyFilters(items);
+ if(v.plugin)return vPlugin(s,run,items);
+ const running=run&&(run.status==='running'||run.status==='paused');
+ const hostsN=run?run.hosts.length:0,vulnsN=aggregate(fitems).length,rems=remediations(fitems);
+ const tab=v.tab||'hosts';
+ const tabs=[['hosts','Hosts',hostsN],['vulns','Vulnerabilities',vulnsN],['rem','Remediations',rems.length],['notes','Notes',notes(s,run).length],['history','History',s.runs.length]];
+ let body='';
+ if(!run)body=`<div class="empty">This scan has not been run yet. <button class="btn primary sm" onclick="launch(${s.id})">${ic('play','sm')}Launch</button></div>`;
+ else if(v.host)body=vHostDetail(s,run,fitems);
+ else if(tab==='hosts')body=vHosts(s,run,fitems);
+ else if(tab==='vulns')body=vVulns(s,run,fitems);
+ else if(tab==='rem')body=vRem(rems,fitems,run);
+ else if(tab==='notes')body=`<div class="mb" style="padding:16px 18px">${notes(s,run).map(n=>`<div class="st">${ic('info','sm')}<span>${n}</span></div>`).join('')||'<div class="empty">No notes.</div>'}</div>`;
+ else if(tab==='history')body=vHistory(s);
+ const act=running?`<button class="btn" onclick="pauseScan(${s.id})">${ic(run.status==='paused'?'play':'pause','sm')}${run.status==='paused'?'Resume':'Pause'}</button><button class="btn" onclick="stopScan(${s.id})">${ic('stop','sm')}Stop</button>`:
+  dd('m-launch',ic('play','sm')+'Launch',[['Default',`launch(${s.id})`],['Custom Targets',`customTargets(${s.id})`]]);
+ const filterBar=(tab==='vulns'||tab==='hosts'||tab==='rem')&&run&&!v.host?filterUI():'';
+ return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'scans'})">${ic('chevL','sm')} Back to My Scans</a>${v.host?` / <a onclick="S.view.host=null;render()">${esc(s.name)}</a>`:''}</div><h1>${v.host?esc(v.host):esc(s.name)}</h1></div>
+ <div class="actions"><button class="btn" onclick="editScan(${s.id})">${ic('gear','sm')}Configure</button><button class="btn" onclick="auditTrail(${s.id})">Audit Trail</button>${act}
+ <button class="btn" ${run&&!running?'':'disabled'} onclick="reportModal(${s.id})">${ic('file','sm')}Report</button>${dd('m-export','Export',[['Nessus',`exportNessus(${s.id})`],['CSV',`reportModal(${s.id},'csv')`]])}</div></div>
+ <div class="results"><div class="card">${v.host?'':`<div class="tabs" role="tablist">${tabs.map(([k,l,n])=>`<button class="tab" role="tab" aria-selected="${tab===k}" onclick="setTab('${k}')">${l} <span class="count num">${n}</span></button>`).join('')}</div>`}${filterBar}${body}</div>
+ <div class="side-stack">${v.host?hostDetailsCard(run,v.host,fitems):scanDetailsCard(s,run,fitems)}</div></div>`;
+}
+function setTab(k){S.view.tab=k;S.view.group=null;if(k==='rem')ev('viewRem');if(k==='history')ev('viewHistory');save();render();}
+function scanDetailsCard(s,run,items){
+ const p=s.policyId?S.policies.find(x=>x.id===s.policyId):null;
+ return`<div class="card pad details"><h3>Scan Details</h3><dl><dt>Policy:</dt><dd>${esc(p?p.name:tpl(s.template).name)}</dd><dt>Status:</dt><dd>${run?esc(run.status[0].toUpperCase()+run.status.slice(1)):'Empty'}</dd><dt>Severity Base:</dt><dd>CVSS v3.0</dd><dt>Scanner:</dt><dd>Local Scanner</dd>
+ <dt>Start:</dt><dd>${run?fmtDate(run.start):'N/A'}</dd><dt>End:</dt><dd>${run&&run.end?fmtDate(run.end):'N/A'}</dd><dt>Elapsed:</dt><dd>${run&&run.end?fmtElapsed(run.end-run.start):run?'<span class="prog"><i data-prog="'+s.id+'" style="width:'+run.progress+'%"></i></span>':'N/A'}</dd>
+ <dt>Credentials:</dt><dd>${run?credLabel(run):'N/A'}</dd></dl></div>
+ <div class="card pad details"><h3>Vulnerabilities</h3>${donut(counts(items))}</div>`;
+}
+function credLabel(run){const m={ok:'OK',fail:'Failed',none:'—'};return`SSH ${m[run.cred.ssh]} · Windows ${m[run.cred.win]}`;}
+function hostDetailsCard(run,ip,items){
+ const h=run.hosts.find(x=>x.ip===ip);if(!h)return'';
+ return`<div class="card pad details"><h3>Host Details</h3><dl><dt>IP:</dt><dd>${h.ip}</dd><dt>DNS:</dt><dd>${esc(h.fqdn)}</dd><dt>MAC:</dt><dd>${h.mac}</dd><dt>OS:</dt><dd>${esc(h.os)}</dd><dt>Start:</dt><dd>${fmtDate(run.start)}</dd><dt>End:</dt><dd>${run.end?fmtDate(run.end):'N/A'}</dd><dt>Auth:</dt><dd>${h.cred==='ok'?'<span class="tag ok">Credentialed</span>':h.cred==='fail'?'<span class="tag warn">Auth failed</span>':'<span class="tag">Not credentialed</span>'}</dd></dl></div>
+ <div class="card pad details"><h3>Vulnerabilities</h3>${donut(counts(items.filter(x=>x.h.ip===ip)))}</div>`;
+}
+function notes(s,run){if(!run)return[];const n=[];
+ if(run.cred.ssh==='fail'||run.cred.win==='fail')n.push('Authentication failure on one or more hosts: local checks were not performed. Revisa las credenciales.');
+ if(run.cred.ssh==='none'&&run.cred.win==='none'&&s.template!=='discovery')n.push('Credentialed checks : no. Los resultados se basan solo en comprobaciones remotas (banners, servicios).');
+ if(s.template==='patch'&&run.cred.ssh!=='ok'&&run.cred.win!=='ok')n.push('Credentialed Patch Audit sin credenciales válidas: casi no hay resultados.');
+ const nr=S.rules.length;if(nr)n.push(nr+' plugin rule(s) defined. Las reglas cambian la presentación (severidad u ocultar), no la ejecución del escaneo.');
+ if(run.status==='canceled')n.push('Scan was canceled: results are partial.');
+ return n;}
+
+/* Hosts */
+function vHosts(s,run,items){
+ if(!run.hosts.length)return`<div class="empty">${run.status==='running'?'Scanning… los hosts aparecen a medida que terminan.':'No hosts found. Comprueba los targets (red del lab: 192.168.56.0/24).'}</div>`;
+ const rows=run.hosts.map(h=>{const c=counts(items.filter(x=>x.h.ip===h.ip));return{h,c};}).sort((a,b)=>ipToN(a.h.ip)-ipToN(b.h.ip));
+ return`<table class="t"><thead><tr><th>Host</th><th>Vulnerabilities</th><th class="num">Total</th></tr></thead><tbody>${rows.map(({h,c})=>`<tr class="click" onclick="openHost('${h.ip}')"><td class="name">${h.ip}<div class="muted" style="font-weight:400;font-size:12.5px">${esc(h.fqdn)}</div></td><td>${sevBar(c)}</td><td class="num">${c.reduce((a,b)=>a+b,0)}</td></tr>`).join('')}</tbody></table>
+ ${run.status==='running'?`<div class="toolbar muted">${ic('radar','sm')} Scanning ${run.ips} target IP(s)… <span class="prog"><i data-prog="${s.id}" style="width:${run.progress}%"></i></span></div>`:''}`;
+}
+function openHost(ip){S.view.host=ip;ev('host:'+ip);save();render();}
+function vHostDetail(s,run,items){
+ const hi=items.filter(x=>x.h.ip===S.view.host);const rows=sortRows(aggregate(hi));
+ return`<div class="toolbar"><button class="btn sm" onclick="S.view.host=null;render()">${ic('chevL','sm')}Back to Hosts</button><span class="muted">${rows.length} vulnerabilities</span></div>${vulnTable(rows,false)}`;
+}
+
+/* Vulnerabilidades */
+function vVulns(s,run,items){
+ let rows=aggregate(items);
+ if(S.view.group){rows=rows.filter(r=>groupKey(r.p)===S.view.group);return`<div class="toolbar"><button class="btn sm" onclick="S.view.group=null;render()">${ic('chevL','sm')}Back to Vulnerabilities</button><b>${esc(S.view.group)}</b></div>${vulnTable(sortRows(rows),false)}`;}
+ if(UI.groups){const gm=new Map(),out=[];for(const r of rows){const g=groupKey(r.p);if(!g){out.push(r);continue;}if(!gm.has(g))gm.set(g,[]);gm.get(g).push(r);}
+  for(const [g,list] of gm){if(list.length===1){out.push(list[0]);continue;}const sevs=new Set(list.map(r=>r.sev));out.push({group:g,name:g,family:[...new Set(list.map(r=>r.p.family))].length===1?list[0].p.family:'Mixed',sev:Math.max(...list.map(r=>r.sev)),mixed:sevs.size>1,count:list.reduce((a,r)=>a+r.count,0),n:list.length,vpr:Math.max(...list.map(r=>r.p.vpr??-1)),cvss:Math.max(...list.map(r=>r.p.cvss??-1)),epss:null});}
+  rows=out;}
+ return`<div class="toolbar" style="padding-top:4px"><span class="muted">${rows.length} rows</span><span style="margin-left:auto"></span><button class="btn sm" onclick="UI.groups=!UI.groups;render()">${UI.groups?'Disable Groups':'Enable Groups'}</button></div>${vulnTable(sortRows(rows),true)}`;
+}
+function th(k,l,cls=''){const a=UI.sort.k===k?(UI.sort.d>0?' ▲':' ▼'):'';return`<th class="sort ${cls}" onclick="sortBy('${k}')">${l}${a}</th>`;}
+function sortBy(k){UI.sort={k,d:UI.sort.k===k?-UI.sort.d:(k==='name'||k==='family'?1:-1)};if(k==='vpr'&&!UI.groups)ev('sortVPR');render();}
+function vulnTable(rows,showGroups){
+ if(!rows.length)return'<div class="empty">No vulnerabilities match the current filters.</div>';
+ return`<table class="t"><thead><tr>${th('sev','Sev')}${th('cvss','CVSS')}${th('vpr','VPR')}${th('epss','EPSS')}${th('name','Name')}${th('family','Family')}${th('count','Count','num')}</tr></thead><tbody>${rows.map(r=>{
+  if(r.group)return`<tr class="click" onclick="S.view.group='${esc(r.group)}';render()"><td>${r.mixed?`<span class="sev mixed">Mixed</span>`:sevTag(r.sev)}</td><td class="num muted">${r.cvss>=0?fmt1(r.cvss):'-'}</td><td class="num vpr">${r.vpr>=0?fmt1(r.vpr):'-'}</td><td class="muted">-</td><td class="name"><span class="tag num" style="margin-right:6px">${r.n}</span>${esc(r.name)}</td><td class="muted">${esc(r.family)}</td><td class="num">${r.count}</td></tr>`;
+  const p=r.p;return`<tr class="click" onclick="openPlugin(${p.id})"><td>${sevTag(r.sev)}${r.recast?'<span class="recast" title="Recast by plugin rule">recast</span>':''}</td><td class="num muted">${fmt1(p.cvss)}</td><td class="num vpr">${fmt1(p.vpr)}</td><td class="num muted">${p.epss!=null?p.epss.toFixed(4):'-'}</td><td class="name">${esc(p.name)}${p.exploit?` <span class="chip-ex" title="Exploit available">${ic('bolt','sm')}</span>`:''}</td><td class="muted">${esc(p.family)}</td><td class="num">${r.count}</td></tr>`;}).join('')}</tbody></table>`;
+}
+function openPlugin(pid){const s=curScan();const run=curRun(s);S.view.plugin=pid;ev('plugin:'+pid);if(run&&(run.cred.ssh==='ok'||run.cred.win==='ok'))ev('pluginCred:'+pid);save();render();$('main').scrollTop=0;}
+
+/* Detalle de plugin */
+function vPlugin(s,run,items){
+ const p=PLUGINS[S.view.plugin];const its=items.filter(x=>x.p.id===p.id&&(!S.view.host||x.h.ip===S.view.host));
+ const sev=its.length?Math.max(...its.map(x=>x.sev)):p.sev;const rec=its.some(x=>x.recast);
+ const outs=its.map(x=>`<div class="out-h"><span>Port ▸ <b>${esc(x.it.port)}</b></span><span>Host ▸ <b>${x.h.ip}</b> (${esc(x.h.fqdn)})</span></div><pre>${esc(x.it.out||'\nNo output recorded.\n')}</pre>`).join('');
+ const vd=p.drivers;
+ return`<div class="ph"><div><div class="crumb"><a onclick="S.view.plugin=null;render()">${ic('chevL','sm')} Back to ${S.view.host?'Host':'Vulnerabilities'}</a></div><h1>${sevTag(sev)} ${esc(p.name)}</h1></div>
+ <div class="actions"><button class="btn" onclick="ruleModal(null,${p.id},'${S.view.host||(its.length===1?its[0].h.ip:'')}')">${ic('flag','sm')}Create Plugin Rule</button></div></div>
+ <div class="pd"><div class="card pad">
+ ${p.note?`<section class="note"><b>Nota del instructor:</b> ${esc(p.note)}</section>`:''}
+ <section><h4>Synopsis</h4><div>${esc(p.syn)}</div></section><section><h4>Description</h4><div>${esc(p.desc)}</div></section>
+ <section><h4>Solution</h4><div>${esc(p.sol)}</div></section>
+ ${p.see&&p.see.length?`<section><h4>See Also</h4>${p.see.map(u=>`<div style="word-break:break-all">${esc(u)}</div>`).join('')}<div class="muted" style="font-size:12px;margin-top:4px">Enlaces mostrados como texto: el simulador no abre conexiones.</div></section>`:''}
+ <section><h4>Output</h4>${outs||'<div class="muted">Hidden by plugin rule or no matching hosts.</div>'}</section></div>
+ <div class="side-stack"><div class="card pad details"><h3>Plugin Details</h3><dl><dt>Severity:</dt><dd>${SEV[sev]}${rec?' (recast from '+SEV[p.sev]+')':''}</dd><dt>ID:</dt><dd>${p.id}</dd><dt>Version:</dt><dd>1.${(p.id%17)+3}</dd><dt>Type:</dt><dd>${p.type==='local'?'local':'remote'}</dd><dt>Family:</dt><dd>${esc(p.family)}</dd><dt>Published:</dt><dd>${p.pub||'-'}</dd><dt>Modified:</dt><dd>2026/10/02</dd></dl></div>
+ ${p.vpr!=null?`<div class="card pad details"><h3>VPR Key Drivers</h3><dl><dt>Threat Recency:</dt><dd>${vd?esc(vd.threat_recency):'No recorded events'}</dd><dt>Threat Intensity:</dt><dd>${vd?esc(vd.threat_intensity):'Very Low'}</dd><dt>Exploit Code Maturity:</dt><dd>${vd?esc(vd.maturity):(p.exploit?'Functional':'Unproven')}</dd><dt>Age of Vuln:</dt><dd>${vd?esc(vd.age):'730 days +'}</dd><dt>Product Coverage:</dt><dd>${vd?esc(vd.product):'Medium'}</dd><dt>CVSSv3 Impact Score:</dt><dd>${vd?esc(vd.cvss_impact):'5.9'}</dd><dt>Threat Sources:</dt><dd>${vd?esc(vd.sources):'No recorded events'}</dd></dl></div>`:''}
+ <div class="card pad details"><h3>Risk Information</h3><dl><dt>Vulnerability Priority Rating (VPR):</dt><dd class="vpr">${fmt1(p.vpr)}</dd><dt>EPSS Score:</dt><dd>${p.epss!=null?p.epss.toFixed(4):'-'}</dd><dt>Risk Factor:</dt><dd>${SEV[p.sev]==='Info'?'None':SEV[p.sev]}</dd><dt>CVSS v3.0 Base Score:</dt><dd>${fmt1(p.cvss)}</dd><dt style="grid-column:1/-1">CVSS v3.0 Vector:</dt><dd style="grid-column:1/-1;font-family:var(--mono);font-size:12px;word-break:break-all">${esc(p.vector||'-')}</dd></dl></div>
+ <div class="card pad details"><h3>Vulnerability Information</h3><dl><dt>Exploit Available:</dt><dd>${p.exploit?'true':'false'}</dd><dt>Exploit Ease:</dt><dd>${esc(p.ease||(p.exploit?'Exploits are available':'No known exploits are available'))}</dd><dt>Patch Pub Date:</dt><dd>${p.ppub||'-'}</dd><dt>Vulnerability Pub Date:</dt><dd>${p.vpub||'-'}</dd></dl></div>
+ <div class="card pad details"><h3>Reference Information</h3><dl><dt>CVE:</dt><dd>${(p.cve||[]).join(', ')||'-'}</dd>${p.mskb?`<dt>MSKB:</dt><dd>${p.mskb.join(', ')}</dd>`:''}</dl></div></div></div>`;
+}
+
+/* Remediaciones */
+function remediations(items){const m=new Map();items.forEach(x=>{if(!x.p.rem||x.sev===0)return;let r=m.get(x.p.rem);if(!r){r={action:x.p.rem,pl:new Set(),hosts:new Set(),max:0,vpr:0};m.set(x.p.rem,r);}r.pl.add(x.p.id+'|'+x.h.ip);r.hosts.add(x.h.ip);r.max=Math.max(r.max,x.sev);r.vpr=Math.max(r.vpr,x.p.vpr||0);});
+ return[...m.values()].sort((a,b)=>b.pl.size-a.pl.size||b.max-a.max);}
+function vRem(rems,items,run){
+ const tot=items.filter(x=>x.sev>0).length;const cov=rems.slice(0,10).reduce((a,r)=>a+r.pl.size,0);
+ if(!rems.length)return'<div class="empty">No remediations available.</div>';
+ return`<div class="toolbar"><span class="muted">Taking the following actions across <b>${run.hosts.length}</b> hosts would resolve <b>${tot?Math.round(cov/tot*100):0}%</b> of the vulnerabilities on the network.</span></div>
+ <table class="t"><thead><tr><th>Action to take</th><th>Max Sev</th><th class="num">Vulns</th><th class="num">Hosts</th></tr></thead><tbody>${rems.map(r=>`<tr><td class="name">${esc(r.action)}</td><td>${sevTag(r.max)}</td><td class="num">${r.pl.size}</td><td class="num">${r.hosts.size}</td></tr>`).join('')}</tbody></table>`;
+}
+/* Historial */
+function vHistory(s){
+ return`<table class="t"><thead><tr><th>Start Time</th><th>End Time</th><th>Status</th><th>Targets</th><th></th></tr></thead><tbody>${s.runs.slice().reverse().map(r=>`<tr class="click" onclick="selRun(${s.id},${r.id})"><td>${fmtDate(r.start)} ${s.cur===r.id?'<span class="tag run">Current</span>':''}</td><td>${r.end?fmtDate(r.end):'N/A'}</td><td>${esc(r.status)}</td><td class="num muted">${r.ips} IP · ${r.custom?'custom':'default'}</td><td style="text-align:right" onclick="event.stopPropagation()"><button class="btn sm" onclick="delRun(${s.id},${r.id})" aria-label="Delete">${ic('trash','sm')}</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No history.</td></tr>'}</tbody></table>`;
+}
+function selRun(sid,rid){const s=S.scans.find(x=>x.id===sid);s.cur=rid;S.view.tab='hosts';ev('selectHistory');save();render();}
+function delRun(sid,rid){const s=S.scans.find(x=>x.id===sid);const r=s.runs.find(x=>x.id===rid);if(r.status==='running'){toast('Stop the scan first','info');return;}s.runs=s.runs.filter(x=>x.id!==rid);s.cur=s.runs.length?s.runs[s.runs.length-1].id:null;save();render();}
+
+/* Filtros UI */
+function filterUI(){
+ const fams=FAMILIES;
+ const valCtl=(f,i)=>{const on=`onchange="UI.filters[${i}].value=this.value"`;
+  if(f.field==='sev')return`<select class="in" ${on}><option value="">—</option>${[4,3,2,1,0].map(s=>`<option value="${s}" ${String(f.value)===String(s)?'selected':''}>${SEV[s]}</option>`).join('')}</select>`;
+  if(f.field==='family')return`<select class="in" ${on}><option value="">—</option>${fams.map(x=>`<option ${f.value===x?'selected':''}>${esc(x)}</option>`).join('')}</select>`;
+  if(f.field==='exploit')return`<select class="in" ${on}><option value="">—</option><option ${f.value==='true'?'selected':''}>true</option><option ${f.value==='false'?'selected':''}>false</option></select>`;
+  return`<input class="in" value="${esc(f.value)}" oninput="UI.filters[${i}].value=this.value" placeholder="value">`;};
+ const active=UI.filters.filter(f=>f.value!=='').length;
+ return`<div class="toolbar"><div class="search">${ic('search','sm')}<input placeholder="Search Vulnerabilities" value="${esc(UI.search)}" oninput="UI.search=this.value;clearTimeout(window._st);window._st=setTimeout(()=>{render();const i=document.querySelector('.search input');i.focus();i.setSelectionRange(i.value.length,i.value.length)},250)"></div>
+ <button class="btn sm" onclick="UI.filterOpen=!UI.filterOpen;if(!UI.filters.length)addFilter(true);render()" aria-expanded="${UI.filterOpen}">${ic('filter','sm')}Filter${active?` <span class="tag run num">${active}</span>`:''}</button>${active?`<button class="btn ghost sm" onclick="clearFilters()">Clear Filters</button>`:''}</div>
+ ${UI.filterOpen?`<div class="filters"><div class="frow"><span>Match</span><select class="in" style="min-width:90px" onchange="UI.match=this.value"><option value="all" ${UI.match==='all'?'selected':''}>All</option><option value="any" ${UI.match==='any'?'selected':''}>Any</option></select><span>of the following:</span></div>
+ ${UI.filters.map((f,i)=>`<div class="frow"><select class="in" onchange="UI.filters[${i}].field=this.value;UI.filters[${i}].op=fOps(this.value)[0][0];UI.filters[${i}].value='';render()">${Object.entries(FFIELDS).map(([k,l])=>`<option value="${k}" ${f.field===k?'selected':''}>${l}</option>`).join('')}</select>
+ <select class="in" onchange="UI.filters[${i}].op=this.value">${fOps(f.field).map(([k,l])=>`<option value="${k}" ${f.op===k?'selected':''}>${l}</option>`).join('')}</select>${valCtl(f,i)}<button class="btn sm" aria-label="Remove filter" onclick="UI.filters.splice(${i},1);render()">${ic('x','sm')}</button></div>`).join('')}
+ <div class="frow"><button class="btn ghost sm" onclick="addFilter()">${ic('plus','sm')}Add filter</button><span style="margin-left:auto"></span><button class="btn sm" onclick="clearFilters()">Clear</button><button class="btn primary sm" onclick="applyF()">Apply</button></div></div>`:''}`;
+}
+function addFilter(silent){UI.filters.push({field:'sev',op:'eq',value:''});if(!silent)render();}
+function clearFilters(){UI.filters=[];UI.search='';render();}
+function applyF(){UI.filterOpen=false;const fs=UI.filters.filter(f=>f.value!=='');
+ if(UI.match==='all'&&fs.some(f=>f.field==='sev'&&f.op==='eq'&&f.value==='4')&&fs.some(f=>f.field==='exploit'&&f.op==='eq'&&f.value==='true'))ev('filterCritExploit');
+ if(fs.length)ev('filterUsed');render();}
+
+/* ===== Modales ===== */
+function modal(title,body,footer){
+ const m=document.getElementById('modal');
+ m.innerHTML=`<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h2>${title}</h2><span style="margin-left:auto"></span><button class="btn ghost sm" onclick="closeModal()" aria-label="Close">${ic('x','sm')}</button></header><div class="mb">${body}</div><footer>${footer||'<button class="btn primary" onclick="closeModal()">OK</button>'}</footer></div></div>`;
+ setTimeout(()=>{const f=m.querySelector('.mb input,.mb select,.mb textarea');if(f)f.focus();},30);
+}
+function closeModal(){document.getElementById('modal').innerHTML='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.getElementById('modal').innerHTML)closeModal();else toggleDrawer(false);}});
+function customTargets(id){modal('Custom Targets',`<p class="muted">Lanza el escaneo una vez contra otros objetivos sin cambiar su configuración.</p><textarea class="in" id="ct" placeholder="192.168.56.30"></textarea>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="const v=document.getElementById('ct').value;closeModal();launch(${id},v)">Launch</button>`);}
+function auditTrail(id){const s=S.scans.find(x=>x.id===id);const run=curRun(s);
+ modal('Audit Trail',`<p class="muted">Explica por qué un plugin NO se reportó en un host. Escribe un Plugin ID y una IP.</p><div class="form"><div class="field"><label>Plugin ID</label><input class="in" id="at-p" placeholder="179072"></div><div class="field"><label>Host</label><input class="in" id="at-h" placeholder="192.168.56.30"></div></div><div id="at-r" style="margin-top:10px"></div>`,
+ `<button class="btn" onclick="closeModal()">Close</button><button class="btn primary" onclick="auditRun(${id})">Search</button>`);}
+function auditRun(id){const s=S.scans.find(x=>x.id===id),run=curRun(s);const pid=+document.getElementById('at-p').value,ip=document.getElementById('at-h').value.trim();const out=document.getElementById('at-r');
+ const p=PLUGINS[pid];if(!p){out.innerHTML='<div class="st">Unknown plugin ID in this lab.</div>';return;}
+ const h=run&&run.hosts.find(x=>x.ip===ip);if(!h){out.innerHTML='<div class="st">Host not scanned in the current run.</div>';return;}
+ if(h.items.some(i=>i.pid===pid)){out.innerHTML='<div class="st ok">The plugin reported a result for this host.</div>';return;}
+ const lab=HOSTS.find(x=>x.ip===ip),f=lab&&lab.f.find(x=>x[1]===pid);let why='The host does not appear to be affected (the service or software is not present).';
+ if(f){if(f[0]==='local')why=h.cred==='ok'?'Disabled family or template excludes local checks.':'Local check skipped: no valid credentials for this host.';
+  else if(f[0]==='banner')why=h.cred==='ok'?'Credentialed check confirmed the installed package is patched (backported fix): the banner-based version check is not reported.':'Accuracy setting "Avoid potential false alarms" suppressed a banner-only check.';
+  else if(f[0]==='web')why='Web application tests disabled (Assessment: Default).';else if(f[0]==='allports')why='Port not scanned: Discovery is set to common ports.';else why='Plugin excluded by template or disabled plugin family.';}
+ out.innerHTML=`<div class="st">${ic('info','sm')}<span>${esc(why)}</span></div>`;ev('auditTrail');}
+
+/* Reglas de plugin */
+function ruleModal(rid,pid,host){
+ const r=rid?S.rules.find(x=>x.id===rid):{host:host||'',pid:pid||'',exp:'',sev:'hide'};
+ modal(rid?'Edit Rule':'New Rule',`<div class="form"><div class="field"><label>Host</label><div><input class="in" id="r-h" value="${esc(r.host)}" placeholder="(todos los hosts)"><div class="hint">Vacío = se aplica a todos los hosts.</div></div></div>
+ <div class="field"><label>Plugin ID</label><input class="in" id="r-p" value="${esc(r.pid)}" placeholder="57608"></div>
+ <div class="field"><label>Expiration Date</label><div><input class="in" type="date" id="r-e" value="${esc(r.exp)}"><div class="hint">Recomendado en aceptación de riesgo: la excepción caduca y el hallazgo vuelve.</div></div></div>
+ <div class="field"><label>Severity</label><select class="in" id="r-s">${[['hide','Hide this result'],['4','Critical'],['3','High'],['2','Medium'],['1','Low'],['0','Info']].map(([v,l])=>`<option value="${v}" ${String(r.sev)===v?'selected':''}>${l}</option>`).join('')}</select></div>
+ <div class="field"><label>Comentario (lab)</label><input class="in" id="r-c" value="${esc(r.comment||'')}" placeholder="Justificación / ticket / aprobador"></div></div><div id="r-err" class="err"></div>`,
+ `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveRule(${rid||0})">Save</button>`);}
+function saveRule(rid){
+ const host=document.getElementById('r-h').value.trim(),pid=+document.getElementById('r-p').value,exp=document.getElementById('r-e').value,sev=document.getElementById('r-s').value,comment=document.getElementById('r-c').value;
+ if(!PLUGINS[pid]){document.getElementById('r-err').textContent='Plugin ID not found in this lab.';return;}
+ if(host&&!isIp(host)){document.getElementById('r-err').textContent='Host must be an IP address.';return;}
+ if(rid)Object.assign(S.rules.find(x=>x.id===rid),{host,pid,exp,sev,comment});else S.rules.push({id:uid(),host,pid,exp,sev,comment,created:Date.now()});
+ save();closeModal();toast('Plugin rule saved');checkExercises();render();}
+function vRules(){
+ return`<div class="ph"><div><h1>Plugin Rules</h1><div class="muted" style="margin-top:4px">Cambian la severidad u ocultan resultados después del escaneo (aceptación de riesgo / falsos positivos). No afectan a la exportación .nessus.</div></div><div class="actions"><button class="btn primary" onclick="ruleModal()">${ic('plus')}New Rule</button></div></div>
+ <div class="card">${S.rules.length?`<table class="t"><thead><tr><th>Host</th><th>Plugin ID</th><th>Plugin Name</th><th>Expiration Date</th><th>Severity</th><th></th></tr></thead><tbody>${S.rules.map(r=>{const exp=r.exp&&r.exp<today();return`<tr class="click" onclick="ruleModal(${r.id})"><td>${esc(r.host||'All Hosts')}</td><td class="num">${r.pid}</td><td>${esc(PLUGINS[r.pid].name)}<div class="muted" style="font-size:12.5px">${esc(r.comment||'')}</div></td><td>${r.exp||'Never'} ${exp?'<span class="tag warn">Expired</span>':''}</td><td>${r.sev==='hide'?'<span class="tag">Hidden</span>':sevTag(+r.sev)}</td><td style="text-align:right" onclick="event.stopPropagation()"><button class="btn sm" aria-label="Delete rule" onclick="S.rules=S.rules.filter(x=>x.id!==${r.id});save();render()">${ic('trash','sm')}</button></td></tr>`;}).join('')}</tbody></table>`:'<div class="empty">No plugin rules. Crea una desde aquí o desde el detalle de un plugin.</div>'}</div>`;}
+
+/* Políticas */
+function vPolicies(){
+ return`<div class="ph"><div><h1>Policies</h1></div><div class="actions"><button class="btn primary" onclick="go({page:'templates',mode:'policy'})">${ic('plus')}New Policy</button></div></div>
+ <div class="card">${S.policies.length?`<table class="t"><thead><tr><th>Name</th><th>Template</th><th>Last Modified</th><th></th></tr></thead><tbody>${S.policies.map(p=>`<tr class="click" onclick="editPolicy(${p.id})"><td class="name">${esc(p.name)}</td><td class="muted">${tpl(p.template).name}</td><td class="muted">${fmtDate(p.mod)}</td><td style="text-align:right" onclick="event.stopPropagation()"><button class="btn sm" onclick="S.view.mode='scan';newDraft('${p.template}',${p.id})">New Scan</button> <button class="btn sm" aria-label="Delete policy" onclick="S.policies=S.policies.filter(x=>x.id!==${p.id});save();render()">${ic('trash','sm')}</button></td></tr>`).join('')}</tbody></table>`:`<div class="empty">No policies. Una policy es una plantilla propia reutilizable (ajustes + credenciales). <a href="#" onclick="go({page:'templates',mode:'policy'});return false">Create a new policy.</a></div>`}</div>`;}
+
+/* Ajustes */
+function vSettings(){
+ const sub=S.view.sub||'about',st=S.settings;if(sub==='about')ev('settings:about');
+ const sf=(label,key,type='text',hint='')=>fld(label,`<input class="in" type="${type}" value="${esc(st[key])}" oninput="S.settings['${key}']=this.value;save()">`,hint);
+ const wrap=(t,inner)=>`<div class="ph"><div><h1>${t}</h1></div></div><div class="card pad">${inner}</div>`;
+ if(sub==='about')return wrap('About',`<div class="tabs" style="padding:0;margin:-6px 0 16px"><button class="tab" aria-selected="true">Overview</button><button class="tab" onclick="toast('Software Update: el simulador no descarga plugins (offline)','info')">Software Update</button></div>
+  <div class="details"><dl><dt>Version:</dt><dd>10.x (simulado)</dd><dt>Licensed Scanner:</dt><dd>Yes</dd><dt>License Type:</dt><dd>Nessus Essentials</dd><dt>Licensed Hosts:</dt><dd><span class="num">${licensedUsed()}</span> of <b>16</b> (IP addresses)</dd><dt>Activation Code:</dt><dd>XXXX-XXXX-XXXX-LAB0</dd><dt>Expiration:</dt><dd>N/A (simulador)</dd><dt>Plugin Set:</dt><dd>202611130412 · ${Object.keys(PLUGINS).length} plugins de laboratorio</dd><dt>Policy Template Version:</dt><dd>1.0-lab</dd></dl></div>
+  <div class="note" style="margin-top:16px">Nessus Essentials es gratuito para uso personal/educativo y limita el escaneo a <b>16 direcciones IP</b>. Los escaneos de descubrimiento (Host Discovery) no consumen licencia. Plantillas de Compliance no están disponibles.</div>`);
+ if(sub==='advanced')return wrap('Advanced Settings',`<div class="form">${sf('max_hosts','maxHosts','number','Máximo de hosts escaneados simultáneamente.')}${sf('max_checks','maxChecks','number','Comprobaciones simultáneas por host.')}${sf('UI timeout (minutes)','uiTimeout','number')}</div>`);
+ if(sub==='proxy')return wrap('Proxy Server',`<div class="form">${sf('Host','proxyHost')}${sf('Port','proxyPort','number')}<div class="muted">Simulado: el laboratorio nunca se conecta a Internet.</div></div>`);
+ if(sub==='smtp')return wrap('SMTP Server',`<div class="form">${sf('Host','smtpHost')}${sf('Port','smtpPort','number')}${sf('From (sender email)','smtpFrom')}<div class="muted">Simulado: no se envían correos.</div></div>`);
+ if(sub==='ca')return wrap('Custom CA',`<div class="form">${fld('Certificate',`<textarea class="in" oninput="S.settings.caCert=this.value;save()" placeholder="-----BEGIN CERTIFICATE-----">${esc(st.caCert)}</textarea>`,'Permite confiar en la CA interna (evita hallazgos "SSL Certificate Cannot Be Trusted" en servicios internos).')}</div>`);
+ if(sub==='pwd')return wrap('Password Management',`<div class="form">${sf('Minimum password length','pwdMin','number')}</div>`);
+ if(sub==='account')return wrap('My Account',`<div class="form">${fld('Username','<input class="in" value="yoandy" disabled>')}${fld('Full Name','<input class="in" value="Yoandy Ramírez Delgado" disabled>')}${fld('Role','<input class="in" value="System Administrator" disabled>','Essentials solo permite un usuario.')}</div>`);
+ if(sub==='lab')return wrap('Simulador (laboratorio)',`<div class="form">${fld('Velocidad de simulación',`<select class="in" onchange="S.speed=+this.value;save()">${[[1,'Lenta'],[2,'Normal'],[4,'Rápida'],[10,'Instantánea']].map(([v,l])=>`<option value="${v}" ${S.speed===v?'selected':''}>${l}</option>`).join('')}</select>`)}
+  ${fld('Tema',`<button class="btn" onclick="toggleTheme()">${ic(S.theme==='dark'?'sun':'moon','sm')}Cambiar a ${S.theme==='dark'?'claro':'oscuro'}</button>`)}
+  ${fld('Inventario del lab',`<table class="t"><thead><tr><th>IP</th><th>Host</th><th>Rol</th></tr></thead><tbody>${HOSTS.map(h=>`<tr><td class="num">${h.ip}</td><td>${h.fqdn}</td><td class="muted">${esc(h.os)}</td></tr>`).join('')}</tbody></table>`,'Spoiler: normalmente lo descubrirías con Host Discovery.')}
+  ${fld('Datos',`<button class="btn danger" onclick="resetLab()">Restablecer laboratorio</button>`,'Borra scans, policies, reglas y progreso guardados en este navegador (localStorage).')}</div>`);
+ return'';
+}
+function resetLab(){modal('Restablecer laboratorio','<p>Se borrarán scans, policies, reglas y el progreso de ejercicios de este navegador.</p>',`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="localStorage.removeItem(KEY);S=fresh();seed();save();closeModal();go({top:'scans',page:'scans',folder:'my'})">Restablecer</button>`);}
+
+/* ===== Informes y exportación (generados localmente) ===== */
+function download(name,mime,text){const b=new Blob([text],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+function reportModal(id,fmt='html'){
+ const active=UI.filters.filter(f=>f.value!=='').length;
+ modal('Generate Report',`<div class="form"><div class="field"><label>Format</label><select class="in" id="rp-f" onchange="document.getElementById('rp-t').disabled=this.value==='csv'"><option value="pdf" disabled>PDF (no disponible offline)</option><option value="html" ${fmt==='html'?'selected':''}>HTML</option><option value="csv" ${fmt==='csv'?'selected':''}>CSV</option></select></div>
+ <div class="field"><label>Report Template</label><select class="in" id="rp-t" ${fmt==='csv'?'disabled':''}><option value="exec">Executive Summary</option><option value="host">Detailed Vulnerabilities By Host</option><option value="plugin">Detailed Vulnerabilities By Plugin</option></select></div></div>
+ <div class="st">${ic('filter','sm')}<span>${active?`Se aplicarán los <b>${active}</b> filtro(s) activos y las plugin rules.`:'Sin filtros activos: se incluyen todos los resultados (aplicando plugin rules).'}</span></div>`,
+ `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="genReport(${id})">${ic('download','sm')}Generate Report</button>`);}
+function genReport(id){
+ const f=document.getElementById('rp-f').value,t=document.getElementById('rp-t').value;closeModal();
+ const s=S.scans.find(x=>x.id===id),run=curRun(s);const items=applyFilters(effItems(run));
+ if(f==='csv'){
+  const cols=['Plugin ID','CVE','CVSS v3.0 Base Score','Risk','Host','Protocol','Port','Name','Synopsis','Solution','VPR Score','EPSS Score','Exploit Available','Plugin Output'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  const lines=[cols.map(q).join(',')].concat(items.map(x=>{const [port,proto]=x.it.port.split('/');return[x.p.id,(x.p.cve||[]).join(','),x.p.cvss??'',x.sev?SEV[x.sev]:'None',x.h.ip,proto,port,x.p.name,x.p.syn,x.p.sol,x.p.vpr??'',x.p.epss??'',x.p.exploit,x.it.out.trim()].map(q).join(',');}));
+  download(slug(s.name)+'.csv','text/csv;charset=utf-8','\ufeff'+lines.join('\r\n'));
+  ev('reportCsv');if(UI.filters.some(f=>f.field==='vpr'&&f.op==='gt'&&parseFloat(f.value)>=6.9&&f.value!==''))ev('csvVPR');
+  toast('CSV report generated','download');checkExercises();return;}
+ download(slug(s.name)+'_'+t+'.html','text/html;charset=utf-8',htmlReport(s,run,items,t));
+ if(t==='exec')ev('reportExec');ev('reportHtml');toast('HTML report generated','download');checkExercises();
+}
+function htmlReport(s,run,items,t){
+ const c=counts(items.filter(x=>x.sev>0).length?items:items);const col=['#67ace1','#f8c851','#f18c43','#dd4b50','#91243e'];
+ const agg=aggregate(items).sort((a,b)=>b.sev-a.sev||(b.p.vpr||0)-(a.p.vpr||0));
+ const top=agg.filter(a=>a.sev>=3).slice(0,10);
+ const sevB=x=>`<span style="background:${col[x]};color:${x===1||x===2?'#1d1206':'#fff'};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">${SEV[x]}</span>`;
+ let body='';
+ if(t==='exec'){
+  body=`<h2>Executive Summary</h2><p>Scan <b>${esc(s.name)}</b> (${esc(tpl(s.template).name)}) · ${run.hosts.length} hosts · ${new Date(run.start).toLocaleString('es-ES')}.</p>
+  <table><tr>${[4,3,2,1,0].map(i=>`<td style="text-align:center;background:${col[i]};color:${i===1||i===2?'#1d1206':'#fff'};padding:12px"><div style="font-size:26px;font-weight:700">${c[i]}</div>${SEV[i]}</td>`).join('')}</tr></table>
+  <h3>Hosts</h3><table><tr><th>Host</th><th>Critical</th><th>High</th><th>Medium</th><th>Low</th><th>Info</th></tr>${run.hosts.map(h=>{const hc=counts(items.filter(x=>x.h.ip===h.ip));return`<tr><td>${h.ip} (${esc(h.fqdn)})</td>${[4,3,2,1,0].map(i=>`<td>${hc[i]}</td>`).join('')}</tr>`;}).join('')}</table>
+  <h3>Top risks (Critical/High, ordenado por VPR)</h3><table><tr><th>Sev</th><th>VPR</th><th>CVSS</th><th>Name</th><th>Hosts</th></tr>${top.map(a=>`<tr><td>${sevB(a.sev)}</td><td>${fmt1(a.p.vpr)}</td><td>${fmt1(a.p.cvss)}</td><td>${esc(a.p.name)}</td><td>${[...a.hosts].join(', ')}</td></tr>`).join('')}</table>
+  <h3>Remediations</h3><table><tr><th>Action</th><th>Vulns</th><th>Hosts</th></tr>${remediations(items).map(r=>`<tr><td>${esc(r.action)}</td><td>${r.pl.size}</td><td>${r.hosts.size}</td></tr>`).join('')}</table>`;
+ }else if(t==='host'){
+  body=run.hosts.map(h=>`<h2>${h.ip} <small>${esc(h.fqdn)} · ${esc(h.os)}</small></h2>`+items.filter(x=>x.h.ip===h.ip).sort((a,b)=>b.sev-a.sev).map(x=>`<div class="v"><h4>${sevB(x.sev)} ${x.p.id} - ${esc(x.p.name)}</h4><p><b>Synopsis:</b> ${esc(x.p.syn)}</p><p><b>Solution:</b> ${esc(x.p.sol)}</p><p><b>Risk:</b> CVSS v3.0 ${fmt1(x.p.cvss)} · VPR ${fmt1(x.p.vpr)} · ${x.p.cve.join(', ')}</p><p><b>Port:</b> ${esc(x.it.port)}</p><pre>${esc(x.it.out)}</pre></div>`).join('')).join('');
+ }else{
+  body=agg.map(a=>`<div class="v"><h4>${sevB(a.sev)} ${a.p.id} - ${esc(a.p.name)}</h4><p>${esc(a.p.desc)}</p><p><b>Solution:</b> ${esc(a.p.sol)}</p><p><b>CVSS v3.0:</b> ${fmt1(a.p.cvss)} ${esc(a.p.vector)} · <b>VPR:</b> ${fmt1(a.p.vpr)} · <b>CVE:</b> ${a.p.cve.join(', ')||'-'}</p><p><b>Hosts:</b> ${[...a.hosts].join(', ')}</p></div>`).join('');
+ }
+ return`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(s.name)} - Report</title><style>body{font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#141c26;max-width:960px;margin:30px auto;padding:0 20px}h1{font-size:24px}table{border-collapse:collapse;width:100%;margin:10px 0 20px}td,th{border-bottom:1px solid #dde3ea;padding:7px 9px;text-align:left;font-size:13px}pre{background:#f4f6f8;padding:10px;border-radius:6px;white-space:pre-wrap;font-size:12px}.v{border-radius:10px;box-shadow:0 0 0 1px rgba(16,24,40,.1);padding:4px 16px;margin:10px 0}small{color:#38434f;font-weight:400;font-size:14px}.disc{color:#38434f;font-size:12px}</style></head><body>
+ <h1>${esc(s.name)}</h1><p class="disc">Informe generado localmente por Vuln Scanner Lab (simulador de estudio no oficial). Datos ficticios de laboratorio. Plugin rules aplicadas.</p>${body}</body></html>`;
+}
+function exportNessus(id){
+ const s=S.scans.find(x=>x.id===id),run=curRun(s);if(!run){toast('Nothing to export','info');return;}
+ const x=v=>esc(v);
+ const xml=`<?xml version="1.0" ?>\n<NessusClientData_v2>\n<Report name="${x(s.name)}">\n`+run.hosts.map(h=>`<ReportHost name="${h.ip}"><HostProperties><tag name="host-fqdn">${x(h.fqdn)}</tag><tag name="operating-system">${x(h.os)}</tag></HostProperties>\n`+h.items.map(it=>{const p=PLUGINS[it.pid];const [port,proto]=it.port.split('/');return`<ReportItem port="${port}" protocol="${proto}" severity="${p.sev}" pluginID="${p.id}" pluginName="${x(p.name)}" pluginFamily="${x(p.family)}"><risk_factor>${p.sev?SEV[p.sev]:'None'}</risk_factor>${p.cvss!=null?`<cvss3_base_score>${p.cvss}</cvss3_base_score>`:''}${p.vpr!=null?`<vpr_score>${p.vpr}</vpr_score>`:''}${(p.cve||[]).map(c=>`<cve>${c}</cve>`).join('')}<plugin_output>${x(it.out)}</plugin_output></ReportItem>`;}).join('\n')+`\n</ReportHost>`).join('\n')+`\n</Report>\n</NessusClientData_v2>\n`;
+ download(slug(s.name)+'.nessus','application/xml',xml);ev('exportNessus');toast('.nessus exported (raw data: plugin rules not applied)','download');}
+
+/* ===== Modo entrenamiento ===== */
+const completed=t=>S.scans.filter(s=>s.template===t||!t).flatMap(s=>s.runs.filter(r=>r.status==='completed').map(r=>({s,r})));
+const EXERCISES=[
+ {id:'e1',lvl:'Básico',title:'Conoce la consola y tu licencia',
+  goal:'Localiza en Settings ▸ About el tipo de licencia y cuántas IPs permite Nessus Essentials.',
+  why:'Antes de escanear debes conocer los límites de la herramienta: en Essentials cada IP escaneada consume licencia.',
+  steps:['Arriba, pulsa la pestaña <b>Settings</b>.','En la barra lateral entra en <b>About</b> ▸ Overview.','Fíjate en <b>License Type</b> y <b>Licensed Hosts</b>.'],
+  hints:['La navegación principal de Nessus tiene solo dos pestañas: Scans y Settings.'],
+  check:()=>!!S.events['settings:about'],
+  quiz:{q:'¿Cuántas direcciones IP permite escanear Nessus Essentials?',o:['5','16','256','Ilimitadas'],a:1,ex:'Essentials limita a 16 IPs. Professional no tiene límite de IPs.'}},
+ {id:'e2',lvl:'Básico',title:'Descubre la red con Host Discovery',
+  goal:'Crea y ejecuta un scan <b>Host Discovery</b> contra <code>192.168.56.0/24</code> y espera a que termine.',
+  why:'No puedes proteger lo que no sabes que existe. El inventario de activos es el primer paso de la gestión de vulnerabilidades.',
+  steps:['Scans ▸ <b>New Scan</b> ▸ plantilla <b>Host Discovery</b>.','Name: <i>Descubrimiento lab</i>. Targets: <code>192.168.56.0/24</code>.','DISCOVERY ▸ Scan Type: <b>OS Identification</b> (opcional).','Pulsa <b>Launch ▸ Save & Launch</b>.','Abre el scan y revisa la pestaña Hosts.'],
+  hints:['Una /24 son 254 IPs, pero Host Discovery no consume licencia.','Si no ves hosts, revisa el target: 192.168.56.0/24.'],
+  check:()=>completed('discovery').some(({r})=>r.hosts.length>=9),
+  quiz:{q:'¿Los activos encontrados SOLO con un Host Discovery cuentan para la licencia?',o:['Sí, cada IP viva consume licencia','No, los escaneos de descubrimiento no cuentan','Solo si tienen puertos abiertos'],a:1,ex:'Tenable indica que los activos identificados por discovery scans no cuentan para la licencia.'}},
+ {id:'e3',lvl:'Básico',title:'Choca con el límite y escanea solo lo vivo',
+  goal:'Intenta lanzar un <b>Basic Network Scan</b> contra toda la /24 (verás el bloqueo) y luego lanza uno contra los hosts vivos (≤16 IPs).',
+  why:'En entornos reales con licencias limitadas se segmenta: descubrir primero, después escanear objetivos concretos.',
+  steps:['New Scan ▸ <b>Basic Network Scan</b>, targets <code>192.168.56.0/24</code> ▸ Save & Launch → aparece el aviso de licencia.','Pulsa <b>Configure</b> en ese scan (o crea otro) y cambia targets a las IPs vivas que encontraste en el ejercicio 2.','Lanza y espera a que termine.'],
+  hints:['Puedes usar rangos: <code>192.168.56.1, 192.168.56.10-80</code> = 72 IPs… ¡demasiadas! Usa la lista exacta.','Lista exacta: <code>192.168.56.1,192.168.56.10,192.168.56.20,192.168.56.30,192.168.56.40,192.168.56.50,192.168.56.60,192.168.56.70,192.168.56.80</code>'],
+  check:()=>!!S.events.licenseBlocked&&completed('basic').some(({r})=>r.hosts.length>=6&&r.ips<=16),
+  quiz:{q:'¿Cuál es la mejor estrategia con una licencia de 16 IPs y una red /24?',o:['Escanear la /24 por partes cada día','Hacer Host Discovery y escanear solo los activos relevantes','Usar Advanced Scan, que no tiene límite'],a:1,ex:'El descubrimiento no consume licencia; los escaneos de vulnerabilidades sí. Prioriza activos críticos.'}},
+ {id:'e4',lvl:'Básico',title:'Lee un hallazgo crítico: MS17-010',
+  goal:'En tu Basic Network Scan abre la pestaña <b>Vulnerabilities</b> y entra en el plugin <b>97833 (MS17-010)</b>.',
+  why:'Saber leer el detalle de un plugin (descripción, solución, salida, CVSS, VPR, CVE) es la habilidad diaria de un analista.',
+  steps:['Abre el scan ▸ <b>Vulnerabilities</b>.','Haz clic en la fila MS17-010 (o busca 97833 en <i>Search Vulnerabilities</i>).','Lee Output, Risk Information y Reference Information.'],
+  hints:['Si no aparece, comprueba que el scan incluyó 192.168.56.20.'],
+  check:()=>!!S.events['plugin:97833'],
+  quiz:{q:'Según el detalle, ¿por qué puerto/protocolo se detecta MS17-010?',o:['3389/tcp (RDP)','445/tcp (SMB)','80/tcp (HTTP)','161/udp (SNMP)'],a:1,ex:'EternalBlue explota SMBv1 en 445/tcp.'}},
+ {id:'e5',lvl:'Intermedio',title:'Filtra: críticos con exploit público',
+  goal:'En Vulnerabilities usa <b>Filter</b> con dos condiciones (Match All): <b>Severity is equal to Critical</b> y <b>Exploit Available is equal to true</b>, y pulsa Apply.',
+  why:'Los filtros permiten responder rápido a preguntas de negocio: “¿qué críticos son explotables hoy?”.',
+  steps:['Vulnerabilities ▸ <b>Filter</b>.','Primera fila: Severity · is equal to · Critical.','<b>Add filter</b>: Exploit Available · is equal to · true.','Match: <b>All</b> ▸ <b>Apply</b>.'],
+  hints:['Los filtros también se aplican a la pestaña Hosts y a los informes.'],
+  check:()=>!!S.events.filterCritExploit,
+  quiz:{q:'¿Qué indica “Exploit Available: true”?',o:['Que el escáner ha explotado el host','Que existe código de explotación público conocido','Que el host ya está comprometido'],a:1,ex:'Indica disponibilidad pública de exploits (frameworks, PoC). Aumenta la probabilidad real de ataque.'}},
+ {id:'e6',lvl:'Intermedio',title:'Vista Hosts: identifica el activo más débil',
+  goal:'En la pestaña <b>Hosts</b> abre el detalle de <b>192.168.56.20</b> y revisa su sistema operativo y vulnerabilidades.',
+  why:'Los responsables de sistemas trabajan por activo; necesitas saber pivotar entre la vista por host y por vulnerabilidad.',
+  steps:['Abre el scan ▸ <b>Hosts</b>.','Haz clic en 192.168.56.20.','Mira <b>Host Details</b> (OS) a la derecha.'],
+  hints:['La barra de colores muestra el reparto Critical/High/Medium/Low/Info.'],
+  check:()=>!!S.events['host:192.168.56.20'],
+  quiz:{q:'¿Qué SO tiene 192.168.56.20 y qué implica?',o:['Windows Server 2019: totalmente soportado','Windows Server 2008 R2: sin soporte, no recibe parches','Ubuntu 20.04: requiere kernel nuevo'],a:1,ex:'2008 R2 está fuera de soporte (Unsupported Windows OS). Además de parchear, hay que planificar migración o aislamiento.'}},
+ {id:'e7',lvl:'Intermedio',title:'CVSS vs VPR: prioriza por amenaza real',
+  goal:'En Vulnerabilities pulsa <b>Disable Groups</b> y ordena por la columna <b>VPR</b>.',
+  why:'CVSS mide la gravedad técnica (estática). VPR (Tenable) combina CVSS con inteligencia de amenazas: exploits, explotación activa, antigüedad. En un puesto de Vulnerability Risk Management se prioriza por riesgo, no solo por CVSS.',
+  steps:['Abre Vulnerabilities.','Pulsa <b>Disable Groups</b> (arriba a la derecha de la tabla).','Haz clic en la cabecera <b>VPR</b> (▼ = mayor primero).','Compara: <i>OpenSSH &lt; 9.3p2</i> (CVSS 9.8) frente a <i>Google Chrome</i> o <i>MS17-010</i>.'],
+  hints:['Con grupos activados la ordenación por VPR mezcla grupos; Tenable recomienda desactivar grupos para ordenar por VPR.'],
+  check:()=>!!S.events.sortVPR,
+  quiz:{q:'Hallazgo A: CVSS 9.8, VPR 5.9, sin exploit. Hallazgo B: CVSS 8.1, VPR 9.7, exploit público y usado por ransomware. ¿Cuál priorizas?',o:['A, porque su CVSS es mayor','B, porque VPR refleja amenaza real y explotación activa','Ambos igual, son críticos'],a:1,ex:'VPR incorpora inteligencia de amenazas. B (MS17-010) tiene explotación real: va primero.'}},
+ {id:'e8',lvl:'Intermedio',title:'Escaneo con credenciales',
+  goal:'Lanza un scan (<b>Basic Network Scan</b> o <b>Credentialed Patch Audit</b>) con credenciales <b>SSH</b> y <b>Windows</b> válidas contra los hosts vivos.',
+  why:'Sin credenciales Nessus solo ve lo expuesto en red (banners). Con credenciales inspecciona paquetes, parches y software instalado: más hallazgos y menos falsos positivos.',
+  steps:['New Scan ▸ Basic Network Scan (targets: hosts vivos).','Pestaña <b>Credentials</b> ▸ <b>SSH</b>: método password, usuario y contraseña del lab, elevar con sudo.','<b>Windows</b>: usuario, contraseña y dominio LAB.','Save & Launch.'],
+  hints:['Credenciales del lab: SSH <code>auditor</code> / <code>Lab2026!</code>; Windows <code>svc_nessus</code> / <code>Lab2026!</code> dominio <code>LAB</code>.','Si falla, la pestaña Notes y el plugin 104410 lo indican.'],
+  check:()=>completed().some(({r})=>r.cred.ssh==='ok'&&r.cred.win==='ok'),
+  quiz:{q:'¿Qué plugin informativo confirma que la autenticación funcionó?',o:['110723 - No Credentials Provided','141118 - Valid Credentials Provided','19506 - Nessus Scan Information solamente'],a:1,ex:'141118 confirma credenciales válidas; 104410 indica fallo; 110723 que no se dieron credenciales.'}},
+ {id:'e9',lvl:'Intermedio',title:'¿Qué ves con credenciales que antes no veías?',
+  goal:'En el scan con credenciales abre el hallazgo <b>Google Chrome &lt; 120.0.6099.129</b> (ws-rrhh-01).',
+  why:'Las vulnerabilidades de software cliente (navegadores, 7-Zip, parches de Windows) son invisibles sin credenciales y son la vía de entrada más habitual (phishing).',
+  steps:['Abre el scan credencializado ▸ Vulnerabilities.','Busca “Chrome”.','Revisa Type: <b>local</b>, Output (ruta y versión) y VPR.'],
+  hints:['Compara los conteos de 192.168.56.70 en el scan sin credenciales y en el credencializado.'],
+  check:()=>!!S.events['pluginCred:187099'],
+  quiz:{q:'¿Por qué el hallazgo de Chrome no aparece en un escaneo sin credenciales?',o:['Chrome no abre puertos de red: solo se detecta inspeccionando el software instalado','Porque Chrome no tiene CVEs','Porque el plugin está deshabilitado en Essentials'],a:0,ex:'Es una comprobación local (Type: local) que lee versión de archivos/registro.'}},
+ {id:'e10',lvl:'Avanzado',title:'Gestiona un falso positivo',
+  goal:'El plugin <b>179072 (OpenSSH &lt; 9.3p2)</b> en <b>192.168.56.30</b> aparece sin credenciales pero no con credenciales. Crea una <b>Plugin Rule</b> para ese host y plugin con severidad <b>Hide this result</b>.',
+  why:'Las distribuciones Linux hacen <i>backport</i> de parches: el banner muestra 8.2p1 aunque el paquete esté corregido. Validar y documentar falsos positivos evita perder tiempo y credibilidad.',
+  steps:['Compara: en el scan sin credenciales aparece 179072 en .30; en el credencializado no.','Opcional: <b>Audit Trail</b> en el scan credencializado con Plugin ID 179072 y host 192.168.56.30.','<b>Plugin Rules ▸ New Rule</b> (o “Create Plugin Rule” en el detalle del plugin).','Host <code>192.168.56.30</code>, Plugin ID <code>179072</code>, Severity <b>Hide this result</b>, comentario con la evidencia.'],
+  hints:['La salida del plugin dice “Version source: SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.11”: es solo el banner.','Limita la regla al host concreto; una regla global podría ocultar un positivo real en otro servidor.'],
+  check:()=>S.rules.some(r=>+r.pid===179072&&r.host==='192.168.56.30'&&r.sev==='hide'),
+  quiz:{q:'¿Qué pasa con una Plugin Rule “Hide this result” al exportar en formato .nessus?',o:['El hallazgo desaparece también del .nessus','El .nessus conserva los datos originales sin aplicar reglas','La regla se borra al exportar'],a:1,ex:'Según la documentación, las exportaciones .nessus omiten las plugin rules: conservan los datos brutos.'}},
+ {id:'e11',lvl:'Avanzado',title:'Aceptación temporal de riesgo',
+  goal:'Negocio acepta temporalmente el riesgo de <b>SNMP community “public”</b> (plugin <b>41028</b>) en la impresora <b>192.168.56.50</b> hasta la próxima ventana de mantenimiento. Recasta a <b>Low</b> con <b>fecha de caducidad</b> (máx. 90 días).',
+  why:'La aceptación de riesgo debe ser explícita, justificada, aprobada y con caducidad. Nunca “para siempre”.',
+  steps:['Plugin Rules ▸ New Rule.','Host <code>192.168.56.50</code>, Plugin ID <code>41028</code>.','Expiration Date: dentro de 90 días o menos.','Severity: <b>Low</b>. Comentario: ticket y aprobador.'],
+  hints:['En la tabla de resultados verás la etiqueta “recast” junto a la severidad.'],
+  check:()=>S.rules.some(r=>{if(+r.pid!==41028||r.host!=='192.168.56.50'||!['1','0'].includes(String(r.sev))||!r.exp)return false;const d=(new Date(r.exp)-new Date(today()))/864e5;return d>=0&&d<=90;}),
+  quiz:{q:'¿Una Plugin Rule de recast reduce el tráfico o la duración del escaneo?',o:['Sí, el plugin deja de ejecutarse','No, solo cambia cómo se presentan los resultados','Solo si la severidad es Info'],a:1,ex:'Las reglas son filtros de presentación post-escaneo; el plugin sigue ejecutándose.'}},
+ {id:'e12',lvl:'Avanzado',title:'Remediations: máximo impacto con mínimo esfuerzo',
+  goal:'Abre la pestaña <b>Remediations</b> de un scan completado y analiza qué acción resuelve más vulnerabilidades.',
+  why:'Los equipos de sistemas tienen capacidad limitada. Agrupar por acción (p. ej. una GPO o un upgrade) maximiza la reducción de riesgo por esfuerzo.',
+  steps:['Abre el scan credencializado.','Pestaña <b>Remediations</b>.','Observa Vulns y Hosts por acción; combina con la severidad máxima y el VPR.'],
+  hints:['Una sola GPO de “SMB signing” arregla el mismo hallazgo en varios hosts.'],
+  check:()=>!!S.events.viewRem,
+  quiz:{q:'En Remediations, ¿qué significa la columna Vulns?',o:['Número de hallazgos que desaparecerían al aplicar esa acción','Número de CVE críticos del host','Puntuación VPR media'],a:0,ex:'Muestra cuántas instancias se resolverían con la acción; útil para planificar.'}},
+ {id:'e13',lvl:'Avanzado',title:'Policy reutilizable y escaneo programado',
+  goal:'Crea una <b>Policy</b> con la plantilla <b>Advanced Scan</b> y, a partir de ella, un scan con <b>Schedule</b> habilitado y frecuencia <b>Weekly</b>.',
+  why:'La gestión de vulnerabilidades es un ciclo continuo: escaneos periódicos y consistentes permiten medir tendencia y SLA.',
+  steps:['Resources ▸ <b>Policies ▸ New Policy ▸ Advanced Scan</b>.','Ponle nombre (p. ej. <i>Semanal servidores</i>) y credenciales; Save.','En Policies pulsa <b>New Scan</b> en esa policy (o New Scan ▸ User Defined).','BASIC ▸ <b>Schedule</b>: Enabled, Frequency Weekly. Añade targets y Save.'],
+  hints:['La policy guarda ajustes y credenciales; el scan añade targets y programación.'],
+  check:()=>S.policies.some(p=>p.template==='advanced')&&S.scans.some(s=>s.policyId&&s.settings.schedule.enabled&&s.settings.schedule.freq==='Weekly'),
+  quiz:{q:'¿Ventaja principal de usar Policies?',o:['Escanean más rápido','Estandarizan la configuración y evitan errores entre escaneos','Saltan el límite de 16 IPs'],a:1,ex:'Consistencia: mismos plugins, credenciales y ajustes → resultados comparables en el tiempo.'}},
+ {id:'e14',lvl:'Gestión de riesgo',title:'Informe ejecutivo para dirección',
+  goal:'Genera un <b>Report</b> en formato <b>HTML</b> con la plantilla <b>Executive Summary</b> de tu scan credencializado.',
+  why:'Dirección necesita contexto de negocio: cuántos riesgos críticos, dónde, tendencia y plan; no la salida técnica de cada plugin.',
+  steps:['Abre el scan ▸ <b>Report</b>.','Format HTML ▸ Template <b>Executive Summary</b> ▸ Generate Report.','Abre el HTML descargado (es local, sin conexión).'],
+  hints:['Los filtros activos y las plugin rules se aplican al informe.'],
+  check:()=>!!S.events.reportExec,
+  quiz:{q:'¿Qué NO debería faltar en un informe para dirección?',o:['La salida completa de todos los plugins Info','Resumen de riesgo, activos críticos afectados, prioridades y plan con plazos','Las contraseñas usadas en el escaneo'],a:1,ex:'Mensaje claro: riesgo, impacto, prioridades, responsables y fechas. Lo técnico va en anexos.'}},
+ {id:'e15',lvl:'Gestión de riesgo',title:'Plan de remediación priorizado (CSV)',
+  goal:'Filtra las vulnerabilidades con <b>VPR Score is more than 7</b> (o más) y exporta un <b>CSV</b> para el equipo de sistemas.',
+  why:'Un plan basado en riesgo: primero VPR alto / explotación activa / activos expuestos, con SLA por nivel (p. ej. VPR ≥ 9: 7 días; 7–8.9: 30 días).',
+  steps:['Vulnerabilities ▸ Filter: <b>VPR Score · is more than · 7</b> ▸ Apply.','<b>Export ▸ CSV</b> (o Report ▸ CSV) ▸ Generate Report.','Abre el CSV en una hoja de cálculo y añade columnas Responsable y Fecha objetivo.'],
+  hints:['El valor del filtro debe ser 7 o mayor (p. ej. 7 o 9).'],
+  check:()=>!!S.events.csvVPR,
+  quiz:{q:'¿Qué criterio de priorización es más defendible para un plan de remediación?',o:['Solo CVSS ≥ 9','Combinar VPR/explotación activa (KEV), criticidad del activo y exposición','Orden alfabético por host'],a:1,ex:'Riesgo = probabilidad (VPR, KEV, EPSS) × impacto (criticidad y exposición del activo).'}}
+];
+function exDone(e){return!!(S.prog[e.id]&&S.quiz[e.id]);}
+function checkExercises(){
+ let any=false;
+ EXERCISES.forEach((e,i)=>{if(!S.prog[e.id]){let ok=false;try{ok=e.check();}catch(x){}if(ok){S.prog[e.id]=Date.now();any=true;toast(`Ejercicio ${i+1}: comprobación superada. Responde el quiz para completarlo.`);}}});
+ if(any){save();renderTop();renderDrawer();}
+}
+let drawerOpen=false,drawerEx=null,drawerTab='ex';
+function toggleDrawer(o){drawerOpen=o;document.getElementById('drawer').classList.toggle('open',o);if(o){checkExercises();renderDrawer();}}
+function renderDrawer(){
+ const el=document.getElementById('drawer');if(!el)return;
+ const done=EXERCISES.filter(exDone).length;
+ let body='';
+ if(drawerTab==='guide')body=GUIDE;
+ else if(drawerEx==null){
+  body=`<div class="ovprog"><span class="num"><b>${done}</b> / ${EXERCISES.length}</span><div class="meter"><i style="width:${done/EXERCISES.length*100}%"></i></div></div>
+  <div class="ex-list">${EXERCISES.map((e,i)=>`<button class="ex ${exDone(e)?'done':''}" onclick="drawerEx=${i};renderDrawer()"><span class="n">${exDone(e)?ic('check','sm'):i+1}</span><span><span class="lvl">${e.lvl}${S.prog[e.id]&&!S.quiz[e.id]?' · falta el quiz':''}</span><b>${e.title}</b></span></button>`).join('')}</div>`;
+ }else{
+  const e=EXERCISES[drawerEx],ok=!!S.prog[e.id],qd=!!S.quiz[e.id];
+  body=`<button class="btn ghost sm" onclick="drawerEx=null;renderDrawer()">${ic('chevL','sm')}Todos los ejercicios</button>
+  <div style="margin:10px 0 4px" class="lvl muted">Ejercicio ${drawerEx+1} · ${e.lvl}</div><h3 style="font-size:17px;margin-bottom:8px">${e.title}</h3>
+  <p><b>Objetivo:</b> ${e.goal}</p><p class="muted">${e.why}</p><b>Pasos</b><ol class="steps">${e.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+  ${e.hints.map((h,i)=>`<details class="hint"><summary>Pista ${i+1}</summary><div style="margin-top:6px">${h}</div></details>`).join('')}
+  <div class="st ${ok?'ok':''}">${ic(ok?'check':'clock','sm')}<span>${ok?'Comprobación automática superada':'Comprobación automática: pendiente (hazlo en el simulador)'}</span></div>
+  <b style="display:block;margin-top:14px">Quiz</b><p style="margin:4px 0">${e.quiz.q}</p><div class="quiz" id="quiz">${e.quiz.o.map((o,i)=>`<label class="${qd&&i===e.quiz.a?'right':''}"><input type="radio" name="q" value="${i}" ${qd&&i===e.quiz.a?'checked':''}> <span>${o}</span></label>`).join('')}</div>
+  <div id="qfb" style="margin-top:8px">${qd?`<div class="st ok">${ic('check','sm')}<span>Correcto. ${e.quiz.ex}</span></div>`:''}</div>
+  <div style="display:flex;gap:8px;margin-top:12px">${qd?'':`<button class="btn primary" onclick="answer(${drawerEx})">Comprobar respuesta</button>`}${drawerEx<EXERCISES.length-1?`<button class="btn" onclick="drawerEx++;renderDrawer()">Siguiente ${ic('chevR','sm')}</button>`:''}</div>
+  ${exDone(e)?`<div class="st ok" style="margin-top:12px">${ic('check','sm')}<span>Ejercicio completado</span></div>`:''}`;
+ }
+ el.innerHTML=`<header>${ic('book')}<h2>Entrenamiento</h2><span style="margin-left:auto"></span><button class="btn ghost sm" onclick="toggleDrawer(false)" aria-label="Cerrar">${ic('x','sm')}</button></header>
+ <div class="tabs" style="padding:0 14px"><button class="tab" aria-selected="${drawerTab==='ex'}" onclick="drawerTab='ex';renderDrawer()">Ejercicios</button><button class="tab" aria-selected="${drawerTab==='guide'}" onclick="drawerTab='guide';renderDrawer()">Guía rápida</button></div><div class="db">${body}</div>`;
+}
+function answer(i){const e=EXERCISES[i];const c=document.querySelector('#quiz input:checked');const fb=document.getElementById('qfb');
+ if(!c){fb.innerHTML='<div class="st">Elige una respuesta.</div>';return;}
+ document.querySelectorAll('#quiz label').forEach(l=>l.classList.remove('right','wrong'));
+ if(+c.value===e.quiz.a){S.quiz[e.id]=Date.now();save();renderTop();renderDrawer();if(!S.prog[e.id])toast('Quiz correcto. Falta completar la práctica en el simulador.','info');}
+ else{c.closest('label').classList.add('wrong');fb.innerHTML=`<div class="st">${ic('x','sm')}<span>No es correcta. Vuelve a leer el “por qué” del ejercicio y prueba otra vez.</span></div>`;}}
+const GUIDE=`<h3 style="font-size:15px">Conceptos clave</h3>
+<p><b>Severity</b>: Critical (CVSS 9.0–10), High (7.0–8.9), Medium (4.0–6.9), Low (0.1–3.9), Info (sin riesgo, datos de inventario).</p>
+<p><b>CVSS v3.0 Base Score</b>: gravedad técnica intrínseca (vector AV/AC/PR/UI/S/C/I/A). No cambia con el tiempo.</p>
+<p><b>VPR</b> (Vulnerability Priority Rating, 0.1–10): métrica dinámica de Tenable que combina impacto con inteligencia de amenazas (exploits, actividad reciente, antigüedad). Los plugins sin CVE (configuración, unsupported) no tienen VPR.</p>
+<p><b>EPSS</b>: probabilidad estimada de explotación en los próximos 30 días (0–1).</p>
+<p><b>Remote vs local</b>: remote = desde la red (banners, respuestas); local = con credenciales (paquetes, registro, archivos). Los chequeos por banner pueden dar falsos positivos por backports.</p>
+<p><b>Plugin Rules</b>: cambian severidad u ocultan resultados tras el escaneo. Úsalas con host concreto, comentario y caducidad. No afectan al .nessus.</p>
+<p><b>Policies</b>: plantillas propias reutilizables (ajustes + credenciales).</p>
+<p><b>Essentials</b>: 16 IPs, sin plantillas de Compliance, un usuario.</p>
+<h3 style="font-size:15px;margin-top:14px">Flujo de trabajo VM</h3><ol class="steps"><li>Descubrir activos (Host Discovery).</li><li>Evaluar (Basic/Advanced con credenciales).</li><li>Priorizar (VPR, exploit, KEV, criticidad del activo).</li><li>Remediar (Remediations, tickets con SLA).</li><li>Validar (re-escaneo, History).</li><li>Reportar (Executive Summary, CSV).</li></ol>
+<p class="muted" style="font-size:12.5px">Simulador de estudio no oficial, no afiliado a Tenable. Nessus y Tenable son marcas de sus propietarios. Datos, IDs y puntuaciones son representativos con fines formativos.</p>`;
+
+/* ===== Datos de ejemplo e inicio ===== */
+function seed(){
+ const s={id:uid(),name:'Ejemplo - web01 (sin credenciales)',template:'basic',policyId:null,settings:{...defaultSettings('basic'),targets:'192.168.56.30',desc:'Scan de ejemplo precargado'},creds:defaultCreds(),folder:'my',runs:[],cur:null,mod:Date.now()};
+ const hosts=genResults(s,['192.168.56.30']);const st=Date.now()-36e5*20;
+ s.runs.push({id:uid(),start:st,end:st+9*60000,status:'completed',progress:100,dur:1,simMs:9*60000,ips:1,hosts,cred:{ssh:'none',win:'none'}});s.cur=s.runs[0].id;S.scans.push(s);
+}
+function init(){
+ S=load();if(!S){S=fresh();seed();save();}
+ S.scans.forEach(s=>s.runs.forEach(r=>{if(r.status==='running'||r.status==='paused'){r.status='completed';r.progress=100;r.end=r.start+r.simMs;}}));
+ render();checkExercises();
+}
+init();
+</script>
+</body>
+</html>
