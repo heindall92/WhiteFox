@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
-<title>Vuln Scanner Lab · simulador estilo Nessus Essentials</title>
+<title>Vuln Scanner Lab · simulador estilo Nessus Essentials Plus</title>
 <style>:root{
  --bg:#eef1f5;--surface:#ffffff;--surface-2:#f6f8fa;--surface-3:#e9edf2;
  --text:#141c26;--text-2:#38434f;--text-3:#4a5562;
@@ -15,11 +15,12 @@
  --head:#13202d;--head-2:#1c2c3c;--head-text:#e9eef4;--head-dim:#b9c5d1;
  --side:#f7f9fb;--side-active:#e3ebf5;
  --primary:#1f6fc5;--primary-h:#195ea9;--primary-text:#ffffff;--primary-soft:#e4effb;--link:#155ba8;
- --ok:#2e7d32;--warn:#a65a00;--danger:#b3261e;
- --crit:#91243e;--high:#dd4b50;--med:#f18c43;--low:#f8c851;--info:#67ace1;
+ --ok:#24692a;--warn:#a65a00;--danger:#b3261e;
+ --crit:#91243e;--high:#c9373d;--med:#f18c43;--low:#f8c851;--info:#67ace1;
  --crit-t:#ffffff;--high-t:#ffffff;--med-t:#1d1206;--low-t:#1d1606;--info-t:#071a2a;
  --focus:0 0 0 3px rgba(31,111,197,.35);
  --r:10px;--r-sm:7px;--r-lg:14px;
+ --ease-out:cubic-bezier(.23,1,.32,1);--ease-io:cubic-bezier(.77,0,.175,1);--ease-sheet:cubic-bezier(.32,.72,0,1);
  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
  color-scheme:light;
 }
@@ -63,7 +64,7 @@ svg.i.sm{width:15px;height:15px}
 .iconbtn:hover{background:var(--head-2);color:#fff}
 .trainbtn{display:flex;align-items:center;gap:8px;background:var(--head-2);color:#fff;border:0;border-radius:9px;padding:8px 12px;cursor:pointer;font-weight:550;box-shadow:0 0 0 1px rgba(255,255,255,.08);transition:background-color .15s}
 .trainbtn:hover{background:#243649}
-.trainbtn .pill{background:#2c8be0;color:#fff;border-radius:20px;padding:0 8px;font-size:12px}
+.trainbtn .pill{background:#1f6fc5;color:#fff;border-radius:20px;padding:0 8px;font-size:12px}
 .user{display:flex;align-items:center;gap:8px;color:var(--head-dim);font-size:13px;margin-left:6px}
 .avatar{width:30px;height:30px;border-radius:50%;background:#2a3c50;color:#fff;display:grid;place-items:center;font-weight:600;font-size:12px}
 .disclaimer{background:var(--surface-3);color:var(--text-2);font-size:12px;padding:5px 16px;display:flex;gap:8px;align-items:center}
@@ -90,9 +91,11 @@ main{overflow:auto;padding:22px 26px 60px;min-width:0}
 .ph .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 
 /* Buttons */
-.btn{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:8px;padding:8px 14px;min-height:36px;cursor:pointer;font-weight:550;background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line-strong),0 1px 2px rgba(16,24,40,.05);transition:background-color .15s,box-shadow .15s,scale .1s;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:8px;padding:8px 14px;min-height:36px;cursor:pointer;font-weight:550;background:var(--surface);color:var(--text);box-shadow:0 0 0 1px var(--line-strong),0 1px 2px rgba(16,24,40,.05);transition:background-color .15s,box-shadow .15s,transform .16s var(--ease-out);white-space:nowrap;-webkit-tap-highlight-color:transparent}
 .btn:hover{background:var(--surface-2)}
-.btn:active{scale:.96}
+.btn:not([disabled]):active{transform:scale(.97)}
+.trainbtn:active,.iconbtn:active,.side button:active,.ex:active{transform:scale(.97)}
+.trainbtn,.iconbtn,.side button,.ex{transition-property:background-color,color,box-shadow,transform;transition-duration:.15s;transition-timing-function:var(--ease-out)}
 .btn.primary{background:var(--primary);color:var(--primary-text);box-shadow:0 1px 2px rgba(16,24,40,.15)}
 .btn.primary:hover{background:var(--primary-h)}
 .btn.ghost{background:none;box-shadow:none;color:var(--link)}
@@ -101,8 +104,9 @@ main{overflow:auto;padding:22px 26px 60px;min-width:0}
 .btn.sm{padding:5px 10px;min-height:30px;font-size:13px}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
 .dd{position:relative;display:inline-block}
-.menu{position:absolute;right:0;top:calc(100% + 6px);min-width:220px;background:var(--surface);border-radius:var(--r);box-shadow:var(--ring-hi);padding:6px;z-index:40;display:none}
-.menu.open{display:block;animation:pop .14s ease-out}
+.menu{position:absolute;right:0;top:calc(100% + 6px);min-width:220px;transform-origin:top right;background:var(--surface);border-radius:var(--r);box-shadow:var(--ring-hi);padding:6px;z-index:40;display:none}
+.menu.open{display:block;animation:menuIn .15s var(--ease-out)}
+@keyframes menuIn{from{opacity:0;transform:scale(.96) translateY(-2px)}to{opacity:1;transform:none}}
 .menu button{display:flex;width:100%;align-items:center;gap:8px;background:none;border:0;padding:8px 10px;border-radius:7px;cursor:pointer;text-align:left}
 .menu button:hover{background:var(--surface-2)}
 @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -158,6 +162,7 @@ table.t{width:100%;border-collapse:collapse}
 .legend{display:grid;gap:4px;font-size:12.5px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
 .side-stack{display:grid;gap:14px}
+.results>*,.pd>*{min-width:0}
 
 /* Plugin detail */
 .pd{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
@@ -192,8 +197,9 @@ textarea.in{min-height:80px;resize:vertical;font-family:var(--mono);font-size:13
 
 /* Templates */
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
-.tcard{background:var(--surface);border:0;border-radius:var(--r-lg);box-shadow:var(--ring);padding:18px 16px;text-align:left;cursor:pointer;display:grid;gap:8px;transition:box-shadow .18s,transform .18s}
-.tcard:hover{box-shadow:var(--ring-hi);transform:translateY(-1px)}
+.tcard{background:var(--surface);border:0;border-radius:var(--r-lg);box-shadow:var(--ring);padding:18px 16px;text-align:left;cursor:pointer;display:grid;gap:8px;transition:box-shadow .18s var(--ease-out),transform .18s var(--ease-out)}
+@media (hover:hover) and (pointer:fine){.tcard:hover{box-shadow:var(--ring-hi);transform:translateY(-1px)}}
+.tcard:not(.locked):active{transform:scale(.98)}
 .tcard .ti{width:44px;height:44px;border-radius:12px;background:var(--primary-soft);color:var(--link);display:grid;place-items:center}
 .tcard .ti svg.i{width:24px;height:24px}
 .tcard b{font-size:14.5px}
@@ -207,24 +213,26 @@ textarea.in{min-height:80px;resize:vertical;font-family:var(--mono);font-size:13
 .prog i{display:block;height:100%;background:var(--primary);transition:width .4s linear}
 
 /* Modal */
-.scrim{position:fixed;inset:0;background:rgba(8,14,22,.45);display:grid;place-items:center;z-index:60;animation:fade .15s ease-out}
-.modal{background:var(--surface);border-radius:16px;box-shadow:var(--ring-hi);width:min(560px,92vw);max-height:88vh;overflow:auto}
+.scrim{position:fixed;inset:0;background:rgba(8,14,22,.45);display:grid;place-items:center;z-index:60;animation:fade .2s var(--ease-out)}
+.modal{background:var(--surface);border-radius:16px;box-shadow:var(--ring-hi);width:min(560px,92vw);max-height:88vh;overflow:auto;animation:modalIn .22s var(--ease-out)}
+.modal.wide{width:min(760px,94vw)}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:none}}
 .modal header{padding:18px 22px 4px;display:flex;align-items:center}
 .modal header h2{font-size:17px}
 .modal .mb{padding:14px 22px}
-.modal footer{padding:12px 22px 18px;display:flex;justify-content:flex-end;gap:8px}
+.modal footer{padding:12px 22px 18px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .modal .field{grid-template-columns:150px 1fr}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* Training drawer */
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,96vw);background:var(--surface);box-shadow:var(--ring-hi);z-index:50;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,0,0,1)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,96vw);background:var(--surface);box-shadow:var(--ring-hi);z-index:50;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .32s var(--ease-sheet);will-change:transform}
 .drawer.open{transform:none}
 .drawer header{padding:16px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 0 var(--line)}
 .drawer header h2{font-size:16px}
 .drawer .db{overflow:auto;padding:16px 18px 40px;flex:1}
 .ex-list{display:grid;gap:8px}
 .ex{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:0;border-radius:12px;box-shadow:var(--ring);padding:12px 14px;cursor:pointer;text-align:left;width:100%;transition:box-shadow .15s}
-.ex:hover{box-shadow:var(--ring-hi)}
+@media (hover:hover) and (pointer:fine){.ex:hover{box-shadow:var(--ring-hi)}}
 .ex .n{width:28px;height:28px;border-radius:50%;background:var(--surface-3);display:grid;place-items:center;font-weight:650;font-size:12.5px;flex:none;color:var(--text-2)}
 .ex.done .n{background:var(--ok);color:#fff}
 .ex .lvl{font-size:11.5px;color:var(--text-2);font-weight:600}
@@ -244,7 +252,9 @@ details.hint summary{cursor:pointer;font-weight:600}
 .ovprog{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .ovprog .meter{flex:1;margin:0;height:8px}
 .toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;align-items:center;z-index:80;pointer-events:none}
-.toast{background:var(--head);color:#fff;padding:10px 16px;border-radius:10px;box-shadow:var(--ring-hi);z-index:80;font-size:13.5px;animation:pop .18s ease-out;display:flex;gap:8px;align-items:center}
+.toast{background:var(--head);color:#fff;padding:10px 16px;border-radius:10px;box-shadow:var(--ring-hi);z-index:80;font-size:13.5px;animation:toastIn .22s var(--ease-out);display:flex;gap:8px;align-items:center;transition:opacity .16s,transform .16s var(--ease-out)}
+.toast.out{opacity:0;transform:translateY(4px) scale(.98)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
 .filters{padding:12px 14px;display:grid;gap:8px;background:var(--surface-2);box-shadow:inset 0 1px 0 var(--line),inset 0 -1px 0 var(--line)}
 .frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .frow select,.frow input{width:auto;min-width:150px}
@@ -253,19 +263,57 @@ details.hint summary{cursor:pointer;font-weight:600}
 .stat b{font-size:24px;display:block;font-variant-numeric:tabular-nums}
 .stat span{color:var(--text-2);font-size:12.5px}
 @media (max-width:1100px){.results,.pd{grid-template-columns:1fr}.body{grid-template-columns:64px 1fr}.side h6,.side .lbl,.side .count,.side .community{display:none}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* Lab 2.0: piezas nuevas */
+.tier{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:650;letter-spacing:.3px;border-radius:20px;padding:1px 8px;background:var(--primary-soft);color:var(--link)}
+.tcard .lock{display:flex;align-items:center;gap:6px}
+.vprb{display:inline-grid;place-items:center;min-width:42px;border-radius:6px;padding:2px 6px;font-weight:700;font-variant-numeric:tabular-nums;font-size:13px}
+.vprb.c{background:var(--crit);color:#fff}.vprb.h{background:var(--high);color:#fff}.vprb.m{background:var(--med);color:var(--med-t)}.vprb.l{background:var(--low);color:var(--low-t)}
+.reason{display:inline-flex;align-items:center;gap:4px;font-size:12px;background:var(--surface-3);color:var(--text-2);border-radius:20px;padding:1px 8px;margin:2px 4px 2px 0;white-space:nowrap}
+.help{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:0;background:var(--surface-3);color:var(--text-2);cursor:pointer;vertical-align:middle;margin-left:4px;padding:0;transition:transform .15s var(--ease-out),background-color .15s}
+.help:hover{background:var(--primary-soft);color:var(--link)}.help:active{transform:scale(.92)}
+.help svg.i{width:13px;height:13px}
+.coach{position:fixed;right:18px;bottom:18px;z-index:45;display:flex;align-items:center;gap:10px;max-width:min(380px,calc(100vw - 36px));background:var(--surface);color:var(--text);border:0;border-radius:14px;padding:10px 14px 10px 10px;box-shadow:var(--ring-hi);cursor:pointer;text-align:left;animation:toastIn .3s var(--ease-out);transition:transform .16s var(--ease-out),box-shadow .16s}
+.coach:active{transform:scale(.97)}
+.coach .ci{width:34px;height:34px;border-radius:10px;background:var(--primary);color:var(--primary-text);display:grid;place-items:center;flex:none}
+.coach small{display:block;color:var(--text-2);font-size:11.5px;font-weight:600;letter-spacing:.2px}
+.coach b{display:block;font-size:13.5px;line-height:1.3}
+.coach .x{margin-left:4px;color:var(--text-3)}
+.mod-h{display:flex;align-items:center;gap:8px;margin:18px 2px 8px;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-3);font-weight:650}
+.mod-h:first-child{margin-top:4px}.mod-h .num{margin-left:auto;text-transform:none;letter-spacing:0}
+.welcome{display:grid;gap:10px;margin:6px 0 4px}
+.welcome .w{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:var(--surface-2)}
+.welcome .w .ti{width:36px;height:36px;border-radius:10px;background:var(--primary-soft);color:var(--link);display:grid;place-items:center;flex:none}
+.welcome .w p{margin:2px 0 0;color:var(--text-2);font-size:13px}
+.gl dt{font-weight:650;margin-top:12px}.gl dd{margin:3px 0 0;color:var(--text-2)}
+.iv details{border-radius:10px;box-shadow:var(--ring);padding:10px 12px;margin:8px 0;background:var(--surface)}
+.iv summary{cursor:pointer;font-weight:600}
+.iv details p{margin:8px 0 0;color:var(--text-2)}
+.dyn{display:grid;gap:8px}
+.cmp{display:flex;gap:6px;flex-wrap:wrap}
+#print{display:none}
+@media print{.app,.drawer,#modal,.coach,.toasts{display:none!important}#print{display:block}body{background:#fff;color:#141c26}}
+@media (max-width:640px){.body{grid-template-columns:1fr;grid-template-rows:auto 1fr}.side{display:flex;gap:4px;overflow-x:auto;padding:8px 12px;box-shadow:0 1px 0 var(--line)}.side h6,.side .community{display:none}.side button{width:auto;flex:none;white-space:nowrap;padding:7px 10px}.side .lbl{display:inline}.topbar{padding:0 8px;gap:2px}.brand>div:last-child,.user,.topbar .iconbtn[aria-label=Notifications]{display:none}.disclaimer{font-size:11.5px}.ph .actions{margin-left:0}.tabs{overflow-x:auto}.tab{white-space:nowrap}main{padding:16px 16px 90px}.modal footer .btn{flex:1 1 auto;justify-content:center}.modal header,.modal .mb,.modal footer{padding-left:16px;padding-right:16px}.toasts{bottom:96px;width:calc(100vw - 32px)}.field,.modal .field{grid-template-columns:1fr;gap:4px}.field>label{padding-top:0}.editor{grid-template-columns:1fr}.enav{box-shadow:0 1px 0 var(--line);display:flex;flex-wrap:wrap;gap:4px}.enav h6{width:100%}.enav button{width:auto}.brand small,.user span,.trainbtn .lbl{display:none}.brand{margin-right:8px}.topnav button{padding:0 10px}.t{display:block;overflow-x:auto}.coach{left:16px;right:16px;bottom:12px;max-width:none}.ph h1{font-size:19px}.results{gap:12px}.disclaimer{padding:5px 16px}}
+@media (prefers-reduced-motion:reduce){
+ *,*::before,*::after{transition-property:opacity,background-color,color,box-shadow!important}
+ .menu.open,.modal,.toast,.coach{animation:fade .15s linear!important}
+ .drawer{transition:none!important}
+ .btn:active,.tcard:active,.coach:active,.ex:active,.trainbtn:active,.iconbtn:active,.side button:active{transform:none!important}
+}
 </style>
 </head>
 <body>
 <div class="app">
  <header class="topbar" id="top"></header>
- <div class="disclaimer" role="note"><svg class="i sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Herramienta de estudio no oficial, sin afiliación con Tenable. Funciona 100% offline: sin conexiones, sin telemetría. Hosts y hallazgos ficticios de laboratorio.</div>
+ <div class="disclaimer" role="note"><svg class="i sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>Herramienta de estudio no oficial, sin afiliación con Tenable. Funciona 100% offline: sin conexiones, sin telemetría. Hosts y hallazgos ficticios de laboratorio.</div>
  <div class="body"><nav class="side" id="side" aria-label="Sidebar"></nav><main id="main"></main></div>
 </div>
 <aside class="drawer" id="drawer" aria-label="Entrenamiento"></aside>
 <div id="modal"></div>
 <script>"use strict";
 /* ===== Datos del laboratorio (ficticios / representativos) ===== */
+const LIC={essentials:{name:'Nessus Essentials',short:'Essentials',ips:5,reports:false,feed:'Daily'},plus:{name:'Nessus Essentials Plus',short:'Essentials Plus',ips:20,reports:true,feed:'Real-time'}};
+const tier=()=>S&&S.settings&&LIC[S.settings.tier]?S.settings.tier:'plus';
+const lic=()=>LIC[tier()];
 const SEV = ['Info','Low','Medium','High','Critical'];
 const SEVKEY = ['info','low','medium','high','critical'];
 const CRED = { ssh:{user:'auditor',pass:'Lab2026!'}, win:{user:'svc_nessus',pass:'Lab2026!',domain:'LAB'} };
@@ -432,24 +480,48 @@ INFO(22869,'Software Enumeration (SSH)','General','It was possible to enumerate 
 INFO(178102,'Microsoft Windows Installed Software Version Enumeration','Windows','Enumerates installed software versions.','This plugin enumerates the installed software version by interrogating the file version and registry using the provided credentials.');
 INFO(10397,'Microsoft Windows SMB LanMan Pipe Server Listing Disclosure','Windows','It is possible to obtain network information.','It was possible to obtain the browse list of the remote Windows system by sending a request to the LANMAN pipe.');
 
+/* Plugins propios del laboratorio (IDs 900000+ = inventados para practicar las plantillas
+   Active Directory Starter, Malware, Find AI y Remote Monitoring and Management; no son IDs reales de Tenable). */
+const LP=(id,o)=>P(id,Object.assign({cvss:null,vector:'',vpr:null,epss:null,exploit:false,cve:[],pub:'2026/01/15',vpub:'2026/01/15',type:'local',see:[]},o));
+LP(900100,{tag:'ad',name:'Active Directory Starter: Domain Information',family:'Windows',sev:0,syn:'It was possible to enumerate basic information about the Active Directory domain.',desc:'Using the supplied domain credentials, the scanner bound to the domain over LDAP (ADSI) and collected the domain name, functional level and domain controllers. This information is used by the rest of the Active Directory Starter checks.',sol:'n/a'});
+LP(900101,{tag:'ad',name:'Active Directory: Kerberoastable Privileged Accounts',family:'Windows',sev:3,cvss:8.1,vector:V30+'AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H',syn:'Privileged accounts have a Service Principal Name (SPN) and can be targeted by Kerberoasting.',desc:'Any authenticated domain user can request a Kerberos service ticket for an account with an SPN and try to crack its password offline. When that account is a member of a privileged group and has an old password using RC4, a successful crack gives domain-wide privileges.',sol:'Remove SPNs from privileged accounts or move services to Group Managed Service Accounts (gMSA). Use long random passwords (25+ characters), enforce AES-only Kerberos encryption and monitor event 4769 for RC4 ticket requests.',see:['https://attack.mitre.org/techniques/T1558/003/'],rem:'Move service accounts to gMSA and enforce AES Kerberos encryption',
+ note:'Kerberoasting no necesita privilegios: cualquier usuario del dominio puede pedir el ticket y romper la contraseña fuera de línea. Una cuenta de servicio en Domain Admins con contraseña de 2019 es un camino directo a todo el dominio.'});
+LP(900102,{tag:'ad',name:'Active Directory: Unconstrained Kerberos Delegation',family:'Windows',sev:3,cvss:7.5,vector:V30+'AV:N/AC:H/PR:L/UI:R/S:U/C:H/I:H/A:H',syn:'Computer accounts other than domain controllers are trusted for unconstrained delegation.',desc:'A server trusted for unconstrained delegation stores the Kerberos TGT of every user that authenticates to it. An attacker who compromises that server can impersonate those users, including domain administrators, anywhere in the domain.',sol:'Remove unconstrained delegation; use constrained or resource-based constrained delegation. Add privileged accounts to the Protected Users group and mark them as "sensitive and cannot be delegated".',see:['https://attack.mitre.org/techniques/T1558/'],rem:'Replace unconstrained delegation with constrained delegation',
+ note:'fs-legacy (Windows 2008 R2, con MS17-010) tiene delegación sin restricciones: si cae ese servidor, cae el dominio. Este hallazgo sube el riesgo del activo legado.'});
+LP(900103,{tag:'ad',name:'Active Directory: KRBTGT Account Password Not Rotated',family:'Windows',sev:2,cvss:6.5,vector:V30+'AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:N',syn:'The KRBTGT account password has not been changed for a long time.',desc:'The KRBTGT password signs every Kerberos ticket in the domain. If it was ever exposed, an attacker can forge "golden tickets" until it is rotated twice. A password older than 180 days increases that exposure window.',sol:'Rotate the KRBTGT password twice, with replication time between both changes, and add it to the periodic maintenance plan.',see:['https://attack.mitre.org/techniques/T1558/001/'],rem:'Rotate the KRBTGT password twice'});
+LP(900104,{tag:'ad',name:'Active Directory: AS-REP Roastable Accounts (Pre-Authentication Disabled)',family:'Windows',sev:3,cvss:7.5,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N',syn:'User accounts do not require Kerberos pre-authentication.',desc:'For accounts with the flag DONT_REQ_PREAUTH, anyone on the network can request an AS-REP encrypted with the user password hash and try to crack it offline, without any domain credentials.',sol:'Enable Kerberos pre-authentication on every account and review why it was disabled.',see:['https://attack.mitre.org/techniques/T1558/004/'],rem:'Enable Kerberos pre-authentication on all accounts'});
+LP(900105,{tag:'ad',name:'Active Directory: Privileged Accounts With Password Never Expires',family:'Windows',sev:2,cvss:5.3,vector:V30+'AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:N/A:N',syn:'Members of privileged groups have passwords that never expire.',desc:'Privileged accounts with non-expiring passwords keep the same credential for years, which increases the impact of any leak or offline cracking.',sol:'Remove the "Password never expires" flag from privileged accounts or protect them with a privileged access management solution that rotates them.',see:[],rem:'Review privileged account password policy'});
+LP(900200,{tag:'mal',name:'Malware Scan Information',family:'Backdoors',sev:0,syn:'Summary of the malware scan performed on the remote host.',desc:'The scanner enumerated running processes, startup items and recently created executables and compared their hashes with known-good and known-bad lists.',sol:'n/a'});
+LP(900201,{tag:'mal',name:'Malicious Process Detection',family:'Backdoors',sev:4,cvss:10.0,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H',exploit:true,ease:'Malware is present',syn:'A process with a known-malicious hash is running on the remote host.',desc:'The hash of a running process matches a known-malicious file in the threat intelligence list. The process was started from the user AppData folder and persists through a Run registry key, which is typical of information stealers delivered by phishing attachments.',sol:'Treat as a security incident: isolate the host, preserve evidence, follow the incident response procedure, reset the user credentials and reimage the endpoint.',see:['https://attack.mitre.org/techniques/T1547/001/'],rem:'Isolate the host and follow the incident response procedure',
+ note:'Esto NO es una vulnerabilidad que se parchea: es un incidente. No se abre un ticket de parcheo con SLA de 30 días; se aísla el equipo y se activa el procedimiento de respuesta a incidentes.'});
+LP(900202,{tag:'mal',name:'Potentially Unwanted Software Detected',family:'Backdoors',sev:2,cvss:5.0,vector:V30+'AV:L/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:L',syn:'Software flagged as potentially unwanted is installed on the remote host.',desc:'A browser extension and its updater flagged as adware were found. They inject advertising and can collect browsing data.',sol:'Remove the software and restrict extension installation through policy.',see:[],rem:'Remove unwanted software and restrict extensions by policy'});
+LP(900300,{tag:'ai',name:'Ollama Detection',family:'Service detection',sev:0,type:'remote',syn:'An Ollama large language model server is listening on the remote host.',desc:'The remote service responds like the Ollama API, used to run large language models locally.',sol:'n/a'});
+LP(900301,{tag:'ai',name:'Ollama API Unauthenticated Access',family:'Service detection',sev:3,cvss:7.3,vector:V30+'AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L',type:'remote',syn:'The Ollama API is reachable from the network without authentication.',desc:'The API is bound to all interfaces and accepts requests without authentication. Anyone on the network can list, pull and delete models, run prompts that consume server resources and read data exposed through the models.',sol:'Bind Ollama to 127.0.0.1 or put it behind an authenticated reverse proxy, restrict the port with the firewall and register the service in the asset inventory with an owner.',see:[],rem:'Restrict the Ollama API to localhost or an authenticated proxy',
+ note:'IA en la sombra: nadie dio de alta este servicio. El riesgo no es solo técnico (API abierta) sino de gobierno: qué datos se le están dando y quién responde de él.'});
+LP(900302,{tag:'ai',name:'AI Desktop Applications Installed (Windows)',family:'Windows',sev:0,syn:'Generative AI desktop applications are installed on the remote host.',desc:'The scanner enumerated installed software and found generative AI desktop applications. Use this information to check them against the acceptable use policy for AI.',sol:'n/a'});
+LP(900400,{tag:'rmm',name:'AnyDesk Installed (Windows)',family:'Windows',sev:0,syn:'AnyDesk remote access software is installed on the remote host.',desc:'AnyDesk is a remote desktop application. Remote access tools are frequently abused by attackers and by fraudulent "technical support" calls.',sol:'n/a'});
+LP(900401,{tag:'rmm',name:'Remote Access Software With Unattended Access Enabled',family:'Windows',sev:2,cvss:6.8,vector:V30+'AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:N',syn:'Remote access software accepts connections without the user approving them.',desc:'Unattended access is enabled with a static password. Anyone who knows the password and the address can take control of the computer without the user being present.',sol:'Remove remote access tools not approved by IT. If the tool is needed, manage it centrally, disable unattended access and require MFA.',see:['https://attack.mitre.org/techniques/T1219/'],rem:'Remove unapproved remote access tools',
+ note:'Herramienta RMM no aprobada en un puesto de RR. HH.: puerta trasera legítima que los atacantes adoran. Para un Risk Manager es un riesgo de gobierno (shadow IT), no solo técnico.'});
+LP(900402,{tag:'rmm',name:'TeamViewer Remote Detection',family:'Service detection',sev:0,type:'remote',syn:'TeamViewer is listening on the remote host.',desc:'The remote host answers on the TeamViewer port, which indicates that the remote access software is installed and running.',sol:'n/a'});
+
 /* Inventario del laboratorio */
 const HOSTS = [
  {ip:'192.168.56.1',fqdn:'gw.lab.local',os:'pfSense 2.7 (FreeBSD)',kind:'device',mac:'08:00:27:3A:10:01',ports:['53/udp','443/tcp'],
   f:[['net',57582,'443/tcp'],['net',51192,'443/tcp']]},
  {ip:'192.168.56.10',fqdn:'dc01.lab.local',os:'Microsoft Windows Server 2019 Standard',kind:'windows',mac:'08:00:27:3A:10:0A',ports:['53/tcp','88/tcp','135/tcp','139/tcp','389/tcp','445/tcp','636/tcp','3268/tcp','3389/tcp'],
-  f:[['net',140657,'445/tcp'],['net',57608,'445/tcp'],['net',10785,'445/tcp'],['net',10114,'0/icmp']]},
- {ip:'192.168.56.20',fqdn:'fs-legacy.lab.local',os:'Microsoft Windows Server 2008 R2 Standard Service Pack 1',kind:'windows',mac:'08:00:27:3A:10:14',ports:['135/tcp','139/tcp','445/tcp','3389/tcp'],
-  f:[['net',97833,'445/tcp'],['net',108797,'0/tcp'],['net',57608,'445/tcp'],['net',18405,'3389/tcp'],['net',58453,'3389/tcp'],['net',104743,'3389/tcp'],['net',96982,'445/tcp'],['net',10785,'445/tcp'],['net',10397,'445/tcp'],['net',10114,'0/icmp']]},
+  f:[['net',140657,'445/tcp'],['net',57608,'445/tcp'],['net',10785,'445/tcp'],['net',10114,'0/icmp'],['ad',900100,'389/tcp'],['ad',900101,'88/tcp'],['ad',900102,'389/tcp'],['ad',900103,'88/tcp'],['ad',900104,'88/tcp'],['ad',900105,'389/tcp']],ad:true},
+ {ip:'192.168.56.20',fqdn:'fs-legacy.lab.local',os:'Microsoft Windows Server 2008 R2 Standard Service Pack 1',kind:'windows',mac:'08:00:27:3A:10:14',ports:['135/tcp','139/tcp','445/tcp','3389/tcp','5938/tcp'],
+  f:[['net',900402,'5938/tcp'],['net',97833,'445/tcp'],['net',108797,'0/tcp'],['net',57608,'445/tcp'],['net',18405,'3389/tcp'],['net',58453,'3389/tcp'],['net',104743,'3389/tcp'],['net',96982,'445/tcp'],['net',10785,'445/tcp'],['net',10397,'445/tcp'],['net',10114,'0/icmp']]},
  {ip:'192.168.56.30',fqdn:'web01.lab.local',os:'Linux Kernel 5.4 on Ubuntu 20.04 (focal)',kind:'linux',mac:'08:00:27:3A:10:1E',ports:['22/tcp','80/tcp','443/tcp'],
   f:[['net',153884,'80/tcp'],['net',153584,'80/tcp'],['banner',179072,'22/tcp'],['net',42873,'443/tcp'],['net',26928,'443/tcp'],['net',104743,'443/tcp'],['net',157288,'443/tcp'],['net',11213,'80/tcp'],['net',71049,'22/tcp'],['web',85582,'443/tcp'],['web',40984,'80/tcp'],['web',84502,'443/tcp'],['local',186530,'0/tcp'],['net',10107,'80/tcp'],['net',10267,'22/tcp'],['net',56984,'443/tcp']]},
- {ip:'192.168.56.40',fqdn:'app01.lab.local',os:'Linux Kernel 5.10 on Debian 11 (bullseye)',kind:'linux',mac:'08:00:27:3A:10:28',ports:['22/tcp','8080/tcp','8443/tcp'],
-  f:[['net',156014,'8080/tcp'],['local',156032,'0/tcp'],['net',12085,'8080/tcp'],['net',57582,'8443/tcp'],['net',51192,'8443/tcp'],['net',26928,'8443/tcp'],['web',39466,'8080/tcp'],['web',85582,'8080/tcp'],['web',42057,'8080/tcp'],['net',10107,'8080/tcp'],['net',10267,'22/tcp'],['net',56984,'8443/tcp']]},
+ {ip:'192.168.56.40',fqdn:'app01.lab.local',os:'Linux Kernel 5.10 on Debian 11 (bullseye)',kind:'linux',mac:'08:00:27:3A:10:28',ports:['22/tcp','8080/tcp','8443/tcp','11434/tcp'],
+  f:[['net',900300,'11434/tcp'],['net',900301,'11434/tcp'],['net',156014,'8080/tcp'],['local',156032,'0/tcp'],['net',12085,'8080/tcp'],['net',57582,'8443/tcp'],['net',51192,'8443/tcp'],['net',26928,'8443/tcp'],['web',39466,'8080/tcp'],['web',85582,'8080/tcp'],['web',42057,'8080/tcp'],['net',10107,'8080/tcp'],['net',10267,'22/tcp'],['net',56984,'8443/tcp']]},
  {ip:'192.168.56.50',fqdn:'prn-planta2.lab.local',os:'HP LaserJet printer (embedded)',kind:'device',mac:'08:00:27:3A:10:32',ports:['23/tcp','80/tcp','161/udp','443/tcp','9100/tcp'],
   f:[['net',41028,'161/udp'],['net',42263,'23/tcp'],['net',57582,'443/tcp'],['net',51192,'443/tcp'],['net',10114,'0/icmp'],['net',10107,'80/tcp']]},
  {ip:'192.168.56.60',fqdn:'db01.lab.local',os:'Linux Kernel 3.10 on CentOS Linux release 7',kind:'linux',mac:'08:00:27:3A:10:3C',ports:['22/tcp','5432/tcp'],extraPorts:['16379/tcp'],
   f:[['allports',100634,'16379/tcp'],['net',90317,'22/tcp'],['net',70658,'22/tcp'],['net',71049,'22/tcp'],['net',153953,'22/tcp'],['local',161800,'0/tcp'],['net',10267,'22/tcp']]},
  {ip:'192.168.56.70',fqdn:'ws-rrhh-01.lab.local',os:'Microsoft Windows 10 Pro 22H2',kind:'windows',mac:'08:00:27:3A:10:46',ports:['135/tcp','139/tcp','445/tcp'],
-  f:[['net',57608,'445/tcp'],['local',187201,'445/tcp'],['local',187099,'445/tcp'],['local',212011,'445/tcp'],['net',10785,'445/tcp']]},
+  f:[['net',57608,'445/tcp'],['local',187201,'445/tcp'],['local',187099,'445/tcp'],['local',212011,'445/tcp'],['net',10785,'445/tcp'],['local',900302,'0/tcp'],['local',900400,'0/tcp'],['local',900401,'0/tcp'],['mal',900200,'0/tcp'],['mal',900201,'0/tcp'],['mal',900202,'0/tcp']]},
  {ip:'192.168.56.80',fqdn:'nas-backup.lab.local',os:'Linux Kernel 5.10 (Samba 4.13.13)',kind:'linux',mac:'08:00:27:3A:10:50',ports:['21/tcp','22/tcp','139/tcp','445/tcp'],
   f:[['net',158090,'445/tcp'],['net',10079,'21/tcp'],['net',57608,'445/tcp'],['net',10267,'22/tcp']]}
 ];
@@ -481,28 +553,85 @@ const OUTPUTS = {
 };
 
 /* ===== Utilidades ===== */
+Object.assign(OUTPUTS,{
+ 900100:'\nDomain : LAB.LOCAL (NetBIOS: LAB)\nForest functional level : Windows Server 2016\nDomain controllers : DC01.lab.local (192.168.56.10)\nUsers : 214   Computers : 38   Groups : 61\n',
+ 900101:'\nThe following privileged accounts have an SPN :\n\n  Account          : svc_sql\n  SPN              : MSSQLSvc/db01.lab.local:1433\n  Member of        : Domain Admins\n  Password last set: 2019-03-11\n  Encryption types : RC4_HMAC\n',
+ 900102:'\nThe following computers are trusted for unconstrained delegation :\n\n  FS-LEGACY$  (fs-legacy.lab.local, Windows Server 2008 R2)\n',
+ 900103:'\nKRBTGT password last set : 2017-06-02 (more than 180 days)\n',
+ 900104:'\nAccounts without Kerberos pre-authentication :\n\n  rrhh.temp   (enabled, last logon 2026-10-29)\n',
+ 900105:'\nPrivileged accounts with "Password never expires" :\n\n  Administrator   (Domain Admins)\n  svc_sql         (Domain Admins)\n  backup.admin    (Backup Operators)\n',
+ 900200:'\nProcesses scanned : 142\nStartup items scanned : 37\nUnknown hashes : 3\nKnown malicious : 1\n',
+ 900201:'\nPath   : C:\\Users\\m.garcia\\AppData\\Roaming\\Update\\nomina_noviembre.pdf.exe\nSHA-256: 4f1c...lab...9e2a (laboratorio)\nPersistence : HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater\nVerdict : known malicious (infostealer)\n',
+ 900202:'\nPath : C:\\Users\\m.garcia\\AppData\\Local\\ShopSaver\\updater.exe\nVerdict : potentially unwanted (adware)\n',
+ 900300:'\nURL : http://192.168.56.40:11434/\nResponse : Ollama is running\nVersion : 0.4.x\n',
+ 900301:'\nGET /api/tags answered without authentication.\nModels exposed : llama3.1:8b, mistral:7b, nomic-embed-text\nListening on : 0.0.0.0:11434\n',
+ 900302:'\nPath : C:\\Users\\m.garcia\\AppData\\Local\\Programs\\ChatGPT\\ChatGPT.exe\nPath : C:\\Program Files\\WindowsApps\\Microsoft.Copilot\\Copilot.exe\n',
+ 900400:'\nPath    : C:\\Program Files (x86)\\AnyDesk\\AnyDesk.exe\nVersion : 8.1.0\nService : AnyDesk (Automatic)\n',
+ 900401:'\nProduct : AnyDesk 8.1.0\nUnattended access : enabled (static password)\nInstalled by : m.garcia (not deployed by IT)\n',
+ 900402:'\nPort 5938/tcp answers with the TeamViewer protocol.\n'
+});
 const $=(s,el=document)=>el.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Iconos: Lucide v0.460.0 (ISC, https://lucide.dev). Trazos copiados en línea, sin CDN. */
 const ICONS={
- radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12l5.5-5.5"/>',
- folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
- layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
- trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
- file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
- flag:'<path d="M5 21V4h11l-2 4 2 4H5"/>',
- gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 3l1.6 2.3 2.7-.7.7 2.7L19.3 9 18 11.5l1.3 2.5-2.3 1.7-.7 2.7-2.7-.7L12 21l-1.6-2.3-2.7.7-.7-2.7L4.7 15 6 12.5 4.7 10 7 8.3l.7-2.7 2.7.7z"/>',
- plus:'<path d="M12 5v14M5 12h14"/>',play:'<path d="M7 4.5l12 7.5-12 7.5z"/>',pause:'<path d="M8 5v14M16 5v14"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="1.5"/>',
- download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',filter:'<path d="M4 5h16l-6 8v5l-4 2v-7z"/>',
- chevD:'<path d="M6 9l6 6 6-6"/>',chevL:'<path d="M15 6l-6 6 6 6"/>',chevR:'<path d="M9 6l6 6-6 6"/>',
- moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>',
- book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/>',check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',
- info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',bell:'<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
- shield:'<path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/>',globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>',
- key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/>',target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
- sliders:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
- lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
- user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
- list:'<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>',server:'<rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/><path d="M8 7.5h.01M8 16.5h.01"/>'
+ radar:'<path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/><path d="m13.41 10.59 5.66-5.66"/>',
+ folder:'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+ layers:'<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+ trash:'<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+ file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+ flag:'<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/>',
+ gear:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+ plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+ play:'<polygon points="6 3 20 12 6 21 6 3"/>',
+ pause:'<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>',
+ stop:'<rect width="18" height="18" x="3" y="3" rx="2"/>',
+ download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+ search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+ filter:'<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+ chevD:'<path d="m6 9 6 6 6-6"/>',
+ chevL:'<path d="m15 18-6-6 6-6"/>',
+ chevR:'<path d="m9 18 6-6-6-6"/>',
+ moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+ book:'<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+ info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+ shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+ globe:'<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+ key:'<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>',
+ target:'<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/>',
+ sliders:'<line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/>',
+ lock:'<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+ user:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/>',
+ edit:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+ bolt:'<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+ list:'<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+ server:'<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/>',
+ flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+ shieldCheck:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+ bug:'<path d="m8 2 1.88 1.88"/><path d="M14.12 3.88 16 2"/><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"/><path d="M12 20v-9"/><path d="M6.53 9C4.6 8.8 3 7.1 3 5"/><path d="M6 13H2"/><path d="M3 21c0-2.1 1.7-3.9 3.8-4"/><path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"/><path d="M22 13h-4"/><path d="M17.2 17c2.1.1 3.8 1.9 3.8 4"/>',
+ bot:'<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
+ rmm:'<path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M10 19v-3.96 3.15"/><path d="M7 19h5"/><rect width="6" height="10" x="16" y="12" rx="2"/>',
+ network:'<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>',
+ userCheck:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/>',
+ scanSearch:'<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/>',
+ refresh:'<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+ history:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+ gauge:'<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+ wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+ badge:'<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>',
+ arrowUR:'<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+ building:'<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>',
+ alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+ sparkles:'<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+ trendDown:'<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>',
+ cpu:'<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/>',
+ crown:'<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+ eye:'<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+ keyhole:'<circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/>'
 };
 const ic=(n,c='')=>`<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
 const sevTag=(s,extra='')=>`<span class="sev ${SEVKEY[s]}">${SEV[s]}${extra}</span>`;
@@ -516,7 +645,7 @@ const today=()=>new Date().toISOString().slice(0,10);
 const KEY='vslab-nessus-v1';
 let S;
 function fresh(){return{v:1,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',seq:10,scans:[],policies:[],rules:[],events:{},prog:{},quiz:{},
- settings:{proxyHost:'',proxyPort:'',smtpHost:'',smtpPort:'25',smtpFrom:'',maxHosts:'5',maxChecks:'5',uiTimeout:'30',pwdMin:'8',caCert:''},speed:2,view:{top:'scans',page:'scans',folder:'my'}}}
+ settings:{proxyHost:'',proxyPort:'',smtpHost:'',smtpPort:'25',smtpFrom:'',maxHosts:'5',maxChecks:'5',uiTimeout:'30',pwdMin:'8',caCert:'',tier:'plus'},fixed:{},speed:2,view:{top:'scans',page:'scans',folder:'my'}}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1)return s;}catch(e){}return null;}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 const uid=()=>++S.seq;
@@ -545,16 +674,28 @@ function parseTargets(txt){
 /* ===== Plantillas ===== */
 const TEMPLATES=[
  {id:'discovery',name:'Host Discovery',cat:'Discovery',icon:'target',desc:'A simple scan to discover live hosts and open ports.'},
- {id:'basic',name:'Basic Network Scan',cat:'Vulnerabilities',icon:'radar',desc:'A full system scan suitable for any host.'},
+ {id:'ping',name:'Ping-Only Discovery',cat:'Discovery',icon:'radar',desc:'A quick scan that only checks whether hosts are alive.'},
+ {id:'basic',name:'Basic Network Scan',cat:'Vulnerabilities',icon:'scanSearch',desc:'A full system scan suitable for any host.'},
+ {id:'credval',name:'Credential Validation',cat:'Vulnerabilities',icon:'userCheck',desc:'Verify that the credentials work on every host before a large scan.'},
  {id:'advanced',name:'Advanced Scan',cat:'Vulnerabilities',icon:'sliders',desc:'Configure a scan without using any recommendations.'},
- {id:'webapp',name:'Web Application Tests',cat:'Vulnerabilities',icon:'globe',desc:'Scan for published and unknown web vulnerabilities.'},
- {id:'patch',name:'Credentialed Patch Audit',cat:'Vulnerabilities',icon:'key',desc:'Authenticate to hosts and enumerate missing updates.'}
+ {id:'dynamic',name:'Advanced Dynamic Scan',cat:'Vulnerabilities',icon:'filter',desc:'Configure a dynamic plugin scan without recommendations.'},
+ {id:'malware',name:'Malware Scan',cat:'Vulnerabilities',icon:'bug',desc:'Scan for malware on Windows and Unix systems.'},
+ {id:'patch',name:'Credentialed Patch Audit',cat:'Vulnerabilities',icon:'key',desc:'Authenticate to hosts and enumerate missing updates.'},
+ {id:'ad',name:'Active Directory Starter Scan',cat:'Vulnerabilities',icon:'network',desc:'Look for misconfigurations in Active Directory.'},
+ {id:'findai',name:'Find AI',cat:'Vulnerabilities',icon:'bot',desc:'Detect AI software, services and libraries in your network.'},
+ {id:'rmm',name:'Remote Monitoring and Management',cat:'Vulnerabilities',icon:'rmm',desc:'Find remote access and RMM tools installed on your hosts.'},
+ {id:'webapp',name:'Web Application Tests',cat:'Legacy',icon:'globe',desc:'Plantilla de versiones antiguas (se conserva para scans guardados).',hidden:true}
 ];
-const LOCKED=[['Audit Cloud Infrastructure','Compliance'],['Policy Compliance Auditing','Compliance'],['SCAP and OVAL Auditing','Compliance'],['Internal PCI Network Scan','Compliance'],['MDM Config Audit','Compliance'],['Offline Config Audit','Compliance']];
+const LOCKED=[
+ ['Attack Surface Discovery','Discovery','Expert'],['Mobile Device Scan','Vulnerabilities','Manager'],
+ ['Audit Cloud Infrastructure','Compliance','Professional'],['Internal PCI Network Scan','Compliance','Professional'],['MDM Config Audit','Compliance','Manager'],['Offline Config Audit','Compliance','Professional'],['PCI Quarterly External Scan','Compliance','Professional'],['Policy Compliance Auditing','Compliance','Professional'],['SCAP and OVAL Auditing','Compliance','Professional'],
+ ['API','Web Application','Expert'],['Config Audit','Web Application','Expert'],['Log4Shell','Web Application','Expert'],['Overview','Web Application','Expert'],['PCI','Web Application','Expert'],['Scan','Web Application','Expert'],['SSL TLS','Web Application','Expert'],['Quick Scan','Web Application','Expert']
+];
+const NOLIC=['discovery','ping'];
 const tpl=id=>TEMPLATES.find(t=>t.id===id);
 const FAMILIES=[...new Set(Object.values(PLUGINS).map(p=>p.family))].sort();
 function defaultSettings(t){return{targets:'',desc:'',folder:'my',
- discovery:t==='discovery'?'hostenum':'common',assessment:t==='webapp'?'webknown':'default',accuracy:'normal',maxHosts:'30',
+ discovery:t==='discovery'||t==='ping'?'hostenum':'common',assessment:t==='webapp'?'webknown':'default',accuracy:'normal',maxHosts:'30',malware:false,dyn:{match:'all',rules:[{field:'cve',op:'contains',value:''}]},
  schedule:{enabled:false,freq:'Weekly',start:today()+'T22:00',day:'MO'},notify:'',families:Object.fromEntries(FAMILIES.map(f=>[f,true]))};}
 function defaultCreds(){return{ssh:{method:'password',user:'',pass:'',elev:'Nothing'},win:{method:'password',user:'',pass:'',domain:''}};}
 
@@ -565,14 +706,27 @@ function credStatus(scan,kind){
  if(kind==='windows'){const w=c.win;if(!w.user)return'none';const u=w.user.replace(/^lab\\/i,'').toLowerCase();return(u===CRED.win.user&&w.pass===CRED.win.pass)?'ok':'fail';}
  return'none';
 }
+const TAGT={findai:'ai',rmm:'rmm',malware:'mal',ad:'ad'};
+const DYNF={cve:'CVE',pid:'Plugin ID',name:'Plugin Name',family:'Plugin Family',sev:'Severity'};
+function dynMatch(p,dyn){
+ const rs=((dyn&&dyn.rules)||[]).filter(r=>String(r.value).trim()!=='');if(!rs.length)return false;
+ const one=r=>{const v=String(r.value).trim().toLowerCase();let ok=false;
+  switch(r.field){case'cve':ok=(p.cve||[]).some(c=>c.toLowerCase().includes(v));break;case'pid':ok=String(p.id)===v;break;
+   case'name':ok=p.name.toLowerCase().includes(v);break;case'family':ok=p.family.toLowerCase()===v;break;case'sev':ok=String(p.sev)===v;break;}
+  return r.op==='ncontains'||r.op==='neq'?!ok:ok;};
+ return dyn.match==='any'?rs.some(one):rs.every(one);
+}
+const dynPlugins=dyn=>Object.values(PLUGINS).filter(p=>p.sev>0&&dynMatch(p,dyn));
+function adBind(scan){const w=(scan.creds||defaultCreds()).win;return/^lab(\.local)?$/i.test((w.domain||'').trim())||/^lab\\/i.test(w.user||'');}
 function genResults(scan,ips){
- const t=scan.template,st=scan.settings,hosts=[];
+ const t=scan.template,st=scan.settings,hosts=[],fixed=S.fixed||{},focus=TAGT[t];
  const alive=HOSTS.filter(h=>ips.includes(h.ip));
  for(const h of alive){
-  const items=[],add=(pid,port,out)=>{if(!PLUGINS[pid])return;if(t==='advanced'&&st.families&&st.families[PLUGINS[pid].family]===false)return;items.push({pid,port,out:out??OUTPUTS[pid]??''});};
+  const items=[],add=(pid,port,out)=>{const p=PLUGINS[pid];if(!p)return;if(p.sev>0&&fixed[h.ip+'|'+pid])return;if(t==='advanced'&&st.families&&st.families[p.family]===false)return;items.push({pid,port,out:out??OUTPUTS[pid]??''});};
   const allPorts=st.discovery==='all';
   const ports=h.ports.concat(allPorts&&h.extraPorts?h.extraPorts:[]);
   add(10180,'0/icmp','\nThe remote host is up\nThe host replied to an ARP who-is query.\n');
+  if(t==='ping'){add(19506,'0/tcp',scanInfo(scan,h,'none'));hosts.push(mkHost(h,items));continue;}
   if(t==='discovery'){
    ports.forEach(p=>add(11219,p,'\nPort '+p.split('/')[0]+'/'+p.split('/')[1]+' was found to be open\n'));
    if(st.discovery==='osid'||st.discovery==='hostenum')add(11936,'0/tcp','\nRemote operating system : '+h.os+'\nConfidence level : 95\nMethod : MLSinFP\n');
@@ -581,15 +735,30 @@ function genResults(scan,ips){
   }
   const cs=credStatus(scan,h.kind);
   const credOk=cs==='ok';
-  if(t!=='patch'){
+  const credInfo=()=>{if(h.kind==='device')return;
+   if(cs==='ok'){add(141118,h.kind==='windows'?'445/tcp':'22/tcp','\nCredential validated for '+(h.kind==='windows'?'SMB : '+scan.creds.win.user:'SSH : '+scan.creds.ssh.user)+'\nLocal checks were enabled.\n');add(117887,'0/tcp');if(t!=='credval')add(h.kind==='windows'?178102:22869,'0/tcp');}
+   else if(cs==='fail')add(104410,h.kind==='windows'?'445/tcp':'22/tcp','\nNessus was unable to log into the target via '+(h.kind==='windows'?'SMB':'SSH')+' (authentication failure).\nCheck the username / password / domain.\n');
+   else add(110723,'0/tcp','\nSSH and/or SMB was detected on port '+(h.kind==='windows'?'445':'22')+'.\nNo credentials were provided.\n');};
+  const osInfo=()=>add(11936,'0/tcp','\nRemote operating system : '+h.os+'\nConfidence level : '+(credOk?100:95)+'\nMethod : '+(credOk?'LinuxDistribution / SMB':'MLSinFP')+'\n');
+  if(t==='credval'){osInfo();credInfo();add(19506,'0/tcp',scanInfo(scan,h,cs));hosts.push(mkHost(h,items,cs));continue;}
+  if(focus){ports.forEach(p=>add(11219,p,'\nPort '+p+' was found to be open\n'));osInfo();}
+  else if(t!=='patch'){
    ports.forEach(p=>add(11219,p,'\nPort '+p+' was found to be open\n'));
-   add(22964,ports[0]);add(11936,'0/tcp','\nRemote operating system : '+h.os+'\nConfidence level : '+(credOk?100:95)+'\nMethod : '+(credOk?'LinuxDistribution / SMB':'MLSinFP')+'\n');
+   add(22964,ports[0]);osInfo();
    add(10287,'0/udp','\nFor your information, here is the traceroute from 192.168.56.5 to '+h.ip+' :\n192.168.56.5\n'+h.ip+'\n');
    add(45590,'0/tcp');add(25220,'0/tcp');
   }
   for(const [cond,pid,port] of h.f){
-   const p=PLUGINS[pid];
-   if(t==='patch'){if(cond==='local'&&credOk)add(pid,port);continue;}
+   const p=PLUGINS[pid],tag=p.tag;
+   if(focus){if(tag!==focus)continue;
+    if(cond==='ad'){if(credOk&&adBind(scan))add(pid,port);}
+    else if(cond==='mal'||cond==='local'){if(credOk)add(pid,port);}
+    else if(cond==='net')add(pid,port);
+    continue;}
+   if(tag==='ad')continue;
+   if(tag==='mal'){if(t==='advanced'&&st.malware&&credOk)add(pid,port);continue;}
+   if(t==='patch'){if(cond==='local'&&credOk&&!tag)add(pid,port);continue;}
+   if(t==='dynamic'&&!dynMatch(p,st.dyn))continue;
    if(t==='webapp'){const webFam=['Web Servers','CGI abuses','CGI abuses : XSS','General','Service detection'];
      if(cond==='web'||(cond==='net'&&webFam.includes(p.family)))add(pid,port);continue;}
    if(cond==='net')add(pid,port);
@@ -598,17 +767,14 @@ function genResults(scan,ips){
    else if(cond==='web'){if(st.assessment!=='default')add(pid,port);}
    else if(cond==='allports'){if(allPorts)add(pid,port);}
   }
-  if(h.kind!=='device'){
-   if(cs==='ok'){add(141118,h.kind==='windows'?'445/tcp':'22/tcp','\nCredential validated for '+(h.kind==='windows'?'SMB : '+scan.creds.win.user:'SSH : '+scan.creds.ssh.user)+'\nLocal checks were enabled.\n');add(117887,'0/tcp');add(h.kind==='windows'?178102:22869,'0/tcp');}
-   else if(cs==='fail')add(104410,h.kind==='windows'?'445/tcp':'22/tcp','\nNessus was unable to log into the target via '+(h.kind==='windows'?'SMB':'SSH')+' (authentication failure).\nCheck the username / password / domain.\n');
-   else add(110723,'0/tcp','\nSSH and/or SMB was detected on port '+(h.kind==='windows'?'445':'22')+'.\nNo credentials were provided.\n');
-  }
+  if(t==='ad'&&h.ad&&credOk&&!adBind(scan))add(104410,'389/tcp','\nADSI : unable to bind to the Active Directory domain.\nThe Windows credential has no Domain set (Credentials > Windows > Domain = LAB).\n');
+  credInfo();
   add(19506,'0/tcp',scanInfo(scan,h,cs));
   hosts.push(mkHost(h,items,cs));
  }
  return hosts;
 }
-function scanInfo(scan,h,cs){return`\nInformation about this scan : \n\nScanner : Vuln Scanner Lab (simulador)\nPlugin feed version : 202611130412\nScan type : Normal\nScan name : ${scan.name}\nScan policy used : ${tpl(scan.template).name}\nScanner IP : 192.168.56.5\nPort scanner(s) : nessus_syn_scanner\nPort range : ${scan.settings.discovery==='all'?'all':'default'}\nPing RTT : 1.204 ms\nThorough tests : no\nCredentialed checks : ${cs==='ok'?'yes':'no'}\nPatch management checks : None\nCGI scanning : ${scan.settings.assessment!=='default'?'enabled':'disabled'}\nReport verbosity : 1\nSafe checks : yes\nScan Start Date : ${new Date().toISOString().slice(0,16).replace('T',' ')}\n`;}
+function scanInfo(scan,h,cs){return`\nInformation about this scan : \n\nScanner : Vuln Scanner Lab (simulador)\nLicense : ${lic().name}\nPlugin feed version : 202611130412\nScan type : Normal\nScan name : ${scan.name}\nScan policy used : ${tpl(scan.template).name}\nScanner IP : 192.168.56.5\nPort scanner(s) : nessus_syn_scanner\nPort range : ${scan.settings.discovery==='all'?'all':'default'}\nPing RTT : 1.204 ms\nThorough tests : no\nCredentialed checks : ${cs==='ok'?'yes':'no'}\nPatch management checks : None\nCGI scanning : ${scan.settings.assessment!=='default'?'enabled':'disabled'}\nReport verbosity : 1\nSafe checks : yes\nScan Start Date : ${new Date().toISOString().slice(0,16).replace('T',' ')}\n`;}
 function mkHost(h,items,cs){return{ip:h.ip,fqdn:h.fqdn,os:h.os,mac:h.mac,kind:h.kind,cred:cs||'none',items};}
 
 /* Reglas de plugins + vista efectiva */
@@ -676,11 +842,11 @@ function sevBar(c){const tot=c.reduce((a,b)=>a+b,0)||1;return`<div class="bar">$
 
 /* ===== Eventos de entrenamiento ===== */
 function ev(name){if(!S.events[name]){S.events[name]=Date.now();save();setTimeout(checkExercises,50);}}
-function toast(msg,icon='check'){let box=document.getElementById('toasts');if(!box){box=document.createElement('div');box.id='toasts';box.className='toasts';box.setAttribute('role','status');document.body.appendChild(box);}while(box.children.length>=3)box.firstChild.remove();const t=document.createElement('div');t.className='toast';t.innerHTML=ic(icon)+'<span>'+msg+'</span>';box.appendChild(t);setTimeout(()=>t.remove(),3200);}
+function toast(msg,icon='check'){let box=document.getElementById('toasts');if(!box){box=document.createElement('div');box.id='toasts';box.className='toasts';box.setAttribute('role','status');document.body.appendChild(box);}while(box.children.length>=3)box.firstChild.remove();const t=document.createElement('div');t.className='toast';t.innerHTML=ic(icon)+'<span>'+msg+'</span>';box.appendChild(t);setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),180);},3200);}
 
 /* ===== Navegación ===== */
 function go(v){UI.menu=null;Object.assign(S.view,v);if(v.page&&v.page!=='scan'){S.view.host=null;S.view.plugin=null;S.view.group=null;}save();render();$('main').scrollTop=0;}
-function openScan(id,tab='hosts'){UI.filters=[];UI.search='';UI.filterOpen=false;UI.groups=true;UI.sort={k:'sev',d:-1};go({top:'scans',page:'scan',scan:id,tab,host:null,plugin:null,group:null});}
+function openScan(id,tab='hosts'){UI.filters=[];UI.search='';UI.filterOpen=false;UI.groups=true;UI.sort={k:'sev',d:-1};go({top:'scans',page:'scan',scan:id,tab,host:null,plugin:null,group:null});const e={rem:'viewRem',vpr:'viewVPR',history:'viewHistory'}[tab];if(e)ev(e);}
 const curScan=()=>S.scans.find(s=>s.id===S.view.scan);
 function curRun(s){if(!s||!s.runs.length)return null;return s.runs.find(r=>r.id===s.cur)||s.runs[s.runs.length-1];}
 function visibleHosts(run){if(!run)return[];if(run.status==='running'||run.status==='paused'||run.status==='canceled'){const n=Math.floor(run.hosts.length*run.progress/100);return run.hosts.slice(0,n);}return run.hosts;}
@@ -696,21 +862,22 @@ function render(){
  else if(p==='scan')h=vScan();else if(p==='policies')h=vPolicies();else if(p==='rules')h=vRules();else if(p==='settings')h=vSettings();
  }catch(e){console.error(e);h='<div class="card pad">Error de vista: '+esc(e.message)+'</div>';}
  $('main').innerHTML=h;
+ document.querySelectorAll('main table.t').forEach(t=>{if(t.scrollWidth>t.clientWidth+1)t.tabIndex=0;});
  if(UI.menu){const m=document.getElementById(UI.menu);if(m)m.classList.add('open');}
- renderDrawer();
+ renderDrawer();renderCoach();
 }
 function renderTop(){
  const done=EXERCISES.filter(e=>exDone(e)).length;
- $('#top').innerHTML=`<div class="brand"><div class="mark">${ic('radar')}</div><div>Vuln Scanner Lab<small>simulador estilo Nessus Essentials</small></div></div>
+ $('#top').innerHTML=`<div class="brand"><div class="mark">${ic('radar')}</div><div>Vuln Scanner Lab<small>simulador estilo ${lic().name}</small></div></div>
  <nav class="topnav" aria-label="Main"><button aria-current="${S.view.top==='scans'}" onclick="go({top:'scans',page:'scans',folder:'my'})">Scans</button><button aria-current="${S.view.top==='settings'}" onclick="go({top:'settings',page:'settings',sub:S.view.sub||'about'})">Settings</button></nav>
  <div class="spacer"></div>
- <button class="trainbtn" onclick="toggleDrawer(true)" aria-label="Abrir modo entrenamiento">${ic('book')}Entrenamiento <span class="pill num">${done}/${EXERCISES.length}</span></button>
+ <button class="trainbtn" onclick="toggleDrawer(true)" aria-label="Abrir modo entrenamiento">${ic('book')}<span class="lbl">Entrenamiento</span> <span class="pill num">${done}/${EXERCISES.length}</span></button>
  <button class="iconbtn" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro" title="Tema claro/oscuro">${ic(S.theme==='dark'?'sun':'moon')}</button>
  <button class="iconbtn" aria-label="Notifications" onclick="toast('No new notifications','bell')">${ic('bell')}</button>
  <div class="user"><div class="avatar">YR</div><span>yoandy</span></div>`;
 }
 function renderSide(){
- const v=S.view;const b=(cond,act,icon,label,count='')=>`<button aria-current="${cond}" onclick="${act}">${ic(icon)}<span class="lbl">${label}</span>${count!==''?`<span class="count num">${count}</span>`:''}</button>`;
+ const v=S.view;const b=(cond,act,icon,label,count='')=>`<button aria-current="${cond}" aria-label="${label}${count!==''?' ('+count+')':''}" onclick="${act}">${ic(icon)}<span class="lbl">${label}</span>${count!==''?`<span class="count num">${count}</span>`:''}</button>`;
  if(v.top==='settings'){
   const s=v.sub||'about';
   $('#side').innerHTML=`<h6>Settings</h6>${b(s==='about',"go({sub:'about'})",'info','About')}${b(s==='advanced',"go({sub:'advanced'})",'sliders','Advanced')}${b(s==='proxy',"go({sub:'proxy'})",'globe','Proxy Server')}${b(s==='smtp',"go({sub:'smtp'})",'bell','SMTP Server')}${b(s==='ca',"go({sub:'ca'})",'shield','Custom CA')}${b(s==='pwd',"go({sub:'pwd'})",'lock','Password Mgmt')}
@@ -721,9 +888,10 @@ function renderSide(){
  const used=licensedUsed();
  $('#side').innerHTML=`<h6>Folders</h6>${b(v.page==='scans'&&v.folder==='my',"go({page:'scans',folder:'my'})",'folder','My Scans',my)}${b(v.page==='scans'&&v.folder==='all',"go({page:'scans',folder:'all'})",'layers','All Scans',S.scans.length-tr)}${b(v.page==='scans'&&v.folder==='trash',"go({page:'scans',folder:'trash'})",'trash','Trash',tr)}
  <h6>Resources</h6>${b(v.page==='policies'||(v.page==='templates'&&v.mode==='policy'),"go({page:'policies'})",'file','Policies',S.policies.length)}${b(v.page==='rules',"go({page:'rules'})",'flag','Plugin Rules',S.rules.length)}
- <div class="community"><b>Nessus Essentials (sim.)</b><br>Licensed hosts: <span class="num">${used}</span> / 16<div class="meter"><i style="width:${Math.min(100,used/16*100)}%"></i></div></div>`;
+ <div class="community"><div style="margin-bottom:2px"><b>${lic().name}</b> ${help('licencia')}</div>Licensed hosts: <span class="num">${used}</span> / ${lic().ips}<div class="meter"><i style="width:${Math.min(100,used/lic().ips*100)}%"></i></div></div>`;
 }
-function licensedUsed(){const set=new Set();S.scans.forEach(s=>{if(s.template==='discovery')return;s.runs.forEach(r=>{if(r.status!=='running')(r.hosts||[]).forEach(h=>set.add(h.ip));});});return set.size;}
+function licensedSet(){const set=new Set();S.scans.forEach(s=>{if(NOLIC.includes(s.template))return;s.runs.forEach(r=>{if((r.tier||'plus')!==tier())return;if(r.status!=='running')(r.hosts||[]).forEach(h=>set.add(h.ip));});});return set;}
+function licensedUsed(){return licensedSet().size;}
 function toggleTheme(){S.theme=S.theme==='dark'?'light':'dark';ev('theme');save();render();}
 function dd(id,label,items,cls='btn'){return`<div class="dd"><button class="${cls}" onclick="event.stopPropagation();toggleMenu('${id}')" aria-haspopup="menu">${label} ${ic('chevD','sm')}</button><div class="menu" id="${id}" role="menu">${items.map(([t,a,dis])=>`<button role="menuitem" ${dis?'disabled style="opacity:.5"':''} onclick="UI.menu=null;${a}">${t}</button>`).join('')}</div></div>`;}
 function toggleMenu(id){UI.menu=UI.menu===id?null:id;document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));if(UI.menu)document.getElementById(id).classList.add('open');}
@@ -751,7 +919,7 @@ function vScans(){
  ${f==='trash'&&list.length?`<button class="btn danger" onclick="emptyTrash()">Empty Trash</button>`:''}
  <button class="btn" onclick="toast('Import: este simulador no importa archivos .nessus','info')">Import</button>
  <button class="btn primary" onclick="go({page:'templates',mode:'scan',ttab:'scanner'})">${ic('plus')}New Scan</button></div></div>
- <div class="card">${list.length?`<div class="toolbar"><span class="muted"><b class="num">${list.length}</b> Scans</span></div><table class="t"><thead><tr><th>Name</th><th>Schedule</th><th>Last Modified</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:
+ <div class="card">${list.length?`<div class="toolbar"><span class="muted"><b class="num">${list.length}</b> Scans</span></div><table class="t"><thead><tr><th>Name</th><th>Schedule</th><th>Last Scanned</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:
  `<div class="empty">${f==='trash'?'This folder is empty.':`This folder is empty. <a href="#" onclick="go({page:'templates',mode:'scan',ttab:'scanner'});return false">Create a new scan.</a><p class="muted">¿Primera vez? Abre <b>Entrenamiento</b> arriba a la derecha y empieza por el ejercicio 1.</p>`}</div>`}</div>`;
 }
 function trashScan(id){const s=S.scans.find(x=>x.id===id);s.folder='trash';save();toast('Scan moved to Trash');render();}
@@ -762,14 +930,17 @@ function emptyTrash(){S.scans=S.scans.filter(s=>s.folder!=='trash');save();rende
 function vTemplates(){
  const pol=S.view.mode==='policy',tab=S.view.ttab||'scanner';
  const card=t=>`<button class="tcard" onclick="newDraft('${t.id}')"><div class="ti">${ic(t.icon)}</div><b>${t.name}</b><p>${t.desc}</p></button>`;
- const locked=LOCKED.map(([n])=>`<div class="tcard locked" aria-disabled="true"><div class="ti">${ic('lock')}</div><b>${n}</b><span class="lock">Upgrade · no incluido en Essentials</span></div>`).join('');
+ const locked=cat=>LOCKED.filter(l=>l[1]===cat).map(([n,,t])=>`<div class="tcard locked" aria-disabled="true"><div class="ti">${ic('lock')}</div><b>${n}</b><span class="lock">${ic('keyhole','sm')}Upgrade · Nessus ${t}</span></div>`).join('');
+ const vis=TEMPLATES.filter(t=>!t.hidden);
  const user=S.policies.map(p=>`<button class="tcard" onclick="newDraft('${p.template}',${p.id})"><div class="ti">${ic('file')}</div><b>${esc(p.name)}</b><p>User defined · ${tpl(p.template).name}</p></button>`).join('');
  return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'${pol?'policies':'scans'}'})">${ic('chevL','sm')} Back to ${pol?'Policies':'My Scans'}</a></div><h1>${pol?'Policy Templates':'Scan Templates'}</h1></div></div>
- ${pol?'':`<div class="tabs" style="margin-bottom:14px;padding:0"><button class="tab" aria-selected="${tab==='scanner'}" onclick="go({ttab:'scanner'})">Scanner</button><button class="tab" aria-selected="${tab==='user'}" onclick="go({ttab:'user'})">User Defined <span class="count">${S.policies.length}</span></button></div>`}
+ ${pol?'':`<div class="tabs" role="tablist" style="margin-bottom:14px;padding:0"><button class="tab" role="tab" aria-selected="${tab==='scanner'}" onclick="go({ttab:'scanner'})">Scanner</button><button class="tab" role="tab" aria-selected="${tab==='user'}" onclick="go({ttab:'user'})">User Defined <span class="count">${S.policies.length}</span></button></div>`}
  ${tab==='user'&&!pol?(user?`<div class="tgrid">${user}</div>`:`<div class="card empty">No user defined templates. Create one in <a href="#" onclick="go({page:'policies'});return false">Policies</a>.</div>`):
- `<div class="sect-t">Discovery</div><div class="tgrid">${TEMPLATES.filter(t=>t.cat==='Discovery').map(card).join('')}</div>
- <div class="sect-t">Vulnerabilities</div><div class="tgrid">${TEMPLATES.filter(t=>t.cat==='Vulnerabilities').map(card).join('')}</div>
- <div class="sect-t">Compliance</div><div class="tgrid">${locked}</div>`}`;
+ `<div class="note" style="margin-bottom:6px">${ic('info','sm')} <b>¿Cuál elijo?</b> Para empezar: <b>Host Discovery</b> (qué hay en la red, no gasta licencia) y luego <b>Basic Network Scan</b> (busca vulnerabilidades). Las tarjetas con candado son de versiones de pago y en ${lic().short} no se pueden usar.</div>
+ <div class="sect-t">Discovery</div><div class="tgrid">${vis.filter(t=>t.cat==='Discovery').map(card).join('')}${locked('Discovery')}</div>
+ <div class="sect-t">Vulnerabilities</div><div class="tgrid">${vis.filter(t=>t.cat==='Vulnerabilities').map(card).join('')}${locked('Vulnerabilities')}</div>
+ <div class="sect-t">Compliance</div><div class="tgrid">${locked('Compliance')}</div>
+ <div class="sect-t">Web Application</div><div class="tgrid">${locked('Web Application')}</div>`}`;
 }
 
 /* ===== Editor de scan / policy ===== */
@@ -789,7 +960,7 @@ const inp=(path,val,type='text',ph='')=>`<input class="in" type="${type}" value=
 const fld=(label,ctrl,hint='')=>`<div class="field"><label>${label}</label><div>${ctrl}${hint?`<div class="hint">${hint}</div>`:''}</div></div>`;
 function vEditor(){
  const d=UI.draft;if(!d){S.view.page='scans';return vScans();}
- const t=tpl(d.template),st=d.settings,pol=d.kind==='policy',disc=d.template==='discovery';
+ const t=tpl(d.template),st=d.settings,pol=d.kind==='policy',disc=NOLIC.includes(d.template);
  const secs=[['BASIC',[['general','General'],['schedule','Schedule'],['notify','Notifications']]],['DISCOVERY',[['discovery','Scan Type']]]];
  if(!disc)secs.push(['ASSESSMENT',[['assessment','General']]]);
  secs.push(['REPORT',[['report','Output']]],['ADVANCED',[['advanced','General']]]);
@@ -800,19 +971,30 @@ function vEditor(){
   else if(d.sec==='schedule')pane=`<h3>Schedule</h3><div class="form">${fld('Enable Schedule',`<label class="check"><input type="checkbox" ${st.schedule.enabled?'checked':''} onchange="D('settings.schedule.enabled',this.checked);render()"> Enabled</label>`)}
    ${st.schedule.enabled?fld('Frequency',sel('settings.schedule.freq',st.schedule.freq,['Once','Daily','Weekly','Monthly','Yearly']))+fld('Starts',inp('settings.schedule.start',st.schedule.start,'datetime-local'))+fld('Repeat On',sel('settings.schedule.day',st.schedule.day,[['MO','Monday'],['TU','Tuesday'],['WE','Wednesday'],['TH','Thursday'],['FR','Friday'],['SA','Saturday'],['SU','Sunday']]))+fld('Timezone',`<input class="in" value="Europe/Madrid" disabled>`)+`<div class="note">En el simulador la programación queda guardada pero no se ejecuta sola; usa <b>Launch</b> para lanzarlo.</div>`:''}</div>`;
   else if(d.sec==='notify')pane=`<h3>Notifications</h3><div class="form">${fld('Email Recipient(s)',inp('settings.notify',st.notify,'text','soc@empresa.example'),'Requiere SMTP Server en Settings. Simulado: no se envía ningún correo.')}</div>`;
-  else if(d.sec==='discovery'){const opts=disc?[['hostenum','Host enumeration'],['osid','OS Identification'],['common','Port scan (common ports)'],['all','Port scan (all ports)']]:[['common','Port scan (common ports)'],['all','Port scan (all ports)']];
+  else if(d.sec==='discovery'){const opts=d.template==='ping'?[['hostenum','Host enumeration (ping only)']]:disc?[['hostenum','Host enumeration'],['osid','OS Identification'],['common','Port scan (common ports)'],['all','Port scan (all ports)']]:[['common','Port scan (common ports)'],['all','Port scan (all ports)']];
    pane=`<h3>Discovery</h3><div class="form">${fld('Scan Type',sel('settings.discovery',st.discovery,opts),disc?'Host enumeration: hosts vivos. OS Identification: añade sistema operativo. Port scan: puertos abiertos.':'<b>common</b>: ~4.700 puertos habituales (rápido). <b>all</b>: 1-65535 (más lento, encuentra servicios en puertos no estándar).')}</div>`;}
   else if(d.sec==='assessment')pane=`<h3>Assessment</h3><div class="form">${fld('Scan Type',sel('settings.assessment',st.assessment,[['default','Default'],['webknown','Scan for known web vulnerabilities'],['weball','Scan for all web vulnerabilities (complex)']]),'Las opciones web activan el rastreo (crawling) de aplicaciones y los plugins CGI.')}
-   ${d.template==='advanced'?fld('Accuracy',sel('settings.accuracy',st.accuracy,[['normal','Normal'],['avoid','Avoid potential false alarms'],['paranoid','Show potential false alarms (paranoid)']]),'Override normal accuracy. "Avoid" oculta comprobaciones solo por banner; ojo: también puede ocultar riesgos reales.'):''}</div>`;
+   ${d.template==='advanced'?fld('Accuracy',sel('settings.accuracy',st.accuracy,[['normal','Normal'],['avoid','Avoid potential false alarms'],['paranoid','Show potential false alarms (paranoid)']]),'Override normal accuracy. "Avoid" oculta comprobaciones solo por banner; ojo: también puede ocultar riesgos reales.')+fld('Malware',`<label class="check"><input type="checkbox" ${st.malware?'checked':''} onchange="D('settings.malware',this.checked)"> Scan for malware</label>`,'Requiere credenciales. Desactivado por defecto en Basic Network Scan.'):''}</div>`;
   else if(d.sec==='report')pane=`<h3>Report</h3><div class="form">${fld('Processing',`<label class="check"><input type="checkbox" checked disabled> Override normal verbosity: Normal</label><label class="check"><input type="checkbox" checked disabled> Show missing patches that have been superseded</label>`)}${fld('Output',`<label class="check"><input type="checkbox" checked disabled> Allow users to edit scan results</label><label class="check"><input type="checkbox" checked disabled> Display hosts that respond to ping</label>`)}</div>`;
   else if(d.sec==='advanced')pane=`<h3>Advanced</h3><div class="form">${fld('Scan Type',sel('settings.adv','Default',['Default','Scan low bandwidth links','Custom']))}${fld('Max simultaneous hosts per scan',inp('settings.maxHosts',st.maxHosts,'number'),'Más hosts simultáneos = escaneo más rápido pero más carga en la red.')}</div>`;
  }else if(d.top==='credentials'){
   const c=d.creds;
-  const cats=`<div class="enav"><h6>Host</h6><button aria-current="${d.cc==='ssh'}" onclick="UI.draft.cc='ssh';render()">SSH ${c.ssh.user?'· 1':''}</button><button aria-current="${d.cc==='win'}" onclick="UI.draft.cc='win';render()">Windows ${c.win.user?'· 1':''}</button><button disabled style="opacity:.55">SNMPv3</button><h6>Miscellaneous</h6><button disabled style="opacity:.55">VMware vCenter SOAP API</button><h6>Database</h6><button disabled style="opacity:.55">Database</button></div>`;
+  const cats=`<div class="enav">${['credval','ad','malware','patch'].includes(d.template)?`<div class="note" style="margin:0 4px 10px;font-size:12.5px">${ic('key','sm')} Esta plantilla <b>necesita credenciales</b>: sin ellas no puede entrar en los equipos.</div>`:''}<h6>Host</h6><button aria-current="${d.cc==='ssh'}" onclick="UI.draft.cc='ssh';render()">SSH ${c.ssh.user?'· 1':''}</button><button aria-current="${d.cc==='win'}" onclick="UI.draft.cc='win';render()">Windows ${c.win.user?'· 1':''}</button><button disabled style="opacity:.55">SNMPv3</button><h6>Miscellaneous</h6><button disabled style="opacity:.55">VMware vCenter SOAP API</button><h6>Database</h6><button disabled style="opacity:.55">Database</button></div>`;
   let cp='';
   if(d.cc==='ssh')cp=`<h3>SSH</h3><div class="form">${fld('Authentication method',sel('creds.ssh.method',c.ssh.method,[['password','password'],['publickey','public key'],['certificate','certificate'],['kerberos','Kerberos']]))}${fld('Username',inp('creds.ssh.user',c.ssh.user))}${fld('Password (unsafe!)',inp('creds.ssh.pass',c.ssh.pass,'password'))}${fld('Elevate privileges with',sel('creds.ssh.elev',c.ssh.elev,['Nothing','sudo','su','su+sudo']))}</div>`;
   else cp=`<h3>Windows</h3><div class="form">${fld('Authentication method',sel('creds.win.method',c.win.method,[['password','Password'],['kerberos','Kerberos'],['lm','LM Hash'],['ntlm','NTLM Hash']]))}${fld('Username',inp('creds.win.user',c.win.user))}${fld('Password',inp('creds.win.pass',c.win.pass,'password'))}${fld('Domain',inp('creds.win.domain',c.win.domain))}${fld('Global Credential Settings',`<label class="check"><input type="checkbox" checked disabled> Never send credentials in the clear</label><label class="check"><input type="checkbox" checked disabled> Start the Remote Registry service during the scan</label>`)}</div>`;
   return edWrap(d,t,pol,`<div class="editor">${cats}<div class="epane">${cp}<div class="note" style="margin-top:16px">${ic('info','sm')} Cuentas del laboratorio (ficticias): SSH <b>${CRED.ssh.user}</b> / <b>${CRED.ssh.pass}</b> · Windows <b>${CRED.win.domain}\\${CRED.win.user}</b> / <b>${CRED.win.pass}</b>. En un entorno real se usan cuentas de servicio dedicadas y se guardan en un gestor de secretos.</div></div></div>`);
+ }else if(d.top==='dynamic'){
+  if(!st.dyn)st.dyn={match:'all',rules:[{field:'cve',op:'contains',value:''}]};
+  const m=dynPlugins(st.dyn);
+  return edWrap(d,t,pol,`<div class="epane"><h3>Dynamic Plugins</h3><p class="muted" style="margin-top:-6px">En vez de elegir familias, defines un filtro: el scan ejecuta solo los plugins que lo cumplen, y los plugins nuevos que lo cumplan se añaden solos. Ideal para responder rápido a «¿estamos afectados por esta CVE?».</p>
+  <div class="dyn"><div class="frow">Match <select class="in" aria-label="Match" style="min-width:90px" onchange="D('settings.dyn.match',this.value);render()"><option value="all" ${st.dyn.match==='all'?'selected':''}>All</option><option value="any" ${st.dyn.match==='any'?'selected':''}>Any</option></select> of the following:</div>
+  ${st.dyn.rules.map((r,i)=>`<div class="frow"><select class="in" aria-label="Field" onchange="UI.draft.settings.dyn.rules[${i}].field=this.value;UI.draft.settings.dyn.rules[${i}].op=['family','sev','pid'].includes(this.value)?'eq':'contains';render()">${Object.entries(DYNF).map(([k,l])=>`<option value="${k}" ${r.field===k?'selected':''}>${l}</option>`).join('')}</select>
+   <select class="in" aria-label="Operator" onchange="UI.draft.settings.dyn.rules[${i}].op=this.value;render()">${(['family','sev','pid'].includes(r.field)?[['eq','is equal to'],['neq','is not equal to']]:[['contains','contains'],['ncontains','does not contain']]).map(([k,l])=>`<option value="${k}" ${r.op===k?'selected':''}>${l}</option>`).join('')}</select>
+   ${r.field==='sev'?`<select class="in" aria-label="Value" onchange="UI.draft.settings.dyn.rules[${i}].value=this.value;render()"><option value="">—</option>${[4,3,2,1].map(s=>`<option value="${s}" ${String(r.value)===String(s)?'selected':''}>${SEV[s]}</option>`).join('')}</select>`:r.field==='family'?`<select class="in" aria-label="Value" onchange="UI.draft.settings.dyn.rules[${i}].value=this.value;render()"><option value="">—</option>${FAMILIES.map(f=>`<option ${r.value===f?'selected':''}>${esc(f)}</option>`).join('')}</select>`:`<input class="in" aria-label="Value" value="${esc(r.value)}" placeholder="${r.field==='cve'?'CVE-2021-44228':'value'}" onchange="UI.draft.settings.dyn.rules[${i}].value=this.value;render()">`}
+   <button class="btn sm" aria-label="Remove rule" onclick="UI.draft.settings.dyn.rules.splice(${i},1);if(!UI.draft.settings.dyn.rules.length)UI.draft.settings.dyn.rules.push({field:'cve',op:'contains',value:''});render()">${ic('x','sm')}</button></div>`).join('')}
+  <div class="frow"><button class="btn ghost sm" onclick="UI.draft.settings.dyn.rules.push({field:'cve',op:'contains',value:''});render()">${ic('plus','sm')}Add rule</button></div></div>
+  <div class="st" style="margin-top:12px">${ic('list','sm')}<span><b class="num">${m.length}</b> plugins match ${m.length?': '+m.slice(0,6).map(p=>`<span class="tag num">${p.id}</span>`).join(' ')+(m.length>6?' …':''):'(escribe un valor y pulsa fuera del campo)'}</span></div></div>`);
  }else if(d.top==='plugins'){
   return edWrap(d,t,pol,`<div class="toolbar"><span class="muted">Activa o desactiva familias de plugins. Desactivar familias reduce tiempo y ruido, pero también cobertura.</span><span style="margin-left:auto"></span><button class="btn sm" onclick="Object.keys(UI.draft.settings.families).forEach(k=>UI.draft.settings.families[k]=true);render()">Enable All</button><button class="btn sm" onclick="Object.keys(UI.draft.settings.families).forEach(k=>UI.draft.settings.families[k]=false);render()">Disable All</button></div>
   <table class="t"><thead><tr><th>Status</th><th>Plugin Family</th><th>Total</th></tr></thead><tbody>${FAMILIES.map(f=>`<tr><td><label class="check"><input type="checkbox" ${st.families[f]!==false?'checked':''} onchange="UI.draft.settings.families['${f}']=this.checked"> ${st.families[f]!==false?'Enabled':'Disabled'}</label></td><td>${esc(f)}</td><td class="num muted">${Object.values(PLUGINS).filter(p=>p.family===f).length}</td></tr>`).join('')}</tbody></table>`);
@@ -821,9 +1003,9 @@ function vEditor(){
  return edWrap(d,t,pol,`<div class="editor">${nav}<div class="epane">${pane}</div></div>`);
 }
 function edWrap(d,t,pol,inner){
- const disc=d.template==='discovery';
+ const disc=NOLIC.includes(d.template);
  return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'${pol?'policies':'scans'}'})">${ic('chevL','sm')} Back to ${pol?'Policies':'My Scans'}</a></div><h1>${d.id?'Edit':'New'} ${pol?'Policy':'Scan'} / ${t.name}</h1></div></div>
- <div class="card"><div class="subtabs"><button class="tab" aria-selected="${d.top==='settings'}" onclick="dtop('settings')">Settings</button>${disc?'':`<button class="tab" aria-selected="${d.top==='credentials'}" onclick="dtop('credentials')">Credentials</button>`}${d.template==='advanced'?`<button class="tab" aria-selected="${d.top==='plugins'}" onclick="dtop('plugins')">Plugins</button>`:''}</div>
+ <div class="card"><div class="subtabs" role="tablist"><button class="tab" role="tab" aria-selected="${d.top==='settings'}" onclick="dtop('settings')">Settings</button>${disc?'':`<button class="tab" role="tab" aria-selected="${d.top==='credentials'}" onclick="dtop('credentials')">Credentials</button>`}${d.template==='advanced'?`<button class="tab" role="tab" aria-selected="${d.top==='plugins'}" onclick="dtop('plugins')">Plugins</button>`:''}${d.template==='dynamic'?`<button class="tab" role="tab" aria-selected="${d.top==='dynamic'}" onclick="dtop('dynamic')">Dynamic Plugins</button>`:''}</div>
  ${inner}
  <div class="toolbar" style="box-shadow:0 -1px 0 var(--line)">${d.err?`<span class="err">${esc(d.err)}</span>`:''}<span style="margin-left:auto"></span><button class="btn" onclick="go({page:'${pol?'policies':'scans'}'})">Cancel</button>
  <button class="btn primary" onclick="saveDraft(false)">Save</button>${pol?'':dd('m-save','Launch',[['Save & Launch','saveDraft(true)']])}</div></div>`;
@@ -851,14 +1033,19 @@ function saveDraft(andLaunch){
 function launch(id,custom){
  const s=S.scans.find(x=>x.id===id);const pt=parseTargets(custom||s.settings.targets);
  if(pt.errors.length||!pt.ips.length){modal('Unable to launch',`<p>Invalid targets: ${esc(pt.errors.join(', ')||'(empty)')}</p>`);return;}
- if(s.template!=='discovery'&&pt.ips.length>16){
-  ev('licenseBlocked');
-  modal('License limit exceeded',`<p><b>${pt.ips.length}</b> targets requested. Your Nessus Essentials license allows scanning up to <b>16 IP addresses</b>.</p><div class="note"><b>Consejo:</b> los escaneos de <b>Host Discovery</b> no consumen licencia. Primero descubre qué hosts están vivos y después lanza el escaneo de vulnerabilidades solo contra esas IPs (p. ej. <code>192.168.56.10, 192.168.56.20, 192.168.56.30</code>).</div>`);return;}
+ if(!NOLIC.includes(s.template)){
+  const L=lic();
+  if(pt.ips.length>L.ips){ev('licenseBlocked');
+   modal('License limit exceeded',`<p><b>${pt.ips.length}</b> targets requested. Your ${L.name} license allows scanning up to <b>${L.ips} IP addresses</b>.</p><div class="note"><b>Consejo:</b> los escaneos de <b>Host Discovery</b> no consumen licencia. Primero descubre qué hosts están vivos y después lanza el escaneo de vulnerabilidades solo contra esas IPs (p. ej. <code>192.168.56.10, 192.168.56.20, 192.168.56.40</code>).</div>`);return;}
+  const used=licensedSet(),nuevos=HOSTS.filter(h=>pt.ips.includes(h.ip)&&!used.has(h.ip)).length;
+  if(used.size+nuevos>L.ips){ev('licenseBlocked');
+   modal('Licensed host limit reached',`<p>Ya has escaneado <b>${used.size}</b> hosts distintos y este scan añadiría <b>${nuevos}</b> nuevos: superarías el límite de <b>${L.ips}</b> de ${L.name}.</p><div class="note">${ic('info','sm')} La licencia cuenta <b>hosts distintos escaneados</b>, no scans. Para liberar licencias, mueve a la papelera los scans que ya no necesites y vacíala (<b>Trash ▸ Empty Trash</b>), o elige mejor qué activos escanear.</div>`);return;}
+ }
  const r=S.scans.find(x=>x.id===id).runs.find(r=>r.status==='running'||r.status==='paused');if(r){toast('Scan already running','info');return;}
  const hosts=genResults(s,pt.ips);
- const alive=hosts.length,base=s.template==='discovery'?5:4+alive*1.1;
- const run={id:uid(),start:Date.now(),end:null,status:'running',progress:0,dur:base,simMs:(s.template==='discovery'?2:6+alive*3.5)*60000*(s.settings.discovery==='all'?2.2:1),ips:pt.ips.length,hosts,custom:!!custom,
-  cred:{ssh:s.creds.ssh.user?credStatus(s,'linux'):'none',win:s.creds.win.user?credStatus(s,'windows'):'none'}};
+ const alive=hosts.length,base=NOLIC.includes(s.template)?3:4+alive*1.1;
+ const run={id:uid(),start:Date.now(),end:null,status:'running',progress:0,dur:base,simMs:(NOLIC.includes(s.template)?2:6+alive*3.5)*60000*(s.settings.discovery==='all'?2.2:1),ips:pt.ips.length,hosts,custom:!!custom,
+  cred:{ssh:s.creds.ssh.user?credStatus(s,'linux'):'none',win:s.creds.win.user?credStatus(s,'windows'):'none'},tier:tier()};
  s.runs.push(run);s.cur=run.id;s.mod=Date.now();save();toast('Scan launched: '+esc(s.name),'play');render();
 }
 function pauseScan(id){const r=curRun(S.scans.find(x=>x.id===id));if(!r)return;r.status=r.status==='paused'?'running':'paused';save();render();}
@@ -887,12 +1074,14 @@ function vScan(){
  const running=run&&(run.status==='running'||run.status==='paused');
  const hostsN=run?run.hosts.length:0,vulnsN=aggregate(fitems).length,rems=remediations(fitems);
  const tab=v.tab||'hosts';
- const tabs=[['hosts','Hosts',hostsN],['vulns','Vulnerabilities',vulnsN],['rem','Remediations',rems.length],['notes','Notes',notes(s,run).length],['history','History',s.runs.length]];
+ const vprTop=vprTop10(fitems);
+ const tabs=[['hosts','Hosts',hostsN],['vulns','Vulnerabilities',vulnsN],['vpr','VPR Top Threats',vprTop.length],['rem','Remediations',rems.length],['notes','Notes',notes(s,run).length],['history','History',s.runs.length]];
  let body='';
  if(!run)body=`<div class="empty">This scan has not been run yet. <button class="btn primary sm" onclick="launch(${s.id})">${ic('play','sm')}Launch</button></div>`;
  else if(v.host)body=vHostDetail(s,run,fitems);
  else if(tab==='hosts')body=vHosts(s,run,fitems);
  else if(tab==='vulns')body=vVulns(s,run,fitems);
+ else if(tab==='vpr')body=vVPR(vprTop);
  else if(tab==='rem')body=vRem(rems,fitems,run);
  else if(tab==='notes')body=`<div class="mb" style="padding:16px 18px">${notes(s,run).map(n=>`<div class="st">${ic('info','sm')}<span>${n}</span></div>`).join('')||'<div class="empty">No notes.</div>'}</div>`;
  else if(tab==='history')body=vHistory(s);
@@ -901,11 +1090,11 @@ function vScan(){
  const filterBar=(tab==='vulns'||tab==='hosts'||tab==='rem')&&run&&!v.host?filterUI():'';
  return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'scans'})">${ic('chevL','sm')} Back to My Scans</a>${v.host?` / <a onclick="S.view.host=null;render()">${esc(s.name)}</a>`:''}</div><h1>${v.host?esc(v.host):esc(s.name)}</h1></div>
  <div class="actions"><button class="btn" onclick="editScan(${s.id})">${ic('gear','sm')}Configure</button><button class="btn" onclick="auditTrail(${s.id})">Audit Trail</button>${act}
- <button class="btn" ${run&&!running?'':'disabled'} onclick="reportModal(${s.id})">${ic('file','sm')}Report</button>${dd('m-export','Export',[['Nessus',`exportNessus(${s.id})`],['CSV',`reportModal(${s.id},'csv')`]])}</div></div>
+ <button class="btn" ${run&&!running?'':'disabled'} onclick="reportModal(${s.id})">${ic('file','sm')}Report</button>${dd('m-export','Export',[['Nessus',`exportNessus(${s.id})`],['CSV',`reportModal(${s.id},'csv')`],['Nessus DB',`exportDbModal(${s.id})`]],'btn'+(run&&!running?'':'" disabled="'))}</div></div>
  <div class="results"><div class="card">${v.host?'':`<div class="tabs" role="tablist">${tabs.map(([k,l,n])=>`<button class="tab" role="tab" aria-selected="${tab===k}" onclick="setTab('${k}')">${l} <span class="count num">${n}</span></button>`).join('')}</div>`}${filterBar}${body}</div>
  <div class="side-stack">${v.host?hostDetailsCard(run,v.host,fitems):scanDetailsCard(s,run,fitems)}</div></div>`;
 }
-function setTab(k){S.view.tab=k;S.view.group=null;if(k==='rem')ev('viewRem');if(k==='history')ev('viewHistory');save();render();}
+function setTab(k){S.view.tab=k;S.view.group=null;if(k==='rem')ev('viewRem');if(k==='vpr')ev('viewVPR');if(k==='history')ev('viewHistory');save();render();}
 function scanDetailsCard(s,run,items){
  const p=s.policyId?S.policies.find(x=>x.id===s.policyId):null;
  return`<div class="card pad details"><h3>Scan Details</h3><dl><dt>Policy:</dt><dd>${esc(p?p.name:tpl(s.template).name)}</dd><dt>Status:</dt><dd>${run?esc(run.status[0].toUpperCase()+run.status.slice(1)):'Empty'}</dd><dt>Severity Base:</dt><dd>CVSS v3.0</dd><dt>Scanner:</dt><dd>Local Scanner</dd>
@@ -986,12 +1175,34 @@ function remediations(items){const m=new Map();items.forEach(x=>{if(!x.p.rem||x.
 function vRem(rems,items,run){
  const tot=items.filter(x=>x.sev>0).length;const cov=rems.slice(0,10).reduce((a,r)=>a+r.pl.size,0);
  if(!rems.length)return'<div class="empty">No remediations available.</div>';
- return`<div class="toolbar"><span class="muted">Taking the following actions across <b>${run.hosts.length}</b> hosts would resolve <b>${tot?Math.round(cov/tot*100):0}%</b> of the vulnerabilities on the network.</span></div>
- <table class="t"><thead><tr><th>Action to take</th><th>Max Sev</th><th class="num">Vulns</th><th class="num">Hosts</th></tr></thead><tbody>${rems.map(r=>`<tr><td class="name">${esc(r.action)}</td><td>${sevTag(r.max)}</td><td class="num">${r.pl.size}</td><td class="num">${r.hosts.size}</td></tr>`).join('')}</tbody></table>`;
+ const done=run.status==='completed';
+ return`<div class="toolbar"><span class="muted">Taking the following actions across <b>${run.hosts.length}</b> hosts would resolve <b>${tot?Math.round(cov/tot*100):0}%</b> of the vulnerabilities on the network. ${help('remediacion')}</span></div>
+ <table class="t"><thead><tr><th>Action to take</th><th>Max Sev</th><th class="num">Vulns</th><th class="num">Hosts</th><th style="text-align:right">Laboratorio</th></tr></thead><tbody>${rems.map((r,i)=>`<tr><td class="name">${esc(r.action)}</td><td>${sevTag(r.max)}</td><td class="num">${r.pl.size}</td><td class="num">${r.hosts.size}</td><td style="text-align:right"><button class="btn sm" ${done?'':'disabled'} onclick="labPatch(${i})" title="Solo en el laboratorio: simula que sistemas aplica esta acción">${ic('wrench','sm')}Simular parche</button></td></tr>`).join('')}</tbody></table>
+ <div class="st" style="margin:0 14px 14px">${ic('info','sm')}<span><b>Simular parche</b> no existe en Nessus: es una ayuda del laboratorio para practicar el ciclo completo (remediar → volver a escanear → comprobar en History que el hallazgo desaparece).</span></div>`;
 }
+/* VPR Top Threats */
+function vprTop10(items){return aggregate(items).filter(a=>a.p.vpr!=null&&a.sev>0).sort((a,b)=>b.p.vpr-a.p.vpr||b.hosts.size-a.hosts.size).slice(0,10);}
+const vprCls=v=>v>=9?'c':v>=7?'h':v>=4?'m':'l';
+function reasons(p){const d=p.drivers||{},r=[];
+ if((d.sources||'').includes('KEV'))r.push(['alert','En CISA KEV']);
+ if(p.exploit)r.push(['bolt','Exploit público']);
+ if(/High/.test(d.threat_intensity||''))r.push(['flame',d.threat_intensity==='Very High'?'Actividad muy alta':'Actividad alta']);
+ if(/^0 to|^8 to|^31 to/.test(d.threat_recency||''))r.push(['clock','Amenaza reciente']);
+ if(d.maturity==='High')r.push(['target','Exploit maduro']);
+ if(p.epss!=null&&p.epss>=.5)r.push(['gauge','EPSS '+Math.round(p.epss*100)+'%']);
+ return r.slice(0,3).map(([i,t])=>`<span class="reason">${ic(i,'sm')}${t}</span>`).join('')||'<span class="muted">-</span>';}
+function vVPR(top){
+ if(!top.length)return`<div class="empty">No hay vulnerabilidades con VPR en este scan.</div>`;
+ return`<div class="toolbar"><span class="muted">Las <b>${top.length}</b> vulnerabilidades con mayor VPR: lo que un atacante intentaría primero. Empieza a remediar por aquí. ${help('vpr')}</span></div>
+ <table class="t"><thead><tr><th>VPR</th><th>Severity</th><th>Name</th><th>Reasons</th><th class="num">Hosts</th></tr></thead><tbody>${top.map(a=>`<tr class="click" onclick="openPlugin(${a.p.id})"><td><span class="vprb ${vprCls(a.p.vpr)}">${fmt1(a.p.vpr)}</span></td><td>${sevTag(a.sev)}</td><td class="name">${esc(a.p.name)}</td><td>${reasons(a.p)}</td><td class="num">${a.hosts.size}</td></tr>`).join('')}</tbody></table>`;
+}
+/* Laboratorio: simular que el equipo de sistemas aplica una remediación */
+function labPatch(i){const s=curScan(),run=runView(curRun(s));const items=applyFilters(effItems(run));const r=remediations(items)[i];if(!r)return;
+ items.filter(x=>x.p.rem===r.action&&x.sev>0).forEach(x=>{S.fixed[x.h.ip+'|'+x.p.id]=Date.now();});
+ ev('labPatch');save();toast('Lab: remediación aplicada. Vuelve a lanzar el scan para verificarla.','wrench');render();}
 /* Historial */
 function vHistory(s){
- return`<table class="t"><thead><tr><th>Start Time</th><th>End Time</th><th>Status</th><th>Targets</th><th></th></tr></thead><tbody>${s.runs.slice().reverse().map(r=>`<tr class="click" onclick="selRun(${s.id},${r.id})"><td>${fmtDate(r.start)} ${s.cur===r.id?'<span class="tag run">Current</span>':''}</td><td>${r.end?fmtDate(r.end):'N/A'}</td><td>${esc(r.status)}</td><td class="num muted">${r.ips} IP · ${r.custom?'custom':'default'}</td><td style="text-align:right" onclick="event.stopPropagation()"><button class="btn sm" onclick="delRun(${s.id},${r.id})" aria-label="Delete">${ic('trash','sm')}</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No history.</td></tr>'}</tbody></table>`;
+ return`<table class="t"><thead><tr><th>Start Time</th><th>End Time</th><th>Status</th><th>Targets</th><th>Vulnerabilities</th><th></th></tr></thead><tbody>${s.runs.slice().reverse().map(r=>`<tr class="click" onclick="selRun(${s.id},${r.id})"><td>${fmtDate(r.start)} ${s.cur===r.id?'<span class="tag run">Current</span>':''}</td><td>${r.end?fmtDate(r.end):'N/A'}</td><td>${esc(r.status)}</td><td class="num muted">${r.ips} IP · ${r.custom?'custom':'default'}</td><td>${r.status==='completed'?sevBar(counts(effItems(r).filter(x=>x.sev>0)).map((c,i)=>i?c:0)):''}</td><td style="text-align:right" onclick="event.stopPropagation()"><button class="btn sm" onclick="delRun(${s.id},${r.id})" aria-label="Delete">${ic('trash','sm')}</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No history.</td></tr>'}</tbody></table>`;
 }
 function selRun(sid,rid){const s=S.scans.find(x=>x.id===sid);s.cur=rid;S.view.tab='hosts';ev('selectHistory');save();render();}
 function delRun(sid,rid){const s=S.scans.find(x=>x.id===sid);const r=s.runs.find(x=>x.id===rid);if(r.status==='running'){toast('Stop the scan first','info');return;}s.runs=s.runs.filter(x=>x.id!==rid);s.cur=s.runs.length?s.runs[s.runs.length-1].id:null;save();render();}
@@ -1007,7 +1218,7 @@ function filterUI(){
  const active=UI.filters.filter(f=>f.value!=='').length;
  return`<div class="toolbar"><div class="search">${ic('search','sm')}<input placeholder="Search Vulnerabilities" value="${esc(UI.search)}" oninput="UI.search=this.value;clearTimeout(window._st);window._st=setTimeout(()=>{render();const i=document.querySelector('.search input');i.focus();i.setSelectionRange(i.value.length,i.value.length)},250)"></div>
  <button class="btn sm" onclick="UI.filterOpen=!UI.filterOpen;if(!UI.filters.length)addFilter(true);render()" aria-expanded="${UI.filterOpen}">${ic('filter','sm')}Filter${active?` <span class="tag run num">${active}</span>`:''}</button>${active?`<button class="btn ghost sm" onclick="clearFilters()">Clear Filters</button>`:''}</div>
- ${UI.filterOpen?`<div class="filters"><div class="frow"><span>Match</span><select class="in" style="min-width:90px" onchange="UI.match=this.value"><option value="all" ${UI.match==='all'?'selected':''}>All</option><option value="any" ${UI.match==='any'?'selected':''}>Any</option></select><span>of the following:</span></div>
+ ${UI.filterOpen?`<div class="filters"><div class="frow"><span>Match</span><select class="in" aria-label="Match" style="min-width:90px" onchange="UI.match=this.value"><option value="all" ${UI.match==='all'?'selected':''}>All</option><option value="any" ${UI.match==='any'?'selected':''}>Any</option></select><span>of the following:</span></div>
  ${UI.filters.map((f,i)=>`<div class="frow"><select class="in" onchange="UI.filters[${i}].field=this.value;UI.filters[${i}].op=fOps(this.value)[0][0];UI.filters[${i}].value='';render()">${Object.entries(FFIELDS).map(([k,l])=>`<option value="${k}" ${f.field===k?'selected':''}>${l}</option>`).join('')}</select>
  <select class="in" onchange="UI.filters[${i}].op=this.value">${fOps(f.field).map(([k,l])=>`<option value="${k}" ${f.op===k?'selected':''}>${l}</option>`).join('')}</select>${valCtl(f,i)}<button class="btn sm" aria-label="Remove filter" onclick="UI.filters.splice(${i},1);render()">${ic('x','sm')}</button></div>`).join('')}
  <div class="frow"><button class="btn ghost sm" onclick="addFilter()">${ic('plus','sm')}Add filter</button><span style="margin-left:auto"></span><button class="btn sm" onclick="clearFilters()">Clear</button><button class="btn primary sm" onclick="applyF()">Apply</button></div></div>`:''}`;
@@ -1019,12 +1230,12 @@ function applyF(){UI.filterOpen=false;const fs=UI.filters.filter(f=>f.value!==''
  if(fs.length)ev('filterUsed');render();}
 
 /* ===== Modales ===== */
-function modal(title,body,footer){
+function modal(title,body,footer,cls=''){
  const m=document.getElementById('modal');
- m.innerHTML=`<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h2>${title}</h2><span style="margin-left:auto"></span><button class="btn ghost sm" onclick="closeModal()" aria-label="Close">${ic('x','sm')}</button></header><div class="mb">${body}</div><footer>${footer||'<button class="btn primary" onclick="closeModal()">OK</button>'}</footer></div></div>`;
- setTimeout(()=>{const f=m.querySelector('.mb input,.mb select,.mb textarea');if(f)f.focus();},30);
+ m.innerHTML=`<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title.replace(/<[^>]+>/g,''))}"><header><h2>${title}</h2><span style="margin-left:auto"></span><button class="btn ghost sm" onclick="closeModal()" aria-label="Close">${ic('x','sm')}</button></header><div class="mb">${body}</div><footer>${footer||'<button class="btn primary" onclick="closeModal()">OK</button>'}</footer></div></div>`;
+ setTimeout(()=>{const f=m.querySelector('.mb input,.mb select,.mb textarea')||m.querySelector('footer .btn.primary');if(f)f.focus({preventScroll:true});},30);renderCoach();
 }
-function closeModal(){document.getElementById('modal').innerHTML='';}
+function closeModal(){document.getElementById('modal').innerHTML='';renderCoach();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.getElementById('modal').innerHTML)closeModal();else toggleDrawer(false);}});
 function customTargets(id){modal('Custom Targets',`<p class="muted">Lanza el escaneo una vez contra otros objetivos sin cambiar su configuración.</p><textarea class="in" id="ct" placeholder="192.168.56.30"></textarea>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="const v=document.getElementById('ct').value;closeModal();launch(${id},v)">Launch</button>`);}
 function auditTrail(id){const s=S.scans.find(x=>x.id===id);const run=curRun(s);
@@ -1069,32 +1280,56 @@ function vSettings(){
  const sub=S.view.sub||'about',st=S.settings;if(sub==='about')ev('settings:about');
  const sf=(label,key,type='text',hint='')=>fld(label,`<input class="in" type="${type}" value="${esc(st[key])}" oninput="S.settings['${key}']=this.value;save()">`,hint);
  const wrap=(t,inner)=>`<div class="ph"><div><h1>${t}</h1></div></div><div class="card pad">${inner}</div>`;
- if(sub==='about')return wrap('About',`<div class="tabs" style="padding:0;margin:-6px 0 16px"><button class="tab" aria-selected="true">Overview</button><button class="tab" onclick="toast('Software Update: el simulador no descarga plugins (offline)','info')">Software Update</button></div>
-  <div class="details"><dl><dt>Version:</dt><dd>10.x (simulado)</dd><dt>Licensed Scanner:</dt><dd>Yes</dd><dt>License Type:</dt><dd>Nessus Essentials</dd><dt>Licensed Hosts:</dt><dd><span class="num">${licensedUsed()}</span> of <b>16</b> (IP addresses)</dd><dt>Activation Code:</dt><dd>XXXX-XXXX-XXXX-LAB0</dd><dt>Expiration:</dt><dd>N/A (simulador)</dd><dt>Plugin Set:</dt><dd>202611130412 · ${Object.keys(PLUGINS).length} plugins de laboratorio</dd><dt>Policy Template Version:</dt><dd>1.0-lab</dd></dl></div>
-  <div class="note" style="margin-top:16px">Nessus Essentials es gratuito para uso personal/educativo y limita el escaneo a <b>16 direcciones IP</b>. Los escaneos de descubrimiento (Host Discovery) no consumen licencia. Plantillas de Compliance no están disponibles.</div>`);
+ if(sub==='about')return wrap('About',`<div class="tabs" role="tablist" style="padding:0;margin:-6px 0 16px"><button class="tab" role="tab" aria-selected="true">Overview</button><button class="tab" role="tab" aria-selected="false" onclick="toast('Software Update: el simulador no descarga plugins (offline)','info')">Software Update</button></div>
+  <div class="details"><dl><dt>Version:</dt><dd>10.x (simulado)</dd><dt>Licensed Scanner:</dt><dd>Yes</dd><dt>License Type:</dt><dd>${lic().name}</dd><dt>Licensed Hosts:</dt><dd><span class="num">${licensedUsed()}</span> of <b>${lic().ips}</b> (IP addresses)</dd><dt>Plugin Updates:</dt><dd>${lic().feed}</dd><dt>Reports (HTML / PDF):</dt><dd>${lic().reports?'Available':'Not available (CSV and .nessus only)'}</dd><dt>Activation Code:</dt><dd>XXXX-XXXX-XXXX-LAB0</dd><dt>Expiration:</dt><dd>N/A (simulador)</dd><dt>Plugin Set:</dt><dd>202611130412 · ${Object.keys(PLUGINS).length} plugins de laboratorio</dd><dt>Policy Template Version:</dt><dd>1.0-lab</dd></dl></div>
+  <h3 style="font-size:15px;margin:22px 0 10px">Licencia del laboratorio</h3>
+  <div class="cmp"><button class="btn ${tier()==='essentials'?'primary':''}" aria-pressed="${tier()==='essentials'}" onclick="setTier('essentials')">Essentials · 5 IPs</button><button class="btn ${tier()==='plus'?'primary':''}" aria-pressed="${tier()==='plus'}" onclick="setTier('plus')">Essentials Plus · 20 IPs</button></div>
+  <table class="t" style="margin-top:14px"><thead><tr><th></th><th>Essentials</th><th>Essentials Plus</th></tr></thead><tbody>
+  <tr><td>Hosts (IPs) que se pueden escanear</td><td class="num">5</td><td class="num">20</td></tr><tr><td>Informes HTML y PDF</td><td>No (solo CSV y .nessus)</td><td>Sí</td></tr><tr><td>Actualización de plugins</td><td>Diaria</td><td>En tiempo real</td></tr><tr><td>Plantillas de Compliance y Web App</td><td>No</td><td>No</td></tr><tr><td>Usuarios</td><td class="num">1</td><td class="num">1</td></tr></tbody></table>
+  <div class="note" style="margin-top:14px">Los dos niveles son para formación y uso personal. Los escaneos de <b>Host Discovery</b> y <b>Ping-Only Discovery</b> no consumen licencia. En la empresa lo habitual es Nessus Professional, Expert o Tenable Vulnerability Management: lo que aprendas aquí (plantillas, credenciales, VPR, reglas e informes) es lo mismo. ${help('licencia')}</div>`);
  if(sub==='advanced')return wrap('Advanced Settings',`<div class="form">${sf('max_hosts','maxHosts','number','Máximo de hosts escaneados simultáneamente.')}${sf('max_checks','maxChecks','number','Comprobaciones simultáneas por host.')}${sf('UI timeout (minutes)','uiTimeout','number')}</div>`);
  if(sub==='proxy')return wrap('Proxy Server',`<div class="form">${sf('Host','proxyHost')}${sf('Port','proxyPort','number')}<div class="muted">Simulado: el laboratorio nunca se conecta a Internet.</div></div>`);
  if(sub==='smtp')return wrap('SMTP Server',`<div class="form">${sf('Host','smtpHost')}${sf('Port','smtpPort','number')}${sf('From (sender email)','smtpFrom')}<div class="muted">Simulado: no se envían correos.</div></div>`);
  if(sub==='ca')return wrap('Custom CA',`<div class="form">${fld('Certificate',`<textarea class="in" oninput="S.settings.caCert=this.value;save()" placeholder="-----BEGIN CERTIFICATE-----">${esc(st.caCert)}</textarea>`,'Permite confiar en la CA interna (evita hallazgos "SSL Certificate Cannot Be Trusted" en servicios internos).')}</div>`);
  if(sub==='pwd')return wrap('Password Management',`<div class="form">${sf('Minimum password length','pwdMin','number')}</div>`);
- if(sub==='account')return wrap('My Account',`<div class="form">${fld('Username','<input class="in" value="yoandy" disabled>')}${fld('Full Name','<input class="in" value="Yoandy Ramírez Delgado" disabled>')}${fld('Role','<input class="in" value="System Administrator" disabled>','Essentials solo permite un usuario.')}</div>`);
+ if(sub==='account')return wrap('My Account',`<div class="form">${fld('Username','<input class="in" value="yoandy" disabled>')}${fld('Full Name','<input class="in" value="Yoandy Ramírez Delgado" disabled>')}${fld('Role','<input class="in" value="System Administrator" disabled>','Essentials y Essentials Plus solo permiten un usuario.')}</div>`);
  if(sub==='lab')return wrap('Simulador (laboratorio)',`<div class="form">${fld('Velocidad de simulación',`<select class="in" onchange="S.speed=+this.value;save()">${[[1,'Lenta'],[2,'Normal'],[4,'Rápida'],[10,'Instantánea']].map(([v,l])=>`<option value="${v}" ${S.speed===v?'selected':''}>${l}</option>`).join('')}</select>`)}
   ${fld('Tema',`<button class="btn" onclick="toggleTheme()">${ic(S.theme==='dark'?'sun':'moon','sm')}Cambiar a ${S.theme==='dark'?'claro':'oscuro'}</button>`)}
   ${fld('Inventario del lab',`<table class="t"><thead><tr><th>IP</th><th>Host</th><th>Rol</th></tr></thead><tbody>${HOSTS.map(h=>`<tr><td class="num">${h.ip}</td><td>${h.fqdn}</td><td class="muted">${esc(h.os)}</td></tr>`).join('')}</tbody></table>`,'Spoiler: normalmente lo descubrirías con Host Discovery.')}
+  ${fld('Parches simulados',`<div><span class="num"><b>${Object.keys(S.fixed||{}).length}</b></span> hallazgos marcados como corregidos ${Object.keys(S.fixed||{}).length?`<button class="btn sm" style="margin-left:8px" onclick="S.fixed={};save();toast('Parches simulados deshechos','refresh');render()">${ic('refresh','sm')}Deshacer todos</button>`:''}</div>`,'Se marcan con «Simular parche» en la pestaña Remediations. Afectan a los escaneos que lances después.')}
+  ${fld('Bienvenida',`<button class="btn" onclick="welcome()">${ic('sparkles','sm')}Ver la bienvenida otra vez</button>`)}
   ${fld('Datos',`<button class="btn danger" onclick="resetLab()">Restablecer laboratorio</button>`,'Borra scans, policies, reglas y progreso guardados en este navegador (localStorage).')}</div>`);
  return'';
 }
+function setTier(t){if(tier()===t)return;S.settings.tier=t;ev('tier:'+t);save();toast('Licencia del laboratorio: '+LIC[t].name,'badge');render();}
 function resetLab(){modal('Restablecer laboratorio','<p>Se borrarán scans, policies, reglas y el progreso de ejercicios de este navegador.</p>',`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="localStorage.removeItem(KEY);S=fresh();seed();save();closeModal();go({top:'scans',page:'scans',folder:'my'})">Restablecer</button>`);}
 
 /* ===== Informes y exportación (generados localmente) ===== */
 function download(name,mime,text){const b=new Blob([text],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-function reportModal(id,fmt='html'){
- const active=UI.filters.filter(f=>f.value!=='').length;
- modal('Generate Report',`<div class="form"><div class="field"><label>Format</label><select class="in" id="rp-f" onchange="document.getElementById('rp-t').disabled=this.value==='csv'"><option value="pdf" disabled>PDF (no disponible offline)</option><option value="html" ${fmt==='html'?'selected':''}>HTML</option><option value="csv" ${fmt==='csv'?'selected':''}>CSV</option></select></div>
- <div class="field"><label>Report Template</label><select class="in" id="rp-t" ${fmt==='csv'?'disabled':''}><option value="exec">Executive Summary</option><option value="host">Detailed Vulnerabilities By Host</option><option value="plugin">Detailed Vulnerabilities By Plugin</option></select></div></div>
+function reportModal(id,fmt){
+ const active=UI.filters.filter(f=>f.value!=='').length,L=lic();
+ if(!L.reports)fmt='csv';else fmt=fmt||'html';
+ const off=L.reports?'':' disabled';
+ modal('Generate Report',`<div class="form"><div class="field"><label for="rp-f">Format</label><select class="in" id="rp-f" onchange="document.getElementById('rp-t').disabled=this.value==='csv'"><option value="pdf"${off} ${fmt==='pdf'?'selected':''}>PDF${L.reports?'':' (Essentials Plus)'}</option><option value="html"${off} ${fmt==='html'?'selected':''}>HTML${L.reports?'':' (Essentials Plus)'}</option><option value="csv" ${fmt==='csv'?'selected':''}>CSV</option></select></div>
+ <div class="field"><label for="rp-t">Report Template</label><select class="in" id="rp-t" ${fmt==='csv'?'disabled':''}><option value="exec">Executive Summary</option><option value="host">Detailed Vulnerabilities By Host</option><option value="plugin">Detailed Vulnerabilities By Plugin</option></select></div></div>
+ ${L.reports?'':`<div class="st">${ic('lock','sm')}<span>Con la licencia <b>Essentials</b> solo hay CSV y .nessus. Cambia a Essentials Plus en <b>Settings ▸ About</b> para HTML y PDF.</span></div>`}
  <div class="st">${ic('filter','sm')}<span>${active?`Se aplicarán los <b>${active}</b> filtro(s) activos y las plugin rules.`:'Sin filtros activos: se incluyen todos los resultados (aplicando plugin rules).'}</span></div>`,
  `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="genReport(${id})">${ic('download','sm')}Generate Report</button>`);}
+function printReport(html){const pr=document.getElementById('print')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'print'}));
+ const m=html.match(/<body>([\s\S]*)<\/body>/);pr.innerHTML=m?m[1]:html;setTimeout(()=>{try{window.print();}catch(e){}},60);}
+async function exportDb(id){const pw=document.getElementById('db-p').value,err=document.getElementById('db-e');
+ if(pw.length<8){err.textContent='La contraseña debe tener al menos 8 caracteres.';return;}
+ const s=S.scans.find(x=>x.id===id),xml=nessusXml(s);if(!xml)return;
+ const enc=new TextEncoder(),salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const base=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']);
+ const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);
+ const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(xml)));
+ const head=enc.encode('VSLAB-NESSUSDB-1\n'),out=new Uint8Array(head.length+28+ct.length);out.set(head);out.set(salt,head.length);out.set(iv,head.length+16);out.set(ct,head.length+28);
+ const b=new Blob([out],{type:'application/octet-stream'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=slug(s.name)+'.db';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+ closeModal();ev('exportDb');toast('Nessus DB exported (encrypted)','download');}
+function exportDbModal(id){modal('Export Nessus DB',`<p class="muted">El formato Nessus DB guarda el scan completo (con su historial) <b>cifrado con contraseña</b>, para moverlo a otro escáner. En el laboratorio se cifra de verdad con AES-256-GCM en tu navegador.</p><div class="form"><div class="field"><label for="db-p">Password</label><input class="in" type="password" id="db-p" autocomplete="new-password"></div></div><div id="db-e" class="err"></div>`,
+ `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="exportDb(${id})">${ic('download','sm')}Export</button>`);}
 function genReport(id){
  const f=document.getElementById('rp-f').value,t=document.getElementById('rp-t').value;closeModal();
  const s=S.scans.find(x=>x.id===id),run=curRun(s);const items=applyFilters(effItems(run));
@@ -1105,11 +1340,14 @@ function genReport(id){
   download(slug(s.name)+'.csv','text/csv;charset=utf-8','\ufeff'+lines.join('\r\n'));
   ev('reportCsv');if(UI.filters.some(f=>f.field==='vpr'&&f.op==='gt'&&parseFloat(f.value)>=6.9&&f.value!==''))ev('csvVPR');
   toast('CSV report generated','download');checkExercises();return;}
- download(slug(s.name)+'_'+t+'.html','text/html;charset=utf-8',htmlReport(s,run,items,t));
+ if(!lic().reports){toast('HTML/PDF requieren Essentials Plus','lock');return;}
+ const html=htmlReport(s,run,items,t);
+ if(f==='pdf'){printReport(html);ev('reportPdf');if(t==='exec')ev('reportExec');toast('PDF: elige «Guardar como PDF» en el diálogo de impresión','file');checkExercises();return;}
+ download(slug(s.name)+'_'+t+'.html','text/html;charset=utf-8',html);
  if(t==='exec')ev('reportExec');ev('reportHtml');toast('HTML report generated','download');checkExercises();
 }
 function htmlReport(s,run,items,t){
- const c=counts(items.filter(x=>x.sev>0).length?items:items);const col=['#67ace1','#f8c851','#f18c43','#dd4b50','#91243e'];
+ const c=counts(items.filter(x=>x.sev>0).length?items:items);const col=['#67ace1','#f8c851','#f18c43','#c9373d','#91243e'];
  const agg=aggregate(items).sort((a,b)=>b.sev-a.sev||(b.p.vpr||0)-(a.p.vpr||0));
  const top=agg.filter(a=>a.sev>=3).slice(0,10);
  const sevB=x=>`<span style="background:${col[x]};color:${x===1||x===2?'#1d1206':'#fff'};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">${SEV[x]}</span>`;
@@ -1128,22 +1366,24 @@ function htmlReport(s,run,items,t){
  return`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${esc(s.name)} - Report</title><style>body{font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:#141c26;max-width:960px;margin:30px auto;padding:0 20px}h1{font-size:24px}table{border-collapse:collapse;width:100%;margin:10px 0 20px}td,th{border-bottom:1px solid #dde3ea;padding:7px 9px;text-align:left;font-size:13px}pre{background:#f4f6f8;padding:10px;border-radius:6px;white-space:pre-wrap;font-size:12px}.v{border-radius:10px;box-shadow:0 0 0 1px rgba(16,24,40,.1);padding:4px 16px;margin:10px 0}small{color:#38434f;font-weight:400;font-size:14px}.disc{color:#38434f;font-size:12px}</style></head><body>
  <h1>${esc(s.name)}</h1><p class="disc">Informe generado localmente por Vuln Scanner Lab (simulador de estudio no oficial). Datos ficticios de laboratorio. Plugin rules aplicadas.</p>${body}</body></html>`;
 }
-function exportNessus(id){
- const s=S.scans.find(x=>x.id===id),run=curRun(s);if(!run){toast('Nothing to export','info');return;}
+function exportNessus(id){const s=S.scans.find(x=>x.id===id),xml=nessusXml(s);if(!xml)return;
+ download(slug(s.name)+'.nessus','application/xml',xml);ev('exportNessus');toast('.nessus exported (raw data: plugin rules not applied)','download');}
+function nessusXml(s){
+ const run=curRun(s);if(!run){toast('Nothing to export','info');return null;}
  const x=v=>esc(v);
  const xml=`<?xml version="1.0" ?>\n<NessusClientData_v2>\n<Report name="${x(s.name)}">\n`+run.hosts.map(h=>`<ReportHost name="${h.ip}"><HostProperties><tag name="host-fqdn">${x(h.fqdn)}</tag><tag name="operating-system">${x(h.os)}</tag></HostProperties>\n`+h.items.map(it=>{const p=PLUGINS[it.pid];const [port,proto]=it.port.split('/');return`<ReportItem port="${port}" protocol="${proto}" severity="${p.sev}" pluginID="${p.id}" pluginName="${x(p.name)}" pluginFamily="${x(p.family)}"><risk_factor>${p.sev?SEV[p.sev]:'None'}</risk_factor>${p.cvss!=null?`<cvss3_base_score>${p.cvss}</cvss3_base_score>`:''}${p.vpr!=null?`<vpr_score>${p.vpr}</vpr_score>`:''}${(p.cve||[]).map(c=>`<cve>${c}</cve>`).join('')}<plugin_output>${x(it.out)}</plugin_output></ReportItem>`;}).join('\n')+`\n</ReportHost>`).join('\n')+`\n</Report>\n</NessusClientData_v2>\n`;
- download(slug(s.name)+'.nessus','application/xml',xml);ev('exportNessus');toast('.nessus exported (raw data: plugin rules not applied)','download');}
+ return xml;}
 
 /* ===== Modo entrenamiento ===== */
 const completed=t=>S.scans.filter(s=>s.template===t||!t).flatMap(s=>s.runs.filter(r=>r.status==='completed').map(r=>({s,r})));
 const EXERCISES=[
  {id:'e1',lvl:'Básico',title:'Conoce la consola y tu licencia',
-  goal:'Localiza en Settings ▸ About el tipo de licencia y cuántas IPs permite Nessus Essentials.',
-  why:'Antes de escanear debes conocer los límites de la herramienta: en Essentials cada IP escaneada consume licencia.',
+  goal:'Localiza en Settings ▸ About el tipo de licencia y cuántas IPs permite escanear.',
+  why:'Antes de escanear debes conocer los límites de la herramienta: cada IP distinta escaneada consume licencia.',
   steps:['Arriba, pulsa la pestaña <b>Settings</b>.','En la barra lateral entra en <b>About</b> ▸ Overview.','Fíjate en <b>License Type</b> y <b>Licensed Hosts</b>.'],
   hints:['La navegación principal de Nessus tiene solo dos pestañas: Scans y Settings.'],
   check:()=>!!S.events['settings:about'],
-  quiz:{q:'¿Cuántas direcciones IP permite escanear Nessus Essentials?',o:['5','16','256','Ilimitadas'],a:1,ex:'Essentials limita a 16 IPs. Professional no tiene límite de IPs.'}},
+  quiz:{q:'¿Cuántas direcciones IP permite escanear Nessus Essentials Plus?',o:['5','20','256','Ilimitadas'],a:1,ex:'Essentials: 5 IPs. Essentials Plus: 20 IPs. Professional y Expert no tienen límite de IPs.'}},
  {id:'e2',lvl:'Básico',title:'Descubre la red con Host Discovery',
   goal:'Crea y ejecuta un scan <b>Host Discovery</b> contra <code>192.168.56.0/24</code> y espera a que termine.',
   why:'No puedes proteger lo que no sabes que existe. El inventario de activos es el primer paso de la gestión de vulnerabilidades.',
@@ -1152,12 +1392,12 @@ const EXERCISES=[
   check:()=>completed('discovery').some(({r})=>r.hosts.length>=9),
   quiz:{q:'¿Los activos encontrados SOLO con un Host Discovery cuentan para la licencia?',o:['Sí, cada IP viva consume licencia','No, los escaneos de descubrimiento no cuentan','Solo si tienen puertos abiertos'],a:1,ex:'Tenable indica que los activos identificados por discovery scans no cuentan para la licencia.'}},
  {id:'e3',lvl:'Básico',title:'Choca con el límite y escanea solo lo vivo',
-  goal:'Intenta lanzar un <b>Basic Network Scan</b> contra toda la /24 (verás el bloqueo) y luego lanza uno contra los hosts vivos (≤16 IPs).',
+  goal:'Intenta lanzar un <b>Basic Network Scan</b> contra toda la /24 (verás el bloqueo) y luego lanza uno contra los hosts vivos (≤20 IPs).',
   why:'En entornos reales con licencias limitadas se segmenta: descubrir primero, después escanear objetivos concretos.',
   steps:['New Scan ▸ <b>Basic Network Scan</b>, targets <code>192.168.56.0/24</code> ▸ Save & Launch → aparece el aviso de licencia.','Pulsa <b>Configure</b> en ese scan (o crea otro) y cambia targets a las IPs vivas que encontraste en el ejercicio 2.','Lanza y espera a que termine.'],
   hints:['Puedes usar rangos: <code>192.168.56.1, 192.168.56.10-80</code> = 72 IPs… ¡demasiadas! Usa la lista exacta.','Lista exacta: <code>192.168.56.1,192.168.56.10,192.168.56.20,192.168.56.30,192.168.56.40,192.168.56.50,192.168.56.60,192.168.56.70,192.168.56.80</code>'],
-  check:()=>!!S.events.licenseBlocked&&completed('basic').some(({r})=>r.hosts.length>=6&&r.ips<=16),
-  quiz:{q:'¿Cuál es la mejor estrategia con una licencia de 16 IPs y una red /24?',o:['Escanear la /24 por partes cada día','Hacer Host Discovery y escanear solo los activos relevantes','Usar Advanced Scan, que no tiene límite'],a:1,ex:'El descubrimiento no consume licencia; los escaneos de vulnerabilidades sí. Prioriza activos críticos.'}},
+  check:()=>!!S.events.licenseBlocked&&completed('basic').some(({r})=>r.hosts.length>=6&&r.ips<=20),
+  quiz:{q:'¿Cuál es la mejor estrategia con una licencia de 20 IPs y una red /24?',o:['Escanear la /24 por partes cada día','Hacer Host Discovery y escanear solo los activos relevantes','Usar Advanced Scan, que no tiene límite'],a:1,ex:'El descubrimiento no consume licencia; los escaneos de vulnerabilidades sí. Prioriza activos críticos.'}},
  {id:'e4',lvl:'Básico',title:'Lee un hallazgo crítico: MS17-010',
   goal:'En tu Basic Network Scan abre la pestaña <b>Vulnerabilities</b> y entra en el plugin <b>97833 (MS17-010)</b>.',
   why:'Saber leer el detalle de un plugin (descripción, solución, salida, CVSS, VPR, CVE) es la habilidad diaria de un analista.',
@@ -1227,7 +1467,7 @@ const EXERCISES=[
   steps:['Resources ▸ <b>Policies ▸ New Policy ▸ Advanced Scan</b>.','Ponle nombre (p. ej. <i>Semanal servidores</i>) y credenciales; Save.','En Policies pulsa <b>New Scan</b> en esa policy (o New Scan ▸ User Defined).','BASIC ▸ <b>Schedule</b>: Enabled, Frequency Weekly. Añade targets y Save.'],
   hints:['La policy guarda ajustes y credenciales; el scan añade targets y programación.'],
   check:()=>S.policies.some(p=>p.template==='advanced')&&S.scans.some(s=>s.policyId&&s.settings.schedule.enabled&&s.settings.schedule.freq==='Weekly'),
-  quiz:{q:'¿Ventaja principal de usar Policies?',o:['Escanean más rápido','Estandarizan la configuración y evitan errores entre escaneos','Saltan el límite de 16 IPs'],a:1,ex:'Consistencia: mismos plugins, credenciales y ajustes → resultados comparables en el tiempo.'}},
+  quiz:{q:'¿Ventaja principal de usar Policies?',o:['Escanean más rápido','Estandarizan la configuración y evitan errores entre escaneos','Saltan el límite de IPs de la licencia'],a:1,ex:'Consistencia: mismos plugins, credenciales y ajustes → resultados comparables en el tiempo.'}},
  {id:'e14',lvl:'Gestión de riesgo',title:'Informe ejecutivo para dirección',
   goal:'Genera un <b>Report</b> en formato <b>HTML</b> con la plantilla <b>Executive Summary</b> de tu scan credencializado.',
   why:'Dirección necesita contexto de negocio: cuántos riesgos críticos, dónde, tendencia y plan; no la salida técnica de cada plugin.',
@@ -1243,6 +1483,74 @@ const EXERCISES=[
   check:()=>!!S.events.csvVPR,
   quiz:{q:'¿Qué criterio de priorización es más defendible para un plan de remediación?',o:['Solo CVSS ≥ 9','Combinar VPR/explotación activa (KEV), criticidad del activo y exposición','Orden alfabético por host'],a:1,ex:'Riesgo = probabilidad (VPR, KEV, EPSS) × impacto (criticidad y exposición del activo).'}}
 ];
+EXERCISES.push(
+ {id:'e0',lvl:'Básico',title:'Antes de tocar nada: ¿qué es esto?',
+  goal:'Lee la <b>bienvenida</b> (se abre sola la primera vez; también en Settings ▸ Simulador) y el <b>Glosario</b> de este panel.',
+  why:'Nessus es un <b>escáner de vulnerabilidades</b>: se conecta a los equipos de la red, comprueba miles de fallos conocidos (cada comprobación es un <b>plugin</b>) y te da una lista ordenada por gravedad. No ataca ni arregla nada: te dice dónde mirar. El trabajo de un Risk Manager es decidir <b>qué se arregla primero, quién y cuándo</b>.',
+  steps:['Pulsa <b>Ver la bienvenida</b> en Settings ▸ Simulador si la cerraste.','En este panel, pestaña <b>Glosario</b>: lee Vulnerabilidad, Plugin, Severidad, CVSS y VPR.','Vuelve aquí y responde el quiz.'],
+  hints:['No hace falta memorizar: el glosario siempre está a mano en el botón Entrenamiento.'],
+  check:()=>!!S.events.welcome&&!!S.events.glossary,
+  quiz:{q:'¿Qué hace exactamente un escáner de vulnerabilidades como Nessus?',o:['Corrige automáticamente los fallos que encuentra','Detecta y prioriza fallos conocidos; la corrección la hacen los equipos responsables','Bloquea a los atacantes como un cortafuegos'],a:1,ex:'Detecta y ordena. Corregir es trabajo de sistemas; decidir prioridades y plazos, de la gestión del riesgo.'}},
+ {id:'e16',lvl:'Gestión de riesgo',title:'Solo 5 IPs: elige bien qué escaneas',
+  goal:'Cambia la licencia a <b>Essentials (5 IPs)</b> en Settings ▸ About y lanza un <b>Basic Network Scan</b> con como máximo 5 IPs que incluya los tres activos más críticos: el <b>controlador de dominio</b>, el <b>servidor legado</b> y el <b>servidor de aplicaciones Java</b>.',
+  why:'Nunca tendrás capacidad para todo. Priorizar por criticidad del activo (lo que, si cae, arrastra al resto) es la primera decisión de un Risk Manager.',
+  steps:['Settings ▸ About ▸ <b>Essentials · 5 IPs</b>.','Mira el inventario que descubriste en el ejercicio 2 y piensa: ¿qué equipo da acceso a todo? ¿cuál no recibe parches? ¿cuál expone una aplicación?','New Scan ▸ Basic Network Scan con esas IPs (máx. 5) ▸ Save & Launch.','Cuando termine, vuelve a <b>Essentials Plus</b> para seguir con el resto.'],
+  hints:['dc01 (.10) es el controlador de dominio; fs-legacy (.20) es Windows 2008 R2; app01 (.40) es la aplicación Java.','Targets: <code>192.168.56.10, 192.168.56.20, 192.168.56.40</code> (y hasta dos más si quieres).'],
+  check:()=>completed().some(({s,r})=>r.tier==='essentials'&&['basic','advanced'].includes(s.template)&&r.ips<=5&&['10','20','40'].every(x=>r.hosts.some(h=>h.ip==='192.168.56.'+x))),
+  quiz:{q:'Con 5 licencias y 9 equipos, ¿qué criterio usas para elegir?',o:['Los cinco primeros por orden de IP','Criticidad para el negocio y exposición: identidad (DC), sistemas sin soporte y servicios expuestos','Los equipos con más puertos abiertos'],a:1,ex:'Riesgo = impacto × probabilidad. El DC tiene el máximo impacto; lo que no tiene soporte y lo expuesto, la mayor probabilidad.'}},
+ {id:'e17',lvl:'Intermedio',title:'VPR Top Threats: lo urgente de verdad',
+  goal:'Abre la pestaña <b>VPR Top Threats</b> de un scan con varios hosts y localiza qué vulnerabilidad encabeza la lista y por qué.',
+  why:'Es la vista que más se usa en un comité de riesgo: diez hallazgos, ordenados por amenaza real, con sus motivos (exploit público, KEV, actividad reciente).',
+  steps:['Abre tu Basic Network Scan de los hosts vivos.','Pestaña <b>VPR Top Threats</b>.','Lee la columna <b>Reasons</b> y haz clic en la primera fila para ver los <b>VPR Key Drivers</b>.'],
+  hints:['Si la pestaña está vacía, el scan no tiene vulnerabilidades con VPR: usa uno con más hosts.'],
+  check:()=>!!S.events.viewVPR,
+  quiz:{q:'¿En qué se diferencia VPR Top Threats de ordenar por severidad?',o:['En nada, es la misma lista','Ordena por probabilidad real de ataque (VPR), no por gravedad técnica (CVSS)','Solo muestra vulnerabilidades de Windows'],a:1,ex:'VPR combina el impacto con la inteligencia de amenazas; por eso un CVSS 8.1 puede ir por delante de un 10.'}},
+ {id:'e18',lvl:'Intermedio',title:'Valida las credenciales antes del gran scan',
+  goal:'Lanza la plantilla <b>Credential Validation</b> contra los hosts vivos con las credenciales SSH y Windows del laboratorio, y comprueba en cada host que aparece el plugin <b>141118</b>.',
+  why:'Un scan con credenciales caducadas parece «limpio» pero no ha mirado dentro. Validar primero (minutos) evita conclusiones falsas en el scan grande (horas).',
+  steps:['New Scan ▸ <b>Credential Validation</b>.','Targets: los hosts vivos. Credentials: SSH y Windows del laboratorio.','Save & Launch. En Vulnerabilities busca 141118 (válidas), 104410 (fallo) o 110723 (sin credenciales).'],
+  hints:['Credenciales: SSH <code>auditor</code> / <code>Lab2026!</code>; Windows <code>svc_nessus</code> / <code>Lab2026!</code>, dominio <code>LAB</code>.'],
+  check:()=>completed('credval').some(({r})=>r.cred.ssh==='ok'&&r.cred.win==='ok'),
+  quiz:{q:'Un scan con credenciales no encuentra nada en un servidor Windows. ¿Qué compruebas primero?',o:['Que el servidor está perfectamente parcheado','Que la autenticación funcionó (141118 frente a 104410/110723)','Que el plugin de Chrome está activado'],a:1,ex:'«Sin hallazgos» con credenciales fallidas no significa «seguro». Siempre se valida primero el acceso.'}},
+ {id:'e19',lvl:'Avanzado',title:'Active Directory: el camino al dominio',
+  goal:'Lanza un <b>Active Directory Starter Scan</b> contra <b>dc01 (192.168.56.10)</b> con la credencial Windows y el <b>Domain</b> rellenado. Abre el hallazgo de <b>Kerberoasting</b>.',
+  why:'La mayoría de los ataques graves (ransomware) acaban controlando el Directorio Activo. Sus fallos son de configuración, no de parches: no salen en un scan normal.',
+  steps:['New Scan ▸ <b>Active Directory Starter Scan</b>, target <code>192.168.56.10</code>.','Credentials ▸ Windows: usuario, contraseña y <b>Domain: LAB</b>.','Save & Launch y abre <i>Kerberoastable Privileged Accounts</i>.','Prueba a quitar el dominio: verás que no puede consultar el directorio.'],
+  hints:['Sin <b>Domain</b> el escáner no puede consultar el directorio (lo verás en el plugin 104410).'],
+  check:()=>completed('ad').some(({r})=>r.hosts.some(h=>h.ip==='192.168.56.10'&&h.items.some(i=>i.pid===900101)))&&!!S.events['plugin:900101'],
+  quiz:{q:'¿Por qué el Kerberoasting de una cuenta de Domain Admins es tan grave?',o:['Porque necesita acceso físico al servidor','Porque cualquier usuario del dominio puede pedir el ticket y romper la contraseña sin conexión','Porque borra el Directorio Activo'],a:1,ex:'No hace falta ser administrador: basta un usuario cualquiera (p. ej. tras un phishing).'}},
+ {id:'e20',lvl:'Avanzado',title:'Sale una CVE en las noticias: ¿estamos afectados?',
+  goal:'Dirección pregunta por <b>Log4Shell (CVE-2021-44228)</b>. Crea un <b>Advanced Dynamic Scan</b> con la regla <b>CVE contains CVE-2021-44228</b>, lánzalo contra los hosts vivos y responde qué equipos están afectados.',
+  why:'Es la pregunta más típica que recibirá un Risk Manager. Un scan dinámico solo ejecuta los plugins de esa CVE: tienes respuesta en minutos y no en horas.',
+  steps:['New Scan ▸ <b>Advanced Dynamic Scan</b>.','Pestaña <b>Dynamic Plugins</b>: CVE · contains · <code>CVE-2021-44228</code> (verás cuántos plugins coinciden).','Targets: hosts vivos. Para la comprobación local añade credenciales SSH.','Save & Launch y revisa Hosts.'],
+  hints:['Si la regla está vacía no coincide ningún plugin.'],
+  check:()=>completed('dynamic').some(({s,r})=>((s.settings.dyn||{}).rules||[]).some(x=>x.field==='cve'&&/2021-44228/.test(x.value))&&r.hosts.some(h=>h.items.some(i=>i.pid===156014))),
+  quiz:{q:'¿Qué ventaja tiene el scan dinámico frente a lanzar un Basic Network Scan completo?',o:['Encuentra más vulnerabilidades','Solo ejecuta lo que pide el filtro: rápido, poco ruido y respuesta concreta','No consume licencia'],a:1,ex:'Además, los plugins nuevos de esa CVE se añaden solos al volver a lanzarlo.'}},
+ {id:'e21',lvl:'Avanzado',title:'Shadow IT: IA y acceso remoto sin aprobar',
+  goal:'Lanza un <b>Find AI</b> y un <b>Remote Monitoring and Management</b> contra los hosts vivos (el segundo con credenciales Windows). Localiza la API de IA abierta y la herramienta de acceso remoto no aprobada.',
+  why:'Lo que TI no conoce no está en el inventario ni en el análisis de riesgos. IA y herramientas de acceso remoto instaladas por usuarios son hoy dos de las mayores fuentes de riesgo de gobierno.',
+  steps:['New Scan ▸ <b>Find AI</b> contra los hosts vivos ▸ Save & Launch.','New Scan ▸ <b>Remote Monitoring and Management</b> con credenciales Windows ▸ Save & Launch.','Revisa los hallazgos: ¿qué equipo, qué servicio, quién lo instaló?'],
+  hints:['La API de IA está en app01, puerto 11434. La herramienta de acceso remoto, en el puesto de RR. HH.'],
+  check:()=>completed('findai').some(({r})=>r.hosts.some(h=>h.items.some(i=>i.pid===900301)))&&completed('rmm').some(({r})=>r.hosts.some(h=>h.items.some(i=>i.pid===900401))),
+  quiz:{q:'Encuentras AnyDesk instalado por una usuaria con acceso desatendido. ¿Qué haces como Risk Manager?',o:['Nada: es software legítimo','Registrarlo como riesgo, pedir su retirada o su gestión centralizada y revisar la política de software','Desinstalarlo tú mismo en remoto sin avisar'],a:1,ex:'Es un riesgo de gobierno: se gestiona con el responsable, la política y un plazo, no a escondidas.'}},
+ {id:'e22',lvl:'Avanzado',title:'Malware: esto ya no es una vulnerabilidad',
+  goal:'Lanza un <b>Malware Scan</b> con credenciales Windows contra <b>192.168.56.70</b> y abre el hallazgo <b>Malicious Process Detection</b>.',
+  why:'Saber distinguir una vulnerabilidad (se parchea con plazo) de un compromiso activo (se responde ya) es clave para no gestionar un incidente como si fuera un ticket.',
+  steps:['New Scan ▸ <b>Malware Scan</b>, target <code>192.168.56.70</code>.','Credentials ▸ Windows del laboratorio.','Save & Launch y abre el hallazgo crítico.'],
+  hints:['Sin credenciales el scan no puede ver los procesos.'],
+  check:()=>completed('malware').some(({r})=>r.hosts.some(h=>h.items.some(i=>i.pid===900201)))&&!!S.events['plugin:900201'],
+  quiz:{q:'Nessus detecta un proceso malicioso en un puesto. ¿Siguiente paso?',o:['Abrir un ticket de parcheo con SLA de 30 días','Activar el procedimiento de respuesta a incidentes: aislar, preservar evidencias y escalar','Crear una plugin rule para ocultarlo'],a:1,ex:'Es un incidente de seguridad. Ocultarlo o tratarlo como un parche sería un error grave.'}},
+ {id:'e23',lvl:'Gestión de riesgo',title:'Cierra el ciclo: remedia y verifica',
+  goal:'En un scan con hallazgos <b>Critical</b>, usa <b>Simular parche</b> en la pestaña Remediations, <b>vuelve a lanzar el mismo scan</b> y comprueba en <b>History</b> que el crítico ha desaparecido.',
+  why:'Una vulnerabilidad no está cerrada porque sistemas diga «hecho», sino cuando un nuevo escaneo lo confirma. Es la evidencia que pide una auditoría.',
+  steps:['Abre un scan completado con críticos ▸ <b>Remediations</b>.','Pulsa <b>Simular parche</b> en una acción con severidad Critical (p. ej. Log4j o MS17-010).','<b>Launch</b> otra vez el mismo scan y espera.','Pestaña <b>History</b>: compara las barras de las dos ejecuciones.'],
+  hints:['«Simular parche» es una ayuda del laboratorio; en la vida real es el equipo de sistemas quien aplica la corrección.'],
+  check:()=>S.scans.some(s=>{const rs=s.runs.filter(r=>r.status==='completed');for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++){const a=rs[i],b=rs[j];if(a.hosts.some(h=>{const hb=b.hosts.find(x=>x.ip===h.ip);return hb&&h.items.some(it=>PLUGINS[it.pid].sev===4&&!hb.items.some(x=>x.pid===it.pid));}))return true;}return false;})&&!!S.events.viewHistory,
+  quiz:{q:'¿Qué evidencia demuestra que una vulnerabilidad está corregida?',o:['El correo del técnico diciendo que está hecho','Un nuevo escaneo (con credenciales) donde el hallazgo ya no aparece','Que haya pasado la fecha del SLA'],a:1,ex:'Se verifica con un nuevo escaneo, y mejor con credenciales para descartar falsos negativos.'}}
+);
+const MODS=[['Módulo 1 · Primeros pasos',['e0','e1','e2','e3']],['Módulo 2 · Leer los resultados',['e4','e6','e5','e7','e17']],['Módulo 3 · Escanear mejor',['e18','e8','e9','e13']],['Módulo 4 · Plantillas especializadas',['e20','e19','e21','e22']],['Módulo 5 · Gestión del riesgo',['e10','e11','e12','e16','e14','e15','e23']]];
+{const ord=MODS.flatMap(m=>m[1]);EXERCISES.sort((a,b)=>ord.indexOf(a.id)-ord.indexOf(b.id));}
+const modOf=id=>MODS.find(m=>m[1].includes(id))[0];
 function exDone(e){return!!(S.prog[e.id]&&S.quiz[e.id]);}
 function checkExercises(){
  let any=false;
@@ -1250,15 +1558,18 @@ function checkExercises(){
  if(any){save();renderTop();renderDrawer();}
 }
 let drawerOpen=false,drawerEx=null,drawerTab='ex';
-function toggleDrawer(o){drawerOpen=o;document.getElementById('drawer').classList.toggle('open',o);if(o){checkExercises();renderDrawer();}}
+function toggleDrawer(o,tab,ex){drawerOpen=o;const d=document.getElementById('drawer');d.classList.toggle('open',o);d.inert=!o;if(tab)drawerTab=tab;if(ex!=null)drawerEx=ex;if(o){checkExercises();renderDrawer();if(tab==='glossary'&&UI.gl)setTimeout(()=>{const t=document.getElementById('gl-'+UI.gl);if(t){t.scrollIntoView({block:'start'});t.style.color='var(--link)';}},40);setTimeout(()=>{const b=d.querySelector('header button');if(b)b.focus();},60);}renderCoach();}
 function renderDrawer(){
  const el=document.getElementById('drawer');if(!el)return;
  const done=EXERCISES.filter(exDone).length;
  let body='';
  if(drawerTab==='guide')body=GUIDE;
+ else if(drawerTab==='glossary'){ev('glossary');body=`<p class="muted">Explicado para quien empieza. Pulsa los botones ${ic('info','sm')} de la aplicación para ver cada término.</p><dl class="gl">${Object.entries(GLOSS).map(([k,[t,d]])=>`<dt id="gl-${k}">${t}</dt><dd>${d}</dd>`).join('')}</dl>`;}
+ else if(drawerTab==='interview')body=`<p class="muted">Preguntas típicas de una entrevista o de tu primera semana como Risk Manager. Piensa tu respuesta y después ábrela.</p><div class="iv">${INTERVIEW.map(([q,a],i)=>`<details ontoggle="if(this.open)ev('interview')"><summary>${i+1}. ${q}</summary><p>${a}</p></details>`).join('')}</div>`;
  else if(drawerEx==null){
   body=`<div class="ovprog"><span class="num"><b>${done}</b> / ${EXERCISES.length}</span><div class="meter"><i style="width:${done/EXERCISES.length*100}%"></i></div></div>
-  <div class="ex-list">${EXERCISES.map((e,i)=>`<button class="ex ${exDone(e)?'done':''}" onclick="drawerEx=${i};renderDrawer()"><span class="n">${exDone(e)?ic('check','sm'):i+1}</span><span><span class="lvl">${e.lvl}${S.prog[e.id]&&!S.quiz[e.id]?' · falta el quiz':''}</span><b>${e.title}</b></span></button>`).join('')}</div>`;
+  <div class="ex-list">${EXERCISES.map((e,i)=>{const m=modOf(e.id),first=!i||modOf(EXERCISES[i-1].id)!==m,ids=MODS.find(x=>x[0]===m)[1];
+   return(first?`<div class="mod-h">${m}<span class="num">${ids.filter(id=>exDone(EXERCISES.find(x=>x.id===id))).length}/${ids.length}</span></div>`:'')+`<button class="ex ${exDone(e)?'done':''}" onclick="drawerEx=${i};renderDrawer()"><span class="n">${exDone(e)?ic('check','sm'):i+1}</span><span><span class="lvl">${e.lvl}${S.prog[e.id]&&!S.quiz[e.id]?' · falta el quiz':''}</span><b>${e.title}</b></span></button>`;}).join('')}</div>`;
  }else{
   const e=EXERCISES[drawerEx],ok=!!S.prog[e.id],qd=!!S.quiz[e.id];
   body=`<button class="btn ghost sm" onclick="drawerEx=null;renderDrawer()">${ic('chevL','sm')}Todos los ejercicios</button>
@@ -1272,7 +1583,7 @@ function renderDrawer(){
   ${exDone(e)?`<div class="st ok" style="margin-top:12px">${ic('check','sm')}<span>Ejercicio completado</span></div>`:''}`;
  }
  el.innerHTML=`<header>${ic('book')}<h2>Entrenamiento</h2><span style="margin-left:auto"></span><button class="btn ghost sm" onclick="toggleDrawer(false)" aria-label="Cerrar">${ic('x','sm')}</button></header>
- <div class="tabs" style="padding:0 14px"><button class="tab" aria-selected="${drawerTab==='ex'}" onclick="drawerTab='ex';renderDrawer()">Ejercicios</button><button class="tab" aria-selected="${drawerTab==='guide'}" onclick="drawerTab='guide';renderDrawer()">Guía rápida</button></div><div class="db">${body}</div>`;
+ <div class="tabs" role="tablist" style="padding:0 14px"><button class="tab" role="tab" aria-selected="${drawerTab==='ex'}" onclick="drawerTab='ex';renderDrawer()">Ejercicios</button><button class="tab" role="tab" aria-selected="${drawerTab==='glossary'}" onclick="drawerTab='glossary';renderDrawer()">Glosario</button><button class="tab" role="tab" aria-selected="${drawerTab==='interview'}" onclick="drawerTab='interview';renderDrawer()">Entrevista</button><button class="tab" role="tab" aria-selected="${drawerTab==='guide'}" onclick="drawerTab='guide';renderDrawer()">Guía</button></div><div class="db" tabindex="0" aria-label="Contenido del entrenamiento">${body}</div>`;
 }
 function answer(i){const e=EXERCISES[i];const c=document.querySelector('#quiz input:checked');const fb=document.getElementById('qfb');
  if(!c){fb.innerHTML='<div class="st">Elige una respuesta.</div>';return;}
@@ -1287,9 +1598,67 @@ const GUIDE=`<h3 style="font-size:15px">Conceptos clave</h3>
 <p><b>Remote vs local</b>: remote = desde la red (banners, respuestas); local = con credenciales (paquetes, registro, archivos). Los chequeos por banner pueden dar falsos positivos por backports.</p>
 <p><b>Plugin Rules</b>: cambian severidad u ocultan resultados tras el escaneo. Úsalas con host concreto, comentario y caducidad. No afectan al .nessus.</p>
 <p><b>Policies</b>: plantillas propias reutilizables (ajustes + credenciales).</p>
-<p><b>Essentials</b>: 16 IPs, sin plantillas de Compliance, un usuario.</p>
+<p><b>Essentials</b>: 5 IPs, solo CSV y .nessus. <b>Essentials Plus</b>: 20 IPs, informes HTML y PDF, plugins en tiempo real. Ninguno tiene plantillas de Compliance ni de Web App; ambos, un usuario.</p>
+<p><b>IDs 900000+</b>: plugins inventados para el laboratorio (AD, malware, IA y acceso remoto). Los demás IDs son reales; textos y puntuaciones, representativos.</p>
 <h3 style="font-size:15px;margin-top:14px">Flujo de trabajo VM</h3><ol class="steps"><li>Descubrir activos (Host Discovery).</li><li>Evaluar (Basic/Advanced con credenciales).</li><li>Priorizar (VPR, exploit, KEV, criticidad del activo).</li><li>Remediar (Remediations, tickets con SLA).</li><li>Validar (re-escaneo, History).</li><li>Reportar (Executive Summary, CSV).</li></ol>
 <p class="muted" style="font-size:12.5px">Simulador de estudio no oficial, no afiliado a Tenable. Nessus y Tenable son marcas de sus propietarios. Datos, IDs y puntuaciones son representativos con fines formativos.</p>`;
+
+/* ===== Ayuda para quien empieza ===== */
+const GLOSS={
+ vuln:['Vulnerabilidad','Un fallo de seguridad en un programa o en una configuración que un atacante podría aprovechar. Ejemplo: un servidor web sin actualizar.'],
+ escaner:['Escáner de vulnerabilidades','Herramienta (como Nessus) que revisa los equipos de la red buscando vulnerabilidades conocidas. Detecta y prioriza; no corrige.'],
+ plugin:['Plugin','Cada una de las comprobaciones que hace Nessus. Hay más de 200.000 y cada una busca un fallo concreto. Tienen un número (Plugin ID), p. ej. 97833 = MS17-010.'],
+ scan:['Scan','Una ejecución de Nessus: qué equipos revisa (targets), con qué plantilla y con qué credenciales. Cada vez que lo lanzas queda en su History.'],
+ plantilla:['Plantilla (template)','Un scan preconfigurado para un fin: descubrir equipos, buscar vulnerabilidades, revisar Active Directory, buscar malware…'],
+ target:['Target','La IP, el rango (192.168.56.10-20), la red (192.168.56.0/24) o el nombre del equipo a escanear.'],
+ licencia:['Licencia y hosts licenciados','Essentials permite 5 IPs y Essentials Plus 20. Se cuentan los equipos distintos escaneados con plantillas de vulnerabilidades; Host Discovery y Ping-Only no cuentan.'],
+ sev:['Severidad (Severity)','Gravedad del hallazgo: Critical, High, Medium, Low o Info. Info no es un riesgo: es información de inventario (puertos, sistema operativo).'],
+ cvss:['CVSS','Puntuación de 0 a 10 de la gravedad técnica de un fallo, igual en todo el mundo. No cambia con el tiempo ni sabe si alguien lo está explotando.'],
+ vpr:['VPR (Vulnerability Priority Rating)','Puntuación de 0,1 a 10 de Tenable que añade al CVSS la inteligencia de amenazas: si hay exploit, si se está usando, desde cuándo. Cambia cada día. Sirve para decidir qué va primero.'],
+ epss:['EPSS','Probabilidad (0 a 1) de que un fallo se explote en los próximos 30 días, calculada por FIRST. Complementa a VPR.'],
+ kev:['KEV (CISA)','Catálogo público de vulnerabilidades que se sabe que se están explotando. Si un hallazgo está en KEV, va al principio de la cola.'],
+ cred:['Scan con credenciales','Le das a Nessus un usuario para entrar en los equipos. Así ve el software y los parches instalados: encuentra mucho más y con menos falsos positivos.'],
+ fp:['Falso positivo','Nessus avisa de algo que en realidad no existe (p. ej. por la versión que anuncia un servicio). Se comprueba y se documenta con una plugin rule.'],
+ regla:['Plugin rule','Regla que oculta un resultado o cambia su severidad después del escaneo. Se usa para falsos positivos y aceptaciones de riesgo, siempre con host, motivo y caducidad.'],
+ riesgo:['Aceptación de riesgo','Decisión formal de negocio de no corregir algo por ahora, con justificación, aprobador y fecha de caducidad.'],
+ remediacion:['Remediación','La acción que corrige uno o varios hallazgos (instalar un parche, cambiar una configuración). La pestaña Remediations agrupa los hallazgos por acción.'],
+ sla:['SLA de remediación','Plazo máximo para corregir según el riesgo. Ejemplo habitual: crítico explotado, 7 días; alto, 30; medio, 90.'],
+ activo:['Activo y criticidad','Cada equipo o servicio de la empresa. La criticidad mide cuánto daño haría perderlo: no es lo mismo el controlador de dominio que una impresora.'],
+ riesgoF:['Riesgo','Probabilidad × impacto. Nessus aporta la probabilidad (VPR, exploit, exposición); el impacto lo aporta el negocio (criticidad del activo y de los datos).']
+};
+function help(k){return`<button class="help" aria-label="Qué es: ${esc(GLOSS[k][0])}" title="${esc(GLOSS[k][0])}" onclick="event.stopPropagation();UI.gl='${k}';toggleDrawer(true,'glossary')">${ic('info')}</button>`;}
+const INTERVIEW=[
+ ['¿Qué diferencia hay entre CVSS y VPR, y cuál usarías para priorizar?','CVSS mide la gravedad técnica y no cambia. VPR añade la amenaza real (exploits, explotación activa, antigüedad) y cambia a diario. Para priorizar uso VPR (o EPSS y KEV) junto con la criticidad del activo; CVSS sirve como referencia y para cumplir normas que lo exigen.'],
+ ['¿Por qué escanear con credenciales?','Sin credenciales solo se ve lo expuesto en red y se deduce por banners, con falsos positivos. Con credenciales se ve el software y los parches instalados: más cobertura y más exactitud. Antes del scan grande, valido las credenciales.'],
+ ['El equipo de sistemas dice que un hallazgo es un falso positivo. ¿Qué haces?','Pido la evidencia (versión del paquete, backport del fabricante), lo compruebo con un scan con credenciales y, si se confirma, creo una plugin rule limitada a ese host con el motivo. Nunca una regla global sin revisar.'],
+ ['Negocio no puede parchear un servidor crítico hasta dentro de tres meses. ¿Cómo lo gestionas?','Como aceptación de riesgo formal: análisis del riesgo, controles compensatorios (segmentar, restringir puertos, vigilar), aprobación del responsable del activo y fecha de caducidad. En Nessus, recast o hide con caducidad y comentario con el ticket.'],
+ ['Te dan una /16 y una licencia limitada. ¿Por dónde empiezas?','Descubrimiento (no consume licencia), inventario y clasificación por criticidad. Primero identidad (AD), lo expuesto a Internet, lo que no tiene soporte y lo que trata datos sensibles. Después, ciclos periódicos con políticas fijas.'],
+ ['¿Qué métricas llevarías a un comité de dirección?','Críticos y altos abiertos y su tendencia, tiempo medio de remediación frente al SLA, porcentaje de activos escaneados con credenciales, riesgos aceptados y su caducidad, y los 10 principales por VPR en activos críticos. Pocos números, tendencia y plan.'],
+ ['Sale una vulnerabilidad grave en las noticias. ¿Cómo respondes si estáis afectados?','Scan dinámico o filtro por la CVE para saber qué activos están afectados, priorización por exposición, aviso a los responsables con plazo de emergencia, medidas temporales si no hay parche y verificación con un nuevo escaneo. Informo a dirección con datos, no con suposiciones.'],
+ ['¿Qué haces si Nessus detecta malware en un puesto?','No es un ticket de parcheo: es un incidente. Se escala a respuesta a incidentes, se aísla el equipo, se preservan evidencias y se cambian credenciales. Después, lecciones aprendidas.'],
+ ['¿Qué diferencia hay entre vulnerabilidad, amenaza y riesgo?','La vulnerabilidad es la debilidad; la amenaza, quien o lo que puede aprovecharla; el riesgo, la probabilidad de que ocurra por el impacto que tendría. Nessus encuentra vulnerabilidades y aporta datos de amenaza; el riesgo lo calculamos con el negocio.'],
+ ['¿Cómo sabes que una vulnerabilidad está realmente cerrada?','Con un nuevo escaneo, idealmente con credenciales, donde ya no aparece. La palabra del técnico o el cierre del ticket no son evidencia suficiente para una auditoría.'],
+ ['¿Qué marcos o normas relacionas con la gestión de vulnerabilidades?','ISO/IEC 27001 (control de gestión de vulnerabilidades técnicas del anexo A), ENS (medidas de gestión de vulnerabilidades y configuración), NIS2 (gestión de riesgos y de vulnerabilidades), DORA en entidades financieras y CIS Controls (control 7).'],
+ ['¿Por qué no basta con escanear una vez al año?','Cada semana aparecen vulnerabilidades nuevas y la red cambia. La gestión de vulnerabilidades es un ciclo continuo: descubrir, evaluar, priorizar, remediar, verificar e informar, con escaneos periódicos y comparables.']
+];
+function welcome(){
+ modal('Bienvenido al laboratorio',`<p>Vas a aprender a usar un escáner de vulnerabilidades <b>desde cero</b>, sin riesgo: todo es simulado, nada sale de tu navegador y puedes equivocarte las veces que quieras.</p>
+ <div class="welcome"><div class="w"><div class="ti">${ic('scanSearch')}</div><div><b>Qué es Nessus</b><p>Una herramienta que revisa los equipos de una red y te dice qué fallos de seguridad tienen y cuáles son más urgentes. No arregla nada: te dice dónde mirar.</p></div></div>
+ <div class="w"><div class="ti">${ic('server')}</div><div><b>Tu red de prácticas</b><p>Una empresa ficticia con 9 equipos en <code>192.168.56.0/24</code>: controlador de dominio, servidores web y de aplicaciones, base de datos, un puesto de RR. HH., una impresora y un NAS.</p></div></div>
+ <div class="w"><div class="ti">${ic('book')}</div><div><b>Cómo aprender</b><p>Abre <b>Entrenamiento</b> (arriba a la derecha) y sigue los ejercicios en orden. Cada uno explica el objetivo, el porqué, los pasos y pistas. Se comprueba solo y acaba con un quiz.</p></div></div>
+ <div class="w"><div class="ti">${ic('info')}</div><div><b>Si te pierdes</b><p>El recuadro <b>Siguiente paso</b> (abajo a la derecha) te dice qué toca. Los botones ${ic('info','sm')} explican cada término.</p></div></div></div>`,
+ `<button class="btn" onclick="closeModal();ev('welcome')">Explorar por mi cuenta</button><button class="btn primary" onclick="closeModal();ev('welcome');toggleDrawer(true,'ex',0)">${ic('play','sm')}Empezar el ejercicio 1</button>`,'wide');}
+let coachHidden=false;
+function renderCoach(){
+ let el=document.getElementById('coach');
+ const i=EXERCISES.findIndex(e=>!exDone(e));
+ if(drawerOpen||coachHidden||i<0||document.getElementById('modal').innerHTML){if(el)el.remove();return;}
+ if(!el){el=document.createElement('button');el.id='coach';el.className='coach';document.body.appendChild(el);}
+ const e=EXERCISES[i],pend=S.prog[e.id]&&!S.quiz[e.id];
+ el.setAttribute('aria-label','Siguiente paso: ejercicio '+(i+1)+', '+e.title);
+ el.onclick=ev2=>{if(ev2.target.closest('.x')){coachHidden=true;renderCoach();return;}toggleDrawer(true,'ex',i);};
+ el.innerHTML=`<span class="ci">${ic(pend?'check':'play')}</span><span><small>Siguiente paso · ejercicio ${i+1} de ${EXERCISES.length}</small><b>${pend?'Responde el quiz: ':''}${e.title}</b></span><span class="x" role="button" aria-label="Ocultar" title="Ocultar">${ic('x','sm')}</span>`;
+}
 
 /* ===== Datos de ejemplo e inicio ===== */
 function seed(){
@@ -1299,8 +1668,11 @@ function seed(){
 }
 function init(){
  S=load();if(!S){S=fresh();seed();save();}
+ if(!S.settings.tier)S.settings.tier='plus';if(!S.fixed)S.fixed={};
+ document.getElementById('drawer').inert=true;
  S.scans.forEach(s=>s.runs.forEach(r=>{if(r.status==='running'||r.status==='paused'){r.status='completed';r.progress=100;r.end=r.start+r.simMs;}}));
  render();checkExercises();
+ if(!S.events.welcome)welcome();
 }
 init();
 </script>
