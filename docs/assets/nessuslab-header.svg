@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="t d">
+  <title id="t">Vuln Scanner Lab</title>
+  <desc id="d">Aprende a usar un escáner de vulnerabilidades desde cero. Consola de escaneo en directo: los hosts aparecen con sus severidades, la vulnerabilidad con más VPR se ilumina y se convierte en una remediación.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c131c"/>
+      <stop offset=".55" stop-color="#12304f"/>
+      <stop offset="1" stop-color="#1f6fc5"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="10%" cy="0%" r="55%">
+      <stop offset="0" stop-color="#4a97e8" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#4a97e8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="98%" cy="100%" r="55%">
+      <stop offset="0" stop-color="#c9373d" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#c9373d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4a97e8"/>
+      <stop offset="1" stop-color="#1a4f8a"/>
+    </linearGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfe2fb"/>
+    </linearGradient>
+    <linearGradient id="senal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c9373d" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#c9373d" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="frame"><rect width="1280" height="320"/></clipPath>
+    <clipPath id="barra"><rect x="0" y="0" width="200" height="6" rx="3"/></clipPath>
+  </defs>
+
+  <style>
+    .ico { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .t1 { font: 800 74px 'Outfit','Segoe UI Variable Display','SF Pro Display',-apple-system,'Segoe UI',system-ui,sans-serif; letter-spacing: -2.5px; }
+    .t2 { font: 500 23px 'Outfit','Segoe UI Variable Text','SF Pro Text',-apple-system,'Segoe UI',system-ui,sans-serif; fill: rgba(255,255,255,.86); }
+    .t3 { font: 700 13px ui-monospace,'SF Mono','Cascadia Code',Consolas,monospace; letter-spacing: 3px; fill: #a9cdf6; }
+    .m { font: 500 12.5px ui-monospace,'SF Mono','Cascadia Code',Consolas,monospace; fill: #c9d1db; }
+    .mt { fill: #8b95a3; }
+    .ms { fill: #8fc2f5; }
+    .tk { font: 600 13px 'Outfit','Segoe UI Variable Text',-apple-system,'Segoe UI',system-ui,sans-serif; fill: #f2f5f8; }
+    .tkd { font: 500 12px 'Outfit','Segoe UI Variable Text',-apple-system,'Segoe UI',system-ui,sans-serif; fill: #8fe0b0; }
+    .chip { font: 700 9.5px 'Outfit',-apple-system,'Segoe UI',system-ui,sans-serif; letter-spacing: .8px; fill: #ffffff; }
+
+    /* La barra de progreso avanza y vuelve a empezar */
+    .prog { animation: prog 9s cubic-bezier(.23,1,.32,1) infinite; transform-box: fill-box; transform-origin: left; }
+    @keyframes prog { 0% { transform: scaleX(.05) } 60%, 100% { transform: scaleX(1) } }
+    /* Los hosts aparecen de uno en uno, como en la pestaña Hosts */
+    .h { opacity: 0; animation: host 9s cubic-bezier(.23,1,.32,1) infinite; }
+    .h1 { animation-delay: .2s } .h2 { animation-delay: .9s } .h3 { animation-delay: 1.6s } .h4 { animation-delay: 2.3s } .h5 { animation-delay: 3s }
+    @keyframes host { 0% { opacity: 0; transform: translateY(6px) } 6%, 92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+    .vivo { animation: latido 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes latido { 0% { opacity: 1 } 70% { opacity: .35 } 100% { opacity: 1 } }
+    /* La amenaza con más VPR se ilumina y después sale la remediación */
+    .brillo { opacity: 0; animation: brillo 9s ease-in-out infinite; }
+    @keyframes brillo { 0%, 42% { opacity: 0 } 50%, 92% { opacity: 1 } 100% { opacity: 0 } }
+    .ticket { opacity: 0; animation: ticket 9s cubic-bezier(.23,1,.32,1) infinite; }
+    @keyframes ticket { 0%, 56% { opacity: 0; transform: translateY(10px) } 64%, 92% { opacity: 1; transform: translateY(0) } 100% { opacity: 0 } }
+    .flota { animation: flota 7s ease-in-out infinite; transform-box: fill-box; }
+    .flota.b { animation-duration: 9s; animation-delay: -2s }
+    .flota.c { animation-duration: 8s; animation-delay: -4s }
+    @keyframes flota { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+    @media (prefers-reduced-motion: reduce) {
+      .prog, .h, .vivo, .brillo, .ticket, .flota { animation: none }
+      .h, .brillo, .ticket { opacity: 1 }
+    }
+  </style>
+
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="320" fill="url(#bg)"/>
+    <rect width="1280" height="320" fill="url(#glowA)"/>
+    <rect width="1280" height="320" fill="url(#glowB)"/>
+    <!-- Retícula sutil -->
+    <g stroke="#ffffff" stroke-opacity=".045">
+      <path d="M0 64H1280M0 128H1280M0 192H1280M0 256H1280"/>
+      <path d="M128 0V320M256 0V320M384 0V320M512 0V320M640 0V320M768 0V320M896 0V320M1024 0V320M1152 0V320"/>
+    </g>
+
+    <!-- Marca: icono scan-search de Lucide -->
+    <g transform="translate(64 56)">
+      <rect width="56" height="56" rx="16" fill="url(#mark)"/>
+      <g transform="translate(14 14) scale(1.17)" class="ico">
+        <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/>
+      </g>
+      <text x="74" y="22" class="t3">SIMULADOR · ESSENTIALS PLUS 10.X</text>
+      <text x="74" y="44" class="t3" fill-opacity=".7" style="letter-spacing:2px">RISK MANAGER · LOCAL-FIRST</text>
+    </g>
+    <text x="60" y="192" class="t1" fill="url(#title)">Vuln Scanner Lab</text>
+    <text x="64" y="236" class="t2">Aprende a usar Nessus desde cero,</text>
+    <text x="64" y="266" class="t2">antes de tu primer día como Risk Manager.</text>
+
+    <!-- Consola de escaneo -->
+    <g transform="translate(724 40)">
+      <rect width="500" height="244" rx="18" fill="#10161e" stroke="#ffffff" stroke-opacity=".08"/>
+      <rect x="0" y="0" width="500" height="34" rx="18" fill="#ffffff" fill-opacity=".03"/>
+      <circle cx="20" cy="17" r="4.5" fill="#4a97e8" class="vivo"/>
+      <text x="34" y="21" class="m mt" style="font-size:11px;letter-spacing:1.5px">BASIC NETWORK SCAN · RUNNING</text>
+      <g transform="translate(282 14)">
+        <rect width="200" height="6" rx="3" fill="#ffffff" fill-opacity=".08"/>
+        <g clip-path="url(#barra)"><rect class="prog" width="200" height="6" rx="3" fill="#4a97e8"/></g>
+      </g>
+
+      <!-- Hosts con su barra de severidades: crítico, alto, medio, bajo -->
+      <g class="h h1" transform="translate(18 56)">
+        <text class="m" y="11"><tspan class="ms">192.168.56.10</tspan><tspan x="118" class="mt">dc01</tspan></text>
+        <g transform="translate(210 0)"><rect width="34" height="14" rx="3" fill="#91243e"/><rect x="36" width="28" height="14" rx="3" fill="#c9373d"/><rect x="66" width="58" height="14" rx="3" fill="#f18c43"/><rect x="126" width="20" height="14" rx="3" fill="#f8c851"/></g>
+      </g>
+      <g class="h h2" transform="translate(18 80)">
+        <text class="m" y="11"><tspan class="ms">192.168.56.20</tspan><tspan x="118" class="mt">fs-legacy</tspan></text>
+        <g transform="translate(210 0)"><rect width="62" height="14" rx="3" fill="#91243e"/><rect x="64" width="40" height="14" rx="3" fill="#c9373d"/><rect x="106" width="44" height="14" rx="3" fill="#f18c43"/></g>
+      </g>
+      <g class="h h3" transform="translate(18 104)">
+        <text class="m" y="11"><tspan class="ms">192.168.56.30</tspan><tspan x="118" class="mt">web01</tspan></text>
+        <g transform="translate(210 0)"><rect width="30" height="14" rx="3" fill="#91243e"/><rect x="32" width="22" height="14" rx="3" fill="#c9373d"/><rect x="56" width="76" height="14" rx="3" fill="#f18c43"/><rect x="134" width="34" height="14" rx="3" fill="#f8c851"/></g>
+      </g>
+      <g class="h h4" transform="translate(18 128)">
+        <text class="m" y="11"><tspan class="ms">192.168.56.40</tspan><tspan x="118" class="mt">app01</tspan></text>
+        <g transform="translate(210 0)"><rect width="44" height="14" rx="3" fill="#91243e"/><rect x="46" width="28" height="14" rx="3" fill="#c9373d"/><rect x="76" width="52" height="14" rx="3" fill="#f18c43"/></g>
+      </g>
+      <g class="h h5" transform="translate(18 152)">
+        <text class="m" y="11"><tspan class="ms">192.168.56.70</tspan><tspan x="118" class="mt">ws-rrhh-01</tspan></text>
+        <g transform="translate(210 0)"><rect width="26" height="14" rx="3" fill="#c9373d"/><rect x="28" width="64" height="14" rx="3" fill="#f18c43"/><rect x="94" width="30" height="14" rx="3" fill="#f8c851"/></g>
+      </g>
+
+      <!-- La amenaza con más VPR -->
+      <g class="brillo">
+        <rect x="0" y="178" width="500" height="26" fill="url(#senal)"/>
+        <rect x="0" y="178" width="3" height="26" fill="#c9373d"/>
+        <rect x="18" y="183" width="34" height="16" rx="4" fill="#91243e"/>
+        <text x="35" y="195" class="chip" text-anchor="middle" style="font-size:11px">9.9</text>
+        <text class="m" x="62" y="195" style="fill:#f2f5f8">Apache Log4Shell RCE · 192.168.56.40:8080</text>
+        <rect x="412" y="184" width="70" height="15" rx="7.5" fill="#c9373d"/>
+        <text x="447" y="195" class="chip" text-anchor="middle">VPR TOP 1</text>
+      </g>
+      <!-- La remediación que sale de ella -->
+      <g class="ticket">
+        <rect x="12" y="210" width="476" height="24" rx="8" fill="#ffffff" fill-opacity=".06"/>
+        <text x="24" y="227" class="m mt" style="font-size:11px">REM-01</text>
+        <rect x="76" y="215" width="46" height="14" rx="7" fill="#4a97e8" fill-opacity=".22"/>
+        <text x="99" y="226" class="chip" text-anchor="middle" style="fill:#8fc2f5">7 DÍAS</text>
+        <text x="132" y="227" class="tk">Upgrade Log4j to 2.17.1</text>
+        <text x="314" y="227" class="tkd">Verificar con un nuevo scan</text>
+      </g>
+    </g>
+
+    <!-- Iconos de Lucide flotando: radar, shield-check, key-round -->
+    <g transform="translate(574 60)" opacity=".5"><g class="flota">
+      <g class="ico" style="stroke-width:1.75"><path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/><path d="m13.41 10.59 5.66-5.66"/></g>
+    </g></g>
+    <g transform="translate(640 214)" opacity=".42"><g class="flota b">
+      <g class="ico" style="stroke-width:1.75"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></g>
+    </g></g>
+    <g transform="translate(676 104)" opacity=".38"><g class="flota c">
+      <g class="ico" style="stroke-width:1.75"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></g>
+    </g></g>
+  </g>
+</svg>

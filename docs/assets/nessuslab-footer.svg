@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="170" viewBox="0 0 1280 170" role="img" aria-labelledby="t">
+  <title id="t">Vuln Scanner Lab · primero lo que de verdad importa</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0c131c"/><stop offset=".5" stop-color="#12304f"/><stop offset="1" stop-color="#1a4f8a"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a97e8"/><stop offset="1" stop-color="#1a4f8a"/></linearGradient>
+    <clipPath id="frame"><rect width="1280" height="170"/></clipPath>
+  </defs>
+  <style>
+    .ico { fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .t { font: 600 18px 'Outfit','Segoe UI Variable Text','SF Pro Text',-apple-system,'Segoe UI',system-ui,sans-serif; fill: rgba(255,255,255,.92); }
+    .s { font: 700 11px ui-monospace,'SF Mono','Cascadia Code',Consolas,monospace; letter-spacing: 3px; fill: #a9cdf6; }
+    .r { font: 500 12px ui-monospace,'SF Mono','Cascadia Code',Consolas,monospace; fill: #ffffff; fill-opacity: .16; }
+    .r .x { fill: #ff8f94; fill-opacity: .9; }
+    .w1 { animation: drift 26s linear infinite; }
+    .w2 { animation: drift 34s linear infinite reverse; }
+    @keyframes drift { to { transform: translateX(-640px) } }
+    @media (prefers-reduced-motion: reduce) { .w1, .w2 { animation: none } }
+  </style>
+  <g clip-path="url(#frame)">
+    <rect width="1280" height="170" fill="url(#bg)"/>
+    <!-- Salida de plugins que pasa; de vez en cuando, lo urgente -->
+    <g class="w1">
+      <text class="r" y="34">11219 Nessus SYN scanner 445/tcp · 22964 Service Detection · 10287 Traceroute · <tspan class="x">97833 MS17-010 · VPR 9.7</tspan> · 45590 CPE · 25220 TCP timestamps · 11219 Nessus SYN scanner 445/tcp · 22964 Service Detection · 10287 Traceroute · <tspan class="x">97833 MS17-010 · VPR 9.7</tspan> · 45590 CPE · 25220 TCP timestamps</text>
+    </g>
+    <g class="w2">
+      <text class="r" y="150" x="-320">141118 Valid Credentials Provided · 117887 OS Security Patch Assessment · <tspan class="x">140657 Zerologon · VPR 9.5</tspan> · 19506 Nessus Scan Information · 10180 Ping · 141118 Valid Credentials Provided · 117887 OS Security Patch Assessment · <tspan class="x">140657 Zerologon · VPR 9.5</tspan> · 19506 Nessus Scan Information · 10180 Ping</text>
+    </g>
+    <g transform="translate(420 64)">
+      <rect width="42" height="42" rx="12" fill="url(#mark)"/>
+      <g transform="translate(9 9)" class="ico">
+        <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/><path d="m16 16-1.9-1.9"/>
+      </g>
+      <text x="58" y="18" class="t">Vuln Scanner Lab · primero lo que de verdad importa</text>
+      <text x="58" y="38" class="s">YOANDY RAMÍREZ DELGADO · 2026</text>
+    </g>
+  </g>
+</svg>
