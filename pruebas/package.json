@@ -1,0 +1,7 @@
+{
+  "name": "nessus-lab-pruebas",
+  "private": true,
+  "description": "Prueba e2e del laboratorio: recorre los 24 ejercicios, vigila consola y red y pasa axe-core.",
+  "scripts": { "test": "node e2e.js" },
+  "devDependencies": { "axe-core": "4.10.2", "playwright": "1.63.0" }
+}
