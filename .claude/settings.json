@@ -2,9 +2,17 @@
   "extraKnownMarketplaces": {
     "egm": {
       "source": { "source": "github", "repo": "google/elephant-goldfish-model" }
+    },
+    "heydamir": {
+      "source": { "source": "github", "repo": "heydamir/unslop" }
+    },
+    "humanizer": {
+      "source": { "source": "github", "repo": "blader/humanizer" }
     }
   },
   "enabledPlugins": {
-    "egm@egm": true
+    "egm@egm": true,
+    "unslop@heydamir": true,
+    "humanizer@humanizer": true
   }
 }
