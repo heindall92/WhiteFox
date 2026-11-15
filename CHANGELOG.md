@@ -1,5 +1,17 @@
 # Cambios
 
+## 2.3.0 · noviembre de 2026
+
+- En español, todo en español. La parte imitada de Nessus también: menús, botones, pestañas, tablas, plantillas, severidades, Configuración, ventanas y avisos. Los 74 plugins tienen nombre, sinopsis, descripción, solución y acción de remediación en español, y la salida del escáner se traduce línea a línea. En inglés se ve el texto original.
+- El contenido didáctico usa los mismos nombres que los botones («pulsa Guardar y lanzar», «la pestaña Equipos»). En la prosa, «scan» pasa a «escaneo» y «host» a «equipo».
+- La prueba de idioma vigila los dos sentidos: falla si queda español con la interfaz en inglés o inglés con la interfaz en español. Los únicos textos iguales en los dos idiomas son nombres propios (equipos, sistemas operativos, productos), revisados en `pruebas/idioma-iguales.json`.
+- Ajustes al estilo de Apple: control segmentado con el texto centrado y una pastilla que se desliza a la opción elegida, e interruptor para el modo oscuro.
+- Perfil editable en Configuración ▸ Mi cuenta: nombre, usuario, correo y puesto, con validación. El avatar y el usuario de la barra superior salen de ahí, y al pulsarlos se abre Mi cuenta.
+- Recorridos guiados: «Atrás» funcionaba mal. Volvía al paso anterior, pero si ese paso ya estaba hecho el recorrido avanzaba solo otra vez. Ahora se queda en el paso y muestra «Siguiente».
+- Las tarjetas de Recorridos guiados alinean sus botones abajo.
+- Más separación entre «Entrenamiento» y el selector de idioma.
+- Fechas en español («Hoy a las 13:46», «14 de noviembre a las 16:53»).
+
 ## 2.2.1 · noviembre de 2026
 
 - Licencia: «Todos los derechos reservados» a nombre de Yoandy Ramírez Delgado, en `LICENSE` (en español y en inglés). Sin licencia abierta.

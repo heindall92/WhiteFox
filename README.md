@@ -10,7 +10,7 @@
 
 <p align="center">
   <img alt="Licencia: todos los derechos reservados" src="https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-1A4F8A?style=flat"/>
-  <img alt="Versión 2.2.1" src="https://img.shields.io/badge/versi%C3%B3n-2.2.1-4A97E8?style=flat"/>
+  <img alt="Versión 2.3.0" src="https://img.shields.io/badge/versi%C3%B3n-2.3.0-4A97E8?style=flat"/>
   <img alt="Idiomas ES y EN" src="https://img.shields.io/badge/idiomas-ES%20%C2%B7%20EN-7C4DFF?style=flat"/>
   <img alt="32 ejercicios" src="https://img.shields.io/badge/ejercicios-32-7C4DFF?style=flat"/>
   <img alt="Manual de 12 capítulos" src="https://img.shields.io/badge/manual-12%20cap%C3%ADtulos-4A97E8?style=flat"/>
@@ -102,6 +102,13 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 ---
 
 ## <img src="docs/assets/icons/sparkles.svg" width="20" height="20" valign="middle"/> Novedades
+
+### 2.3.0 · noviembre de 2026 · Todo en tu idioma
+
+- En español no queda nada en inglés: también la interfaz de Nessus, los 74 plugins y la salida del escáner. En inglés se ve el original.
+- La prueba de idioma vigila los dos sentidos en unas 1.400 pantallas.
+- Ajustes al estilo de Apple (segmentado e interruptor), perfil editable en Mi cuenta y botones alineados en Recorridos guiados.
+- Se corrige «Atrás» en los recorridos guiados.
 
 ### 2.2.0 · noviembre de 2026 · En inglés y mejor en el móvil
 
@@ -315,7 +322,7 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 
 ## <img src="docs/assets/icons/flask-conical.svg" width="20" height="20" valign="middle"/> Pruebas
 
-`pruebas/e2e.js` abre el laboratorio en Chromium y hace 116 comprobaciones:
+`pruebas/e2e.js` abre el laboratorio en Chromium y hace 127 comprobaciones:
 
 - completa los 32 ejercicios usando la aplicación, responde un quiz (mal y bien) y ordena la cola de remediación con las flechas;
 - recorre los 6 recorridos guiados de principio a fin con un conductor que pulsa o rellena solo lo que señala cada paso, y abre los 12 capítulos del manual;
@@ -323,10 +330,10 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 - comprueba los límites de las dos licencias, el scan dinámico, AD sin dominio, el ciclo de parche y verificación y las descargas;
 - comprueba el cambio de idioma en vivo, que se guarda, que restablecer no mezcla idiomas y que volver a español deja el contenido original;
 - comprueba la barra de pestañas y la hoja «Más» en el móvil, los estados vacíos y que no hay desbordamiento a 820, 1100 y 1440 px;
-- pasa axe-core (WCAG 2.2 AA) 35 veces, también en inglés, en claro y en oscuro;
+- pasa axe-core (WCAG 2.2 AA) 36 veces, también en inglés, en claro y en oscuro;
 - falla si hay errores de consola, peticiones externas o desplazamiento horizontal a 390 px.
 
-`pruebas/idioma.js` (`npm run idioma`) recorre unas 700 pantallas en español y en inglés. Falla si con la interfaz en inglés queda un texto en español: busca tildes, ¿¡ y palabras frecuentes, y compara los textos que salen idénticos en los dos idiomas. Los idénticos legítimos, que son la parte imitada de Nessus, están en `pruebas/idioma-iguales.json`.
+`pruebas/idioma.js` (`npm run idioma`) recorre unas 1.400 pantallas en español y en inglés. Falla si con la interfaz en inglés queda un texto en español o con la interfaz en español queda uno en inglés: busca tildes, ¿¡ y palabras frecuentes, y compara los textos que salen idénticos en los dos idiomas. Los idénticos legítimos, que son la parte imitada de Nessus, están en `pruebas/idioma-iguales.json`.
 
 ```bash
 cd pruebas
