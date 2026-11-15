@@ -105,7 +105,7 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 ### 2.1.0 · noviembre de 2026 · WhiteFox: aprender haciendo
 
 - **Barra superior con «?» y Ajustes**: ayuda (manual, recorridos, glosario, atajos) y ajustes del laboratorio (tema, velocidad, licencia) a un clic.
-- **Se llama WhiteFox.** Nuevo nombre, nuevo logo (el icono paw-print de Lucide) y nuevo título en la portada: «WhiteFox · Aprende a escanear, priorizar y decidir». El repositorio sigue en `heindall92/nessus-lab`.
+- **Se llama WhiteFox.** Nuevo nombre, nuevo logo (el icono paw-print de Lucide) y nuevo título en la portada: «WhiteFox · Aprende a escanear, priorizar y decidir». El repositorio pasa a ser `heindall92/WhiteFox` (las direcciones antiguas redirigen).
 - **Manual en la barra lateral** (Aprender ▸ Manual, o la tecla `?`). Son 12 capítulos, de «La consola de un vistazo» a «Policies y programación». Cada uno trae la imagen numerada de la pantalla real, los pasos con esos mismos números, los errores típicos y un recuadro **«Qué le dirías a dirección»**. Las imágenes se generan desde la propia aplicación (`npm run manual`), así que no se quedan viejas, y se amplían con un clic.
 - **Recorridos guiados.** Oscurecen la pantalla, señalan el botón real y avanzan cuando haces la acción: la consola en 60 segundos, tu primer scan, leer los resultados, credenciales, una Plugin Rule y remediar y verificar. Si te sales, te ofrecen volver. Cada ejercicio tiene **Muéstrame dónde** y **Ver en el manual**.
 - **8 ejercicios nuevos** (32 en 7 módulos):
@@ -334,7 +334,7 @@ GitHub Actions ejecuta lo mismo en cada push y en cada PR (`.github/workflows/pr
 ## <img src="docs/assets/icons/folder-tree.svg" width="20" height="20" valign="middle"/> Estructura
 
 ```
-whitefox/                         (repositorio nessus-lab)
+WhiteFox/
 ├── 🌐 index.html                 El laboratorio completo (HTML, CSS, JS e imágenes en un archivo)
 ├── 🏔️ hero/                      Estilos, script e incrustación de la portada
 ├── 📖 manual/img/                Las 12 imágenes del manual en WebP (las incrusta npm run manual)
