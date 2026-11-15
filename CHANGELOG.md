@@ -1,5 +1,21 @@
 # Cambios
 
+## 2.1.0 · noviembre de 2026
+
+- **El laboratorio se llama WhiteFox.** Logo con el icono paw-print de Lucide (no hay zorro en Lucide) y portada con el título «WhiteFox · Aprende a escanear, priorizar y decidir».
+- **Manual** en la barra lateral (Aprender ▸ Manual, o la tecla `?`): 12 capítulos con una imagen numerada de la pantalla real, los pasos, los errores típicos y «Qué le dirías a dirección». Las imágenes se generan desde la propia aplicación (`npm run manual`) y se amplían con un clic.
+- **Recorridos guiados** (Aprender ▸ Recorridos guiados): 6 recorridos que señalan el botón real y avanzan cuando haces la acción. Botón «Muéstrame dónde» en los ejercicios y «Recorrido de 60 s» en la bienvenida.
+- **8 ejercicios nuevos** (32 en 7 módulos): puertos no estándar, Audit Trail, credenciales que fallan, Accuracy, pruebas web, familias de plugins, ordenar la cola de remediación (pregunta de arrastrar) y un caso final de una semana.
+- **Ruta**: tiempo estimado por módulo, módulo técnico opcional para el perfil de riesgo, «Lo que ya sabes» al cerrar un módulo y pistas que se abren solas tras dos fallos.
+- **Fluidez**: transición entre vistas (View Transitions), entrada coreografiada, esqueletos mientras un scan está en marcha, avisos apilados y píldora en la barra lateral. Con «reducir movimiento», solo fundidos.
+- **Portada** sin el interruptor de tema (ya está en la barra superior) y con el zorro entero también en el móvil y la tableta.
+- **README** con un banner como el de Blue-Jr (pata de cristal y ondas; logo con el icono paw-print de Lucide).
+- **Barra superior** con dos menús nuevos: **«?»** (manual, recorridos, la consola en 60 segundos, glosario, cómo funciona y atajos de teclado) y **Ajustes** (tema, velocidad de simulación, licencia del laboratorio, bienvenida, más ajustes y restablecer). `Esc` cierra el menú y devuelve el foco a su botón. En el móvil el botón de tema se queda dentro de Ajustes.
+- **Portada** con un zorro ártico sobre la nieve (WebP de 35 KB incrustado; la anterior pesaba unos 84 KB). El encuadre deja cielo sobre las orejas y la roca entera desde 1100 px.
+- **Rendimiento**: durante un scan la vista ya no se redibuja 4 veces por segundo, solo cuando aparece un host.
+- Se corrige: las pestañas de resultados se partían en varias líneas y el icono de ayuda de la licencia se salía de su sitio.
+- Diseño revisado con el método Elephant-Goldfish: `docs/designs/2.1-pedagogia.md`.
+
 ## 2.0.0 · noviembre de 2026
 
 - Simula Nessus Essentials Plus (20 IPs, informes HTML y PDF) y permite cambiar a Essentials (5 IPs, solo CSV y `.nessus`). La licencia cuenta hosts distintos.

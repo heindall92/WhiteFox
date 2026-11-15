@@ -9,7 +9,7 @@ function vHero(){
   :nx?`<button class="btn primary lg" onclick="toggleDrawer(true,'ex',${i})">${ic('play','sm')}Continuar con el ejercicio ${i+1}</button>`
   :`<button class="btn primary lg" onclick="toggleDrawer(true,'ex')">${ic('badge','sm')}Repasar los ejercicios</button>`;
  const words=(t,from)=>t.split(' ').map((w,k)=>heroPlayed?esc(w):`<span class="w"><span style="--i:${from+k}">${esc(w)}</span></span>`).join(' ');
- const l1='Escáner de vulnerabilidades',l2='Vuln Scanner Lab';heroPlayed=true;
+ const l1='WhiteFox',l2='Aprende a escanear, priorizar y decidir';heroPlayed=true;
  const runs=S.scans.flatMap(s=>s.runs.filter(r=>r.status==='completed'));
  const last=runs.sort((a,b)=>(b.end||0)-(a.end||0))[0];
  const crit=last?effItems(last).filter(x=>x.sev===4).length:0;
@@ -17,7 +17,6 @@ function vHero(){
  const stat=(icon,t,v,c,extra='')=>`<div class="hstat"><span class="si" aria-hidden="true">${ic(icon)}</span><div style="min-width:0;flex:1"><p class="st-t">${t}</p><p class="st-v">${v}</p><p class="st-c">${c}</p>${extra}</div></div>`;
  return`<section class="hero" aria-labelledby="hero-t">
   <div class="hero-art" role="img" aria-label="Persona en la cima de una montaña sobre un mar de nubes al amanecer" style="background-image:url('${HERO_IMG}')"></div>
-  <div class="hero-tools" role="group" aria-label="Tema"><button aria-pressed="${S.theme!=='dark'}" aria-label="Tema claro" title="Tema claro" onclick="if(S.theme==='dark')toggleTheme()">${ic('sun','sm')}</button><button aria-pressed="${S.theme==='dark'}" aria-label="Tema oscuro" title="Tema oscuro" onclick="if(S.theme!=='dark')toggleTheme()">${ic('moon','sm')}</button></div>
   <div class="hero-txt">
    <p class="eyebrow">${ic('radar','sm')}Laboratorio de gestión de vulnerabilidades · 192.168.56.0/24</p>
    <h1 id="hero-t" aria-label="${l1}. ${l2}"><span aria-hidden="true"><span class="l1">${words(l1,0)}</span><span class="l2">${words(l2,l1.split(' ').length)}</span></span></h1>
