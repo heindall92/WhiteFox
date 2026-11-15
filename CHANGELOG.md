@@ -1,5 +1,10 @@
 # Cambios
 
+## 2.3.4 · noviembre de 2026
+
+- La práctica del ejercicio 7 nunca se marcaba en español. El filtro «Exploit disponible · es igual a · sí» devolvía siempre una lista vacía: la opción no tenía valor propio y, al traducir «true» por «sí», el navegador tomaba «sí» como valor. Pasaba lo mismo con las familias de plugins («Servidores web» frente a «Web Servers»). Ahora cada opción lleva su valor fijo y la traducción solo cambia el texto.
+- La condición del ejercicio 7 decía «Cumplir: All»; ahora, «Cumplir: Todas».
+
 ## 2.3.3 · noviembre de 2026
 
 - Algunas prácticas no se marcaban aunque se hubieran hecho:
