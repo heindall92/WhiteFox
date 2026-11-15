@@ -10,7 +10,7 @@
 
 <p align="center">
   <img alt="Licencia: todos los derechos reservados" src="https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-1A4F8A?style=flat"/>
-  <img alt="Versión 2.3.3" src="https://img.shields.io/badge/versi%C3%B3n-2.3.3-4A97E8?style=flat"/>
+  <img alt="Versión 2.3.4" src="https://img.shields.io/badge/versi%C3%B3n-2.3.4-4A97E8?style=flat"/>
   <img alt="Idiomas ES y EN" src="https://img.shields.io/badge/idiomas-ES%20%C2%B7%20EN-7C4DFF?style=flat"/>
   <img alt="32 ejercicios" src="https://img.shields.io/badge/ejercicios-32-7C4DFF?style=flat"/>
   <img alt="Manual de 12 capítulos" src="https://img.shields.io/badge/manual-12%20cap%C3%ADtulos-4A97E8?style=flat"/>
@@ -103,11 +103,15 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 
 ## <img src="docs/assets/icons/sparkles.svg" width="20" height="20" valign="middle"/> Novedades
 
+### 2.3.4 · noviembre de 2026 · El filtro funciona en español
+
+- En español, el filtro «Exploit disponible: sí» no encontraba nada y la práctica del ejercicio 7 no se marcaba. Lo mismo con el filtro por familia. Corregido.
+
 ### 2.3.3 · noviembre de 2026 · Cada ejercicio dice dónde se hace y qué le falta
 
 - Recuadro «Dónde se hace» en cada ejercicio: escaneo, equipos y pantalla, si estás en el sitio correcto y un botón «Llévame allí» o «Crear el escaneo» con los objetivos ya puestos.
 - «Desagrupar» va junto a «Filtro», y en pantallas anchas el panel de Entrenamiento empuja el contenido en vez de taparlo.
-- Los ejercicios 1, 4, 7 y 8 no se marcaban aunque se hubieran hecho: la bienvenida solo contaba cerrada con sus botones, el 4 exigía además chocar con el aviso de licencia, en el 7 el filtro «Exploit disponible: sí» no funcionaba en español y el 8 exigía desagrupar antes de ordenar. Corregido.
+- Los ejercicios 1, 4 y 8 no se marcaban aunque se hubieran hecho: la bienvenida solo contaba cerrada con sus botones, el 4 exigía además chocar con el aviso de licencia y el 8 exigía desagrupar antes de ordenar. Corregido.
 - Las 15 prácticas con varias condiciones muestran la lista de lo que piden, con ✓ en lo hecho, y hay un botón «Comprobar ahora».
 - El botón «Agrupar / Desagrupar» vuelve a notarse en español: la tabla agrupada forma otra vez los grupos SSL, SSH y Windows (15 filas, como en inglés).
 
