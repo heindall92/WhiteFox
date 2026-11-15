@@ -81,7 +81,7 @@ async function axe(page, label) {
       // Barra superior: menús «?» y Ajustes
       await page.click('[data-tour=top-m-ajustes]');
       await page.click('#m-ajustes .seg button:has-text("Rápida")');
-      await page.click('#m-ajustes .seg button:has-text("Oscuro")');
+      await page.click('#m-ajustes .sw');
       ok(await page.evaluate(() => S.speed === 4 && S.theme === 'dark' && document.getElementById('m-ajustes').classList.contains('open')), 'Ajustes cambia velocidad y tema sin cerrarse');
       await axe(page, 'menú Ajustes abierto');
       await page.keyboard.press('Escape');
@@ -94,13 +94,13 @@ async function axe(page, label) {
       await page.evaluate(() => closeModal());
 
       // Módulo 1
-      await page.click('.topnav button:has-text("Settings")');
+      await page.click('.topnav button:has-text("Configuración")');
       await page.waitForTimeout(200);
       ok(await page.isVisible('text=Nessus Essentials Plus'), 'About muestra Essentials Plus');
       await page.screenshot({ path: `${SHOTS}/${vp.n}-03-about.png`, fullPage: true });
       await axe(page, 'Settings › About');
-      await page.click('.topnav button:has-text("Scans")');
-      await page.click('text=New Scan');
+      await page.click('.topnav button:has-text("Escaneos")');
+      await page.click('text=Nuevo escaneo');
       await page.waitForTimeout(200);
       ok(await page.locator('.tcard:not(.locked)').count() === 11, '11 plantillas disponibles en Essentials Plus');
       ok(await page.locator('.tcard.locked').count() === 17, '17 plantillas bloqueadas (Compliance, Web App, Expert, Manager)');
@@ -118,7 +118,7 @@ async function axe(page, label) {
       await page.waitForTimeout(200);
       await page.screenshot({ path: `${SHOTS}/${vp.n}-05-vulnerabilities.png`, fullPage: true });
       await axe(page, 'Vulnerabilities');
-      await page.click('.tab:has-text("VPR Top Threats")');
+      await page.click('.tab:has-text("Principales amenazas VPR")');
       await page.waitForTimeout(200);
       const vprRows = await page.locator('.results table.t tbody tr').count();
       ok(vprRows === 10, `VPR Top Threats muestra 10 filas (${vprRows})`);
@@ -142,8 +142,8 @@ async function axe(page, label) {
       // Módulo 4: plantillas especializadas
       await page.evaluate(() => { S.view.mode = 'scan'; newDraft('dynamic'); UI.draft.top = 'dynamic'; UI.draft.settings.dyn.rules[0].value = 'CVE-2021-44228'; render(); });
       await page.waitForTimeout(200);
-      const matchTxt = await page.locator('.st:has-text("plugins match")').innerText();
-      ok(/\b2\b plugins match/.test(matchTxt), `el filtro dinámico encuentra los 2 plugins de Log4Shell: «${matchTxt.slice(0, 40)}»`);
+      const matchTxt = await page.locator('.st:has-text("plugins cumplen")').innerText();
+      ok(/\b2\b plugins cumplen/.test(matchTxt), `el filtro dinámico encuentra los 2 plugins de Log4Shell: «${matchTxt.slice(0, 40)}»`);
       await page.screenshot({ path: `${SHOTS}/${vp.n}-07-dynamic.png`, fullPage: true });
       await axe(page, 'editor Advanced Dynamic Scan');
       const dynId = await page.evaluate(L => mk('dynamic', 'Log4Shell', L, { creds: true, dyn: { match: 'all', rules: [{ field: 'cve', op: 'contains', value: 'CVE-2021-44228' }] } }), LIVE);
@@ -206,7 +206,7 @@ async function axe(page, label) {
       await page.evaluate(() => mk('basic', 'Joyas de la corona', '192.168.56.10,192.168.56.20,192.168.56.40'));
       await waitIdle();
       await page.evaluate(() => { mk('basic', 'Tres más', '192.168.56.30,192.168.56.50,192.168.56.60'); });
-      ok(await page.isVisible('text=Licensed host limit reached'), 'Essentials cuenta hosts distintos: 3 + 3 nuevos supera 5');
+      ok(await page.isVisible('text=Límite de equipos con licencia alcanzado'), 'Essentials cuenta hosts distintos: 3 + 3 nuevos supera 5');
       await page.evaluate(() => closeModal());
       await page.evaluate(() => { const s = S.scans[S.scans.length - 2]; reportModal(s.id); });
       ok(await page.evaluate(() => document.querySelector('#rp-f option[value=html]').disabled && document.querySelector('#rp-f').value === 'csv'), 'en Essentials el informe HTML/PDF está bloqueado y queda CSV');
@@ -218,7 +218,7 @@ async function axe(page, label) {
       await page.evaluate(() => mk('basic', 'Todos los puertos db01', '192.168.56.60', { set: { discovery: 'all' } }));
       await waitIdle();
       await page.evaluate(() => { const s = S.scans.find(x => x.name === 'Hosts vivos'); auditTrail(s.id); document.getElementById('at-p').value = '187099'; document.getElementById('at-h').value = '192.168.56.70'; auditRun(s.id); });
-      ok(await page.isVisible('text=Local check skipped'), 'Audit Trail explica por qué Chrome no aparece sin credenciales');
+      ok(await page.isVisible('text=Comprobación local omitida'), 'Audit Trail explica por qué Chrome no aparece sin credenciales');
       await page.evaluate(() => closeModal());
       const malId = await page.evaluate(() => mk('basic', 'Credenciales mal', '192.168.56.30', { ssh: { user: 'auditor', pass: 'equivocada' } }));
       await waitIdle();
@@ -292,6 +292,18 @@ async function axe(page, label) {
         await page.evaluate(() => { closeModal(); UI.menu = null; });
       }
       await waitIdle();
+      // «Atrás» en un recorrido vuelve al paso anterior aunque ya esté cumplido, y se queda ahí
+      await page.evaluate(() => { closeModal(); tourStart('primer'); });
+      await page.waitForTimeout(500);
+      await page.click('#tour .tour-bub'); await page.evaluate(() => go({ top: 'scans', page: 'templates', mode: 'scan', ttab: 'scanner' }));
+      await page.waitForFunction(() => TOUR && TOUR.i >= 1, null, { timeout: 5000 });
+      const iAntes = await page.evaluate(() => TOUR.i);
+      await page.click('#tour button:has-text("Atrás")');
+      await page.waitForTimeout(1500);
+      ok(await page.evaluate(n => TOUR && TOUR.i === n - 1 && !!document.querySelector('#tour .tb-f .btn.primary'), iAntes), '«Atrás» en un recorrido vuelve al paso anterior y no salta solo hacia delante');
+      await page.click('#tour .tb-f .btn.primary'); await page.waitForTimeout(400);
+      ok(await page.evaluate(n => TOUR && TOUR.i >= n, iAntes), 'tras volver atrás, «Siguiente» continúa el recorrido');
+      await page.evaluate(() => tourEnd(false));
 
       // 2.1 · Manual: 12 capítulos con su imagen
       await page.evaluate(() => { toggleDrawer(false); go({ top: 'scans', page: 'scans', folder: 'my' }); });
@@ -383,8 +395,8 @@ async function axe(page, label) {
       ok(await page.isVisible('main .seg button[lang=en]'), 'Settings ▸ Simulador también tiene el selector de idioma');
       // Estados vacíos con explicación y acción
       await page.evaluate(() => { openScan(S.scans.find(s => s.name === 'Hosts vivos con credenciales').id, 'vulns'); UI.search = 'zzzz-sin-resultados'; render(); }); await page.waitForTimeout(450);
-      ok(await page.isVisible('.empty .empty-i') && await page.isVisible('.empty button:has-text("Clear filters")'), 'un filtro sin resultados explica qué pasa y ofrece quitar los filtros');
-      await page.click('.empty button:has-text("Clear filters")'); await page.waitForTimeout(200);
+      ok(await page.isVisible('.empty .empty-i') && await page.isVisible('.empty button:has-text("Quitar filtros")'), 'un filtro sin resultados explica qué pasa y ofrece quitar los filtros');
+      await page.click('.empty button:has-text("Quitar filtros")'); await page.waitForTimeout(200);
       ok(await page.evaluate(() => !document.querySelector('main .empty') && UI.search === ''), '«Clear filters» vuelve a mostrar los resultados');
       // Manual: cada paso en un bloque, sin columnas estrechas
       await page.evaluate(() => manOpen('resultados')); await page.waitForTimeout(450);
@@ -405,8 +417,41 @@ async function axe(page, label) {
       await page.setViewportSize({ width: 900, height: 800 });
       await page.evaluate(() => go({ top: 'scans', page: 'scans', folder: 'my' })); await page.waitForTimeout(450);
       await page.hover('#side button[data-tour="side-policies"]');
-      ok(await page.evaluate(() => { const t = document.getElementById('sidetip'); return !t.hidden && t.textContent.startsWith('Policies'); }), 'la barra lateral plegada muestra el nombre al pasar el ratón');
+      ok(await page.evaluate(() => { const t = document.getElementById('sidetip'); return !t.hidden && t.textContent.startsWith('Políticas'); }), 'la barra lateral plegada muestra el nombre al pasar el ratón');
       await page.setViewportSize({ width: vp.w, height: vp.h });
+      // 2.3 · En español, también la parte de Nessus: botones, pestañas, plugins y salida
+      await page.evaluate(() => { openScan(S.scans.find(s => s.name === 'Hosts vivos con credenciales').id, 'vulns'); });
+      await page.waitForTimeout(450);
+      ok(await page.evaluate(() => [...document.querySelectorAll('.ph .btn')].map(b => b.textContent.trim()).join('|').includes('Configurar') && [...document.querySelectorAll('.tabs .tab')].some(t => t.textContent.startsWith('Equipos')) && !!document.querySelector('.sevb, .sev') && document.body.innerText.includes('Crítica')), 'en español los botones, pestañas y severidades de Nessus salen en español');
+      await page.evaluate(() => { S.view.plugin = 97833; render(); });
+      await page.waitForTimeout(450);
+      ok(await page.evaluate(() => /Sinopsis/.test(document.body.innerText) && /Solución/.test(document.body.innerText) && /actualización de seguridad/.test(document.body.innerText)), 'el detalle del plugin sale en español (nombre, sinopsis, solución)');
+      await page.evaluate(() => { setLang('en'); });
+      await page.waitForTimeout(300);
+      ok(await page.evaluate(() => /Synopsis/.test(document.body.innerText) && /Security Update/.test(document.body.innerText)), 'en inglés el plugin vuelve a su texto original');
+      await page.evaluate(() => { setLang('es'); });
+      // 2.3 · Perfil editable en Configuración ▸ Mi cuenta
+      await page.evaluate(() => go({ top: 'settings', page: 'settings', sub: 'account' }));
+      await page.waitForTimeout(450);
+      await page.fill('#pf-user', 'x');
+      await page.click('main button:has-text("Guardar cambios")');
+      ok(await page.isVisible('#pf-msg >> text=El usuario admite'), 'el perfil avisa si el usuario no es válido');
+      await page.fill('#pf-name', 'Ana López Pérez'); await page.fill('#pf-user', 'ana.lopez'); await page.fill('#pf-email', 'ana@empresa.example');
+      await page.click('main button:has-text("Guardar cambios")');
+      await page.waitForTimeout(300);
+      ok(await page.evaluate(() => S.profile.user === 'ana.lopez' && document.querySelector('#top .user .avatar').textContent === 'AL' && document.querySelector('#top .user').textContent.includes('ana.lopez')), 'guardar el perfil actualiza el avatar y el usuario de la barra superior');
+      await axe(page, 'Mi cuenta');
+      await page.evaluate(() => { S.profile = { ...PROFILE0 }; save(); render(); });
+      // 2.3 · Ajustes: control segmentado con la pastilla en la opción elegida e interruptor del modo oscuro
+      await page.click('[data-tour=top-m-ajustes]');
+      ok(await page.evaluate(() => { const g = document.querySelector('#m-ajustes .seg[aria-label="Velocidad de simulación"]'); const b = g.querySelector('button[aria-pressed=true]'); return getComputedStyle(b).justifyContent === 'center' && g.style.getPropertyValue('--i') === String([...g.children].indexOf(b)); }), 'el segmentado centra el texto y la pastilla está bajo la opción elegida');
+      await page.click('#m-ajustes .sw');
+      ok(await page.evaluate(() => S.theme === 'dark' && document.querySelector('#m-ajustes .sw').getAttribute('aria-checked') === 'true' && document.querySelector('#m-ajustes .sw').getBoundingClientRect().width < 60), 'el interruptor del modo oscuro cambia el tema y conserva su tamaño');
+      await page.keyboard.press('Escape');
+      await page.evaluate(() => { S.theme = 'light'; save(); render(); });
+      // 2.3 · Recorridos: los botones de las tarjetas alineados
+      await page.evaluate(() => go({ top: 'scans', page: 'tours' })); await page.waitForTimeout(450);
+      ok(await page.evaluate(() => { const ys = [...document.querySelectorAll('.tcard2 .btn')].map(b => Math.round(b.getBoundingClientRect().bottom)); const fila = ys.slice(0, 4); return new Set(fila).size === 1; }), 'en Recorridos guiados los botones de cada fila están alineados');
       // Persistencia
       await page.reload();
       await page.waitForTimeout(300);
@@ -438,10 +483,10 @@ async function axe(page, label) {
       ok(await page.evaluate(() => drawerOpen), 'la pestaña Práctica abre el entrenamiento');
       await page.evaluate(() => toggleDrawer(false));
       await page.click('#tabbar [data-tab=more]'); await page.waitForTimeout(400);
-      ok(await page.isVisible('.modal.sheet >> text=Policies') && !(await page.isVisible('.modal.sheet footer')), 'la hoja «Más» se abre sin pie de ventana');
+      ok(await page.isVisible('.modal.sheet >> text=Políticas') && !(await page.isVisible('.modal.sheet footer')), 'la hoja «Más» se abre sin pie de ventana');
       await page.screenshot({ path: `${SHOTS}/${vp.n}-07-mas.png` });
       await axe(page, 'hoja «Más»');
-      await page.click('.modal.sheet button:has-text("English")'); await page.waitForTimeout(300);
+      await page.click('.modal.sheet .seg button[lang=en]'); await page.waitForTimeout(300);
       ok(await page.evaluate(() => S.lang === 'en' && document.querySelector('#tabbar [data-tab=train] span').textContent === 'Practice'), 'el idioma se cambia desde «Más» en móvil');
       await page.evaluate(() => { closeModal(); setLang('es'); });
       ok(await page.evaluate(() => document.querySelector('.disclaimer .d-short').getBoundingClientRect().height < 24), 'el aviso legal ocupa una línea en móvil');

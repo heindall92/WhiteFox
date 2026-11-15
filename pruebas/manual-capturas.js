@@ -18,7 +18,7 @@ const CAPS = [
   { id: 'discovery', setup: `S.view.mode='scan';newDraft('discovery');UI.draft.name='Descubrimiento lab';UI.draft.settings.targets='192.168.56.0/24';render();`,
     m: ['[data-path=name]', '#targets', `[onclick="dsec('discovery')"]`, '[data-tour=dd-m-save]'], ctx: ['main .card'] },
   { id: 'licencia', setup: `go({top:'settings',page:'settings',sub:'about'});`,
-    m: [`js:[...document.querySelectorAll('main dt')].find(d=>d.textContent.startsWith('License Type')).nextElementSibling`, `js:[...document.querySelectorAll('main dt')].find(d=>d.textContent.startsWith('Licensed Hosts')).nextElementSibling`, 'main .cmp', 'main table.t'] },
+    m: [`js:[...document.querySelectorAll('main dt')].find(d=>(d.textContent.startsWith('License Type')||d.textContent.startsWith('Tipo de licencia'))).nextElementSibling`, `js:[...document.querySelectorAll('main dt')].find(d=>(d.textContent.startsWith('Licensed Hosts')||d.textContent.startsWith('Equipos con licencia'))).nextElementSibling`, 'main .cmp', 'main table.t'] },
   { id: 'resultados', setup: `openScan(window.CAP.cred,'hosts');`,
     m: ['main .results .tabs', 'main tr[onclick^=openHost]', 'main tr[onclick^=openHost] .bar', 'main .side-stack .card:first-child dl', 'main .side-stack .card:nth-child(2) svg'], ctx: ['main .results'] },
   { id: 'priorizar', setup: `openScan(window.CAP.cred,'vpr');`,

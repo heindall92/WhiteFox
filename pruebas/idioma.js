@@ -12,6 +12,9 @@ async function snap(page, label) {
   await page.waitForTimeout(60);
   const r = await page.evaluate(() => {
     const SP = /[áéíóúñ¿¡ÁÉÍÓÚÑ]|\b(el|la|los|las|del|que|con|para|por|una|unos|es|son|está|esta|este|estos|sin|pero|como|tus?|sus?|al|lo|se|y|ya|hay|aquí|cuando|también|puedes|pulsa|ejercicios?|hallazgos?|equipos?|escaneos?|ajustes|idioma|recorridos?|siguiente|cerrar|abrir|elige|ningún|ninguno|todavía|aún|desde|hasta|entre|sobre|cada|solo|otro|otra|nuevo|nueva|ejemplo|pendiente|completad[oa]s?|correcto|vuelve|paso|pasos|activos?|riesgo|tema|claro|oscuro|velocidad|lenta|licencia|simulad[oa]|simulador|glosario|entrevista|entrenamiento|ayuda|atajos|teclado|restablecer|laboratorio|empezar|comprobar|respuesta|orden|pista|capítulo|módulo|carpetas|papelera|buscar|guardar|cancelar|volver|informe|salir|terminar|saltar|opcional|minutos|guía|aprender|ejercicio|quiz de|bienvenid[oa]|usuario|contraseña|dominio|hosts vivos|plantillas?|ninguna|nada|todos|todas|mis|tu)\b/i;
+    const EN = new RegExp('(?<![\\p{L}\\d_])(the|and|of|to|is|are|was|were|with|for|this|that|from|by|be|have|can|will|not|your|you|scan|scans|host|hosts|issues?|found|open|remote|available|enabled|disabled|details|information|settings|policy|policies|report|launch|export|configure|severity|output|solution|description|synopsis|critical|high|medium|low|vulnerabilit(?:y|ies)|rules?|new|back|save|cancel|close|license|licensed|templates?|folders?|trash|history|notes|search|filter|name|status|credentials|password|username|domain|discovery|advanced|basic|schedule|running|completed|default|custom|yes|days?|minutes?|today|upgrade|enable|disable|groups?)(?![\\p{L}\\d_])', 'iu');
+    const PROPER = /Domain Admins|Service Principal Name|Netlogon Remote Protocol|ARP who-is|diffie-hellman[\w-]*|Tenable Vulnerability Management|Nessus (Professional|Expert|Essentials Plus|Essentials|DB)|VMware vCenter SOAP API|User-Agent|GET \/[^\n]*|Host: [^\n]*|https?:\/\/\S+|Remote Desktop|Service Pack \d|Microsoft Windows[^\n]*|Linux Kernel[^\n]*/g;
+    const ES_MODE = document.documentElement.lang === 'es', RX0 = ES_MODE ? EN : SP, RX = { test: x => RX0.test(ES_MODE ? x.replace(PROPER, ' ') : x) };
     const OK = new Set(['su', 'su+sudo', 'Normal', 'Español', 'Yoandy Ramírez Delgado', 'Ramírez']);
     const skip = el => { if (!el) return true; if (el.closest('[data-notr]')) return true; const l = el.closest('[lang=es]'); return !!l && l !== document.documentElement; };
     const out = new Set(), w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
@@ -20,11 +23,11 @@ async function snap(page, label) {
       if (n.nodeType === 3) {
         const p = n.parentNode;
         if (!p || /^(SCRIPT|STYLE)$/.test(p.nodeName) || skip(p)) continue;
-        const t = n.nodeValue.trim(); if (t && !OK.has(t) && SP.test(t)) out.add(t);
+        const t = n.nodeValue.trim(); if (t && !OK.has(t) && RX.test(t)) out.add(t);
       } else {
         if (skip(n)) continue;
-        for (const a of ['aria-label', 'title', 'placeholder', 'alt']) { const v = n.getAttribute(a); if (v && !OK.has(v) && SP.test(v)) out.add('@' + a + ': ' + v); }
-        if ((n.nodeName === 'INPUT' || n.nodeName === 'TEXTAREA') && n.value && !OK.has(n.value) && SP.test(n.value)) out.add('@value: ' + n.value);
+        for (const a of ['aria-label', 'title', 'placeholder', 'alt']) { const v = n.getAttribute(a); if (v && !OK.has(v) && RX.test(v)) out.add('@' + a + ': ' + v); }
+        if ((n.nodeName === 'INPUT' || n.nodeName === 'TEXTAREA') && n.value && !OK.has(n.value) && RX.test(n.value)) out.add('@value: ' + n.value);
       }
     }
     const all = new Set();
@@ -80,7 +83,7 @@ async function crawl(browser, locale) {
   const LIVE = '192.168.56.1,192.168.56.10,192.168.56.20,192.168.56.30,192.168.56.40,192.168.56.50,192.168.56.60,192.168.56.70,192.168.56.80';
   const ids = [];
   for (const [t, o] of [['discovery', {}], ['basic', { creds: 1 }], ['basic', {}], ['basic', { bad: 1 }], ['ad', { creds: 1 }], ['malware', { creds: 1 }], ['findai', {}], ['rmm', { creds: 1 }], ['credval', { creds: 1 }], ['dynamic', { dyn: { rules: [{ f: 'cve', op: 'contains', v: 'CVE-2021-44228' }] } }]]) {
-    ids.push(await E(`mk('${t}','Lab ${t}','${t === 'ad' ? '192.168.56.10' : LIVE}',${JSON.stringify(o)})`));
+    ids.push(await E(`mk('${t}','Lab-${ids.length + 1}','${t === 'ad' ? '192.168.56.10' : LIVE}',${JSON.stringify(o)})`));
   }
   await snap(page, 'scans lanzados (avisos)');
   await page.waitForFunction(() => S.scans.every(s => s.runs.every(r => r.status !== 'running')), null, { timeout: 90000 });
@@ -136,7 +139,7 @@ async function crawl(browser, locale) {
 (async () => {
   const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
   // Pasada en español: todos los textos que se ven
-  ALL = new Map(); const es = await crawl(browser, 'es-ES'); const ES = ALL; ALL = new Map(); found.clear(); screens = 0;
+  ALL = new Map(); const es = await crawl(browser, 'es-ES'); const ES = ALL; ALL = new Map(); const esFound = [...found]; found.clear(); const esScreens = screens; screens = 0;
   // Pasada en inglés
   const { lang, back, errors, data } = await crawl(browser, 'en-GB'); const EN = ALL;
   console.log('idioma inicial: es-ES → ' + es.lang + ' · en-GB → ' + lang);
@@ -149,6 +152,7 @@ async function crawl(browser, locale) {
     if (!found.has(t)) found.set('= ' + t, l);
   }
   console.log('textos ES ' + ES.size + ' · EN ' + EN.size + ' · iguales ' + [...EN.keys()].filter(t => ES.has(t)).length);
+  for (const [t, l] of esFound) found.set('[ES] ' + t, l); screens += esScreens;
   errors.push(...es.errors);
   await browser.close();
   const list = [...found.entries()];
