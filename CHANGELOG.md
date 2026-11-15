@@ -1,5 +1,20 @@
 # Cambios
 
+## 2.3.3 · noviembre de 2026
+
+- Algunas prácticas no se marcaban aunque se hubieran hecho:
+  - Ejercicio 1: «haber leído la bienvenida» solo contaba si se cerraba con sus botones de abajo; con la X, Esc o pulsando fuera, no. Ahora cuenta al abrirla.
+  - Ejercicio 4: exigía además haber chocado antes con el aviso de licencia escaneando toda la /24. Ahora lo que cuenta es lo que enseña: un Basic Network Scan completado solo contra los equipos vivos. El aviso queda como paso opcional.
+  - Ejercicio 8: ordenar por VPR solo contaba si antes se había pulsado «Desagrupar». Ahora también cuenta si se desagrupa después, con la tabla ya ordenada por VPR. Si se ordena con los grupos puestos, un aviso explica qué falta.
+- Los 15 ejercicios cuya práctica tiene varias condiciones (1, 4, 7, 8, 11, 13 a 17, 22, 26 y 28 a 30) muestran la lista de lo que piden, con ✓ en lo que ya está hecho. Así se ve qué falta, en lugar de un «pendiente» sin más.
+- Botón «Comprobar ahora» en cada práctica pendiente.
+- Cada ejercicio dice **dónde se hace**: en qué escaneo, contra qué equipos y en qué pantalla. Antes un objetivo como «En Vulnerabilities pulsa Desagrupar» no aclaraba de qué escaneo, y con uno de un solo equipo (por ejemplo, solo 192.168.56.20) no hay nada que comparar. El recuadro mira dónde estás y lo dice:
+  - «Estás en el sitio correcto», o
+  - «El escaneo «192.168.56.20» no sirve para este ejercicio: hace falta un escaneo de los equipos vivos», con un botón «Llévame allí» que abre el escaneo que sirve, o «Ir al ejercicio 4» si aún no lo tienes.
+  - En los ejercicios que crean un escaneo, «Crear el escaneo» abre el editor con la plantilla y los objetivos ya puestos.
+- «Desagrupar» estaba en la esquina derecha de la tabla, justo debajo del panel de Entrenamiento: con los dos abiertos no se veía. Ahora está junto a «Filtro». Además, en pantallas de 1360 px o más, el panel abierto empuja el contenido en vez de taparlo.
+- El botón «Agrupar / Desagrupar» parecía no hacer nada en español. En español, la tabla de vulnerabilidades agrupada no formaba los grupos SSL, SSH y Microsoft Windows (20 filas agrupada frente a 21 sin agrupar): la agrupación miraba el nombre del plugin, y en español ya está traducido. Ahora agrupa por el nombre original y la tabla tiene las mismas filas en los dos idiomas.
+
 ## 2.3.2 · noviembre de 2026
 
 - El botón «Continuar» se quedaba en el ejercicio 1. La regla de la 2.3.1 seguía el último ejercicio abierto: al pulsar «Continuar con el ejercicio 1» ese pasaba a ser el último abierto, y vuelta a empezar. Además, el recuadro «Siguiente paso» usaba otra regla. Ahora la regla es una sola, en la portada, el panel y «Siguiente paso»: tu sitio es el último ejercicio cuyo quiz has respondido. Si está a medias, sigues en él; si está completo, pasas al siguiente sin terminar. Las prácticas que el simulador marca solas no te cambian de sitio.

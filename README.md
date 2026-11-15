@@ -10,7 +10,7 @@
 
 <p align="center">
   <img alt="Licencia: todos los derechos reservados" src="https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-1A4F8A?style=flat"/>
-  <img alt="Versión 2.3.2" src="https://img.shields.io/badge/versi%C3%B3n-2.3.2-4A97E8?style=flat"/>
+  <img alt="Versión 2.3.3" src="https://img.shields.io/badge/versi%C3%B3n-2.3.3-4A97E8?style=flat"/>
   <img alt="Idiomas ES y EN" src="https://img.shields.io/badge/idiomas-ES%20%C2%B7%20EN-7C4DFF?style=flat"/>
   <img alt="32 ejercicios" src="https://img.shields.io/badge/ejercicios-32-7C4DFF?style=flat"/>
   <img alt="Manual de 12 capítulos" src="https://img.shields.io/badge/manual-12%20cap%C3%ADtulos-4A97E8?style=flat"/>
@@ -102,6 +102,14 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 ---
 
 ## <img src="docs/assets/icons/sparkles.svg" width="20" height="20" valign="middle"/> Novedades
+
+### 2.3.3 · noviembre de 2026 · Cada ejercicio dice dónde se hace y qué le falta
+
+- Recuadro «Dónde se hace» en cada ejercicio: escaneo, equipos y pantalla, si estás en el sitio correcto y un botón «Llévame allí» o «Crear el escaneo» con los objetivos ya puestos.
+- «Desagrupar» va junto a «Filtro», y en pantallas anchas el panel de Entrenamiento empuja el contenido en vez de taparlo.
+- Los ejercicios 1, 4 y 8 no se marcaban aunque se hubieran hecho: la bienvenida solo contaba cerrada con sus botones, el 4 exigía además chocar con el aviso de licencia y el 8 exigía desagrupar antes de ordenar. Corregido.
+- Las 15 prácticas con varias condiciones muestran la lista de lo que piden, con ✓ en lo hecho, y hay un botón «Comprobar ahora».
+- El botón «Agrupar / Desagrupar» vuelve a notarse en español: la tabla agrupada forma otra vez los grupos SSL, SSH y Windows (15 filas, como en inglés).
 
 ### 2.3.1 · noviembre de 2026 · Tu progreso, a la vista
 
@@ -328,7 +336,7 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 
 ## <img src="docs/assets/icons/flask-conical.svg" width="20" height="20" valign="middle"/> Pruebas
 
-`pruebas/e2e.js` abre el laboratorio en Chromium y hace 138 comprobaciones:
+`pruebas/e2e.js` abre el laboratorio en Chromium y hace 152 comprobaciones:
 
 - completa los 32 ejercicios usando la aplicación, responde un quiz (mal y bien) y ordena la cola de remediación con las flechas;
 - recorre los 6 recorridos guiados de principio a fin con un conductor que pulsa o rellena solo lo que señala cada paso, y abre los 12 capítulos del manual;

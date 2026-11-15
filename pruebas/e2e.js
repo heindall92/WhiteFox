@@ -497,6 +497,44 @@ async function axe(page, label) {
       const q = await c2.newPage(); q.on('pageerror', e => errors.push(String(e)));
       await q.goto(FILE); await q.waitForTimeout(700);
       await q.click('.hero >> text=Empezar el ejercicio 1'); await q.waitForTimeout(400);
+      ok(await q.evaluate(() => document.querySelectorAll('.drawer .req li').length === 2 && !document.querySelector('.drawer .req li.ok')), 'el ejercicio 1 muestra la lista de lo que falta de la práctica');
+      await q.evaluate(() => { toggleDrawer(false); welcome(); }); await q.waitForTimeout(300); await q.keyboard.press('Escape'); await q.waitForTimeout(200);
+      await q.evaluate(() => { toggleDrawer(true, 'ex', 0); }); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => !!S.events.welcome && document.querySelectorAll('.drawer .req li.ok').length === 1), 'la bienvenida cuenta como leída aunque se cierre con Esc, y la lista lo marca');
+      await q.evaluate(() => { toggleDrawer(true, 'glossary'); }); await q.waitForTimeout(200);
+      await q.waitForTimeout(300);
+      ok(await q.evaluate(() => !!S.prog.e0), 'tras abrir la bienvenida y el glosario, la práctica del ejercicio 1 queda superada sola');
+      await q.evaluate(() => { delete S.prog.e0; save(); drawerTab = 'ex'; drawerEx = 0; renderDrawer(); }); await q.waitForTimeout(200);
+      await q.click('.drawer button:has-text("Comprobar ahora")'); await q.waitForTimeout(200);
+      ok(await q.evaluate(() => !!S.prog.e0 && !!document.querySelector('.drawer .st.ok')), '«Comprobar ahora» vuelve a comprobar y marca la práctica');
+      // 2.3.3 · Ejercicio 8: ordenar por VPR con grupos no cuenta, pero avisa; al desagrupar después, sí
+      await q.evaluate(() => { toggleDrawer(false); openScan(S.scans.find(s => s.runs.some(r => r.status === 'completed')).id, 'vulns'); UI.groups = true; render(); }); await q.waitForTimeout(300);
+      await q.evaluate(() => sortBy('vpr')); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => !!S.events.sortVPRgrouped && !S.events.sortVPR) && await q.isVisible('text=Para el ejercicio, pulsa «Desagrupar»'), 'ordenar por VPR con grupos avisa de que hay que desagrupar y no cuenta');
+      await q.click('main button:has-text("Desagrupar")'); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => !!S.events.groupsOff && !!S.events.sortVPR && !!S.prog.e7), 'al desagrupar con la tabla ya ordenada por VPR, la práctica del ejercicio 8 queda superada');
+      const filas = () => q.evaluate(() => { UI.groups = true; render(); return +((document.querySelector('main').textContent.match(/(\d+) (filas|rows)/) || [])[1]); });
+      const nEs = await filas(); await q.evaluate(() => setLang('en')); await q.waitForTimeout(300); const nEn = await filas(); await q.evaluate(() => setLang('es')); await q.waitForTimeout(300);
+      ok(nEs > 0 && nEs === nEn && await q.evaluate(() => document.querySelector('main').textContent.includes('SSL (varios problemas)')), `con grupos, la tabla tiene las mismas filas en español y en inglés (${nEs} / ${nEn}) y forma el grupo SSL`);
+      await q.evaluate(() => { toggleDrawer(true, 'ex', EXERCISES.findIndex(e => e.id === 'e8')); }); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => document.querySelectorAll('.drawer .req li').length === 2 && document.querySelector('.drawer .req').textContent.includes('Ese mismo escaneo')), 'el ejercicio de escaneo con credenciales lista sus dos condiciones (SSH y Windows)');
+      // 2.3.3 · «Desagrupar» va junto a Filtro y el panel abierto no lo tapa
+      await q.evaluate(() => { openScan(S.scans[0].id, 'vulns'); toggleDrawer(true, 'ex', EXERCISES.findIndex(e => e.id === 'e7')); }); await q.waitForTimeout(500);
+      ok(await q.evaluate(() => { const g = document.getElementById('groups-btn'), f = [...g.parentElement.querySelectorAll('button')].find(b => /Filtro/.test(b.textContent)); return !!f && g.getBoundingClientRect().right < document.getElementById('drawer').getBoundingClientRect().left; }), '«Desagrupar» está junto a «Filtro» y el panel de Entrenamiento abierto no lo tapa');
+      ok(await q.evaluate(() => { const m = document.getElementById('main'); return m.scrollWidth <= m.clientWidth + 1; }), 'con el panel abierto, la pantalla del escaneo no se desborda');
+      // 2.3.3 · «Dónde se hace»: un escaneo de un solo equipo no sirve para el ejercicio 8 y lo dice
+      await q.evaluate(() => { const s = JSON.parse(JSON.stringify(S.scans[0])); s.id = 901; s.name = '192.168.56.20'; s.runs[0].hosts = s.runs[0].hosts.slice(0, 1); S.scans.push(s); save(); openScan(901, 'vulns'); }); await q.waitForTimeout(400);
+      ok(await q.evaluate(() => { const w = document.getElementById('ex-where').textContent; return /Dónde se hace/.test(w) && /«192\.168\.56\.20» no sirve/.test(w) && /Hazlo en el ejercicio 4/.test(w); }), 'el ejercicio 8 dice dónde se hace y avisa de que un escaneo de un solo equipo no sirve');
+      await axe(q, 'ejercicio con «Dónde se hace»');
+      await q.evaluate(() => { const s = JSON.parse(JSON.stringify(S.scans[0])); s.id = 902; s.name = 'Vivos'; const h0 = s.runs[0].hosts[0]; s.runs[0].hosts = ['1', '10', '20', '30', '40', '50'].map(x => ({ ...h0, ip: '192.168.56.' + x })); S.scans.push(s); save(); renderDrawer(); }); await q.waitForTimeout(300);
+      await q.click('#ex-where button:has-text("Llévame allí")'); await q.waitForTimeout(500);
+      ok(await q.evaluate(() => S.view.scan === 902 && S.view.tab === 'vulns' && /Estás en el sitio correcto/.test(document.getElementById('ex-where').textContent)), '«Llévame allí» abre el escaneo que sirve y el recuadro confirma que estás en el sitio correcto');
+      await q.evaluate(() => { drawerEx = EXERCISES.findIndex(e => e.id === 'e3'); renderDrawer(); }); await q.waitForTimeout(200);
+      await q.click('#ex-where button:has-text("Crear el escaneo")'); await q.waitForTimeout(500);
+      ok(await q.evaluate(() => S.view.page === 'editor' && UI.draft.template === 'basic' && UI.draft.settings.targets.split(', ').length === 9 && /Estás en el sitio correcto/.test(document.getElementById('ex-where').textContent)), '«Crear el escaneo» abre el editor con la plantilla y los 9 equipos vivos ya puestos');
+      await q.evaluate(() => { S.scans = S.scans.filter(s => s.id !== 901 && s.id !== 902); UI.draft = null; save(); });
+      await q.evaluate(() => { for (const k of ['sortVPR', 'sortVPRgrouped', 'groupsOff']) delete S.events[k]; delete S.prog.e7; UI.groups = true; save(); go({ top: 'scans', page: 'scans', folder: 'my' }); toggleDrawer(true, 'ex', 0); }); await q.waitForTimeout(500);
+      await q.evaluate(() => { delete S.prog.e0; delete S.events.welcome; delete S.events.glossary; save(); drawerEx = 0; renderDrawer(); });
       await q.locator('#quiz label').nth(1).click(); await q.click('text=Comprobar respuesta'); await q.waitForTimeout(300);
       await q.evaluate(() => { drawerEx = 2; renderDrawer(); toggleDrawer(false); });
       await q.reload(); await q.waitForTimeout(700);
