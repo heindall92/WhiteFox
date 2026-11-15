@@ -518,6 +518,21 @@ async function axe(page, label) {
       ok(nEs > 0 && nEs === nEn && await q.evaluate(() => document.querySelector('main').textContent.includes('SSL (varios problemas)')), `con grupos, la tabla tiene las mismas filas en español y en inglés (${nEs} / ${nEn}) y forma el grupo SSL`);
       await q.evaluate(() => { toggleDrawer(true, 'ex', EXERCISES.findIndex(e => e.id === 'e8')); }); await q.waitForTimeout(300);
       ok(await q.evaluate(() => document.querySelectorAll('.drawer .req li').length === 2 && document.querySelector('.drawer .req').textContent.includes('Ese mismo escaneo')), 'el ejercicio de escaneo con credenciales lista sus dos condiciones (SSH y Windows)');
+      // 2.3.3 · Filtro en español, como lo hace una persona: eligiendo por el texto visible («Crítica», «Exploit disponible», «sí»)
+      await q.evaluate(() => { toggleDrawer(false); delete S.events.filterCritExploit; openScan(S.scans[0].id, 'vulns'); }); await q.waitForTimeout(300);
+      await q.click('main button:has-text("Filtro")'); await q.waitForTimeout(200);
+      await q.locator('.filters select').nth(3).selectOption({ label: 'Crítica' });
+      await q.click('.filters button:has-text("Añadir filtro")'); await q.waitForTimeout(200);
+      await q.locator('.filters select').nth(4).selectOption({ label: 'Exploit disponible' }); await q.waitForTimeout(200);
+      await q.locator('.filters select').nth(6).selectOption({ label: 'sí' });
+      await q.click('.filters button:has-text("Aplicar")'); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => !!S.events.filterCritExploit && UI.filters.some(f => f.field === 'exploit' && f.value === 'true')), 'en español, el filtro «Exploit disponible · es igual a · sí» cuenta para el ejercicio 7 (el valor sigue siendo «true» aunque se traduzca el texto)');
+      ok(await q.evaluate(() => { const s = curScan(); const it = applyFilters(effItems(runView(curRun(s)))); return it.length > 0 && it.every(x => x.p.exploit && x.sev === 4); }), 'y la tabla muestra críticos con exploit, no una lista vacía');
+      await q.evaluate(() => { UI.filters = [{ field: 'family', op: 'eq', value: '' }]; UI.filterOpen = true; render(); }); await q.waitForTimeout(200);
+      await q.locator('.filters select').nth(3).selectOption({ label: 'Servidores web' });
+      await q.click('.filters button:has-text("Aplicar")'); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => { const s = curScan(); return UI.filters[0].value === 'Web Servers' && applyFilters(effItems(runView(curRun(s)))).length > 0; }), 'en español, filtrar por la familia «Servidores web» encuentra resultados');
+      await q.evaluate(() => { UI.filters = []; UI.filterOpen = false; delete S.events.filterCritExploit; delete S.events.filterUsed; delete S.prog.e5; save(); render(); });
       // 2.3.3 · «Desagrupar» va junto a Filtro y el panel abierto no lo tapa
       await q.evaluate(() => { openScan(S.scans[0].id, 'vulns'); toggleDrawer(true, 'ex', EXERCISES.findIndex(e => e.id === 'e7')); }); await q.waitForTimeout(500);
       ok(await q.evaluate(() => { const g = document.getElementById('groups-btn'), f = [...g.parentElement.querySelectorAll('button')].find(b => /Filtro/.test(b.textContent)); return !!f && g.getBoundingClientRect().right < document.getElementById('drawer').getBoundingClientRect().left; }), '«Desagrupar» está junto a «Filtro» y el panel de Entrenamiento abierto no lo tapa');

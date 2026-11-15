@@ -5,6 +5,7 @@
 - Algunas prácticas no se marcaban aunque se hubieran hecho:
   - Ejercicio 1: «haber leído la bienvenida» solo contaba si se cerraba con sus botones de abajo; con la X, Esc o pulsando fuera, no. Ahora cuenta al abrirla.
   - Ejercicio 4: exigía además haber chocado antes con el aviso de licencia escaneando toda la /24. Ahora lo que cuenta es lo que enseña: un Basic Network Scan completado solo contra los equipos vivos. El aviso queda como paso opcional.
+  - Ejercicio 7: en español, el filtro «Exploit disponible · es igual a · sí» nunca coincidía. La opción no tenía valor propio y, al traducir «true» por «sí», el navegador tomaba «sí» como valor. Pasaba lo mismo con las familias de plugins («Servidores web» frente a «Web Servers»). El filtro devolvía una lista vacía y la práctica no se marcaba. Ahora cada opción lleva su valor fijo y la traducción solo cambia el texto.
   - Ejercicio 8: ordenar por VPR solo contaba si antes se había pulsado «Desagrupar». Ahora también cuenta si se desagrupa después, con la tabla ya ordenada por VPR. Si se ordena con los grupos puestos, un aviso explica qué falta.
 - Los 15 ejercicios cuya práctica tiene varias condiciones (1, 4, 7, 8, 11, 13 a 17, 22, 26 y 28 a 30) muestran la lista de lo que piden, con ✓ en lo que ya está hecho. Así se ve qué falta, en lugar de un «pendiente» sin más.
 - Botón «Comprobar ahora» en cada práctica pendiente.
