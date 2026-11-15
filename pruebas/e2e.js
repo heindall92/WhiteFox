@@ -528,6 +528,7 @@ async function axe(page, label) {
       await q.click('.filters button:has-text("Aplicar")'); await q.waitForTimeout(300);
       ok(await q.evaluate(() => !!S.events.filterCritExploit && UI.filters.some(f => f.field === 'exploit' && f.value === 'true')), 'en español, el filtro «Exploit disponible · es igual a · sí» cuenta para el ejercicio 7 (el valor sigue siendo «true» aunque se traduzca el texto)');
       ok(await q.evaluate(() => { const s = curScan(); const it = applyFilters(effItems(runView(curRun(s)))); return it.length > 0 && it.every(x => x.p.exploit && x.sev === 4); }), 'y la tabla muestra críticos con exploit, no una lista vacía');
+      ok(await q.evaluate(() => { const m = document.querySelector('main').textContent; return !m.includes('Clear Filters') && m.includes('Quitar filtros'); }), 'con un filtro activo, el botón «Quitar filtros» también está en español');
       await q.evaluate(() => { UI.filters = [{ field: 'family', op: 'eq', value: '' }]; UI.filterOpen = true; render(); }); await q.waitForTimeout(200);
       await q.locator('.filters select').nth(3).selectOption({ label: 'Servidores web' });
       await q.click('.filters button:has-text("Aplicar")'); await q.waitForTimeout(300);
@@ -547,6 +548,18 @@ async function axe(page, label) {
       await q.evaluate(() => { drawerEx = EXERCISES.findIndex(e => e.id === 'e3'); renderDrawer(); }); await q.waitForTimeout(200);
       await q.click('#ex-where button:has-text("Crear el escaneo")'); await q.waitForTimeout(500);
       ok(await q.evaluate(() => S.view.page === 'editor' && UI.draft.template === 'basic' && UI.draft.settings.targets.split(', ').length === 9 && /Estás en el sitio correcto/.test(document.getElementById('ex-where').textContent)), '«Crear el escaneo» abre el editor con la plantilla y los 9 equipos vivos ya puestos');
+      // 2.4.0 · Copiar un escaneo (como «More ▸ Copy to» de Nessus): misma configuración, sin resultados, y se abre para cambiarla
+      await q.evaluate(() => { window._prog = JSON.stringify(S.prog); S.scans.find(s => s.id === 902).settings.targets = '192.168.56.1, 192.168.56.10'; save(); UI.draft = null; drawerEx = EXERCISES.findIndex(e => e.id === 'e8'); renderDrawer(); }); await q.waitForTimeout(300);
+      ok(await q.isVisible('#ex-where button:has-text("Copiar «Vivos»")'), 'el ejercicio de credenciales ofrece copiar tu escaneo de los equipos vivos');
+      await q.click('#ex-where button:has-text("Copiar «Vivos»")'); await q.waitForTimeout(500);
+      ok(await q.evaluate(() => { const c = S.scans[S.scans.length - 1]; return S.view.page === 'editor' && UI.draft.id === c.id && c.name === 'Copia de Vivos' && c.runs.length === 0 && c.settings.targets === '192.168.56.1, 192.168.56.10' && c.template === 'basic'; }), 'la copia se llama «Copia de Vivos», hereda plantilla y objetivos, no trae resultados y se abre en el editor');
+      await q.evaluate(() => { UI.draft = null; openScan(902, 'vulns'); }); await q.waitForTimeout(300);
+      await q.click('main .actions button:has-text("Copiar")'); await q.waitForTimeout(400);
+      ok(await q.evaluate(() => S.scans.some(s => s.name === 'Copia de Vivos (2)')), 'una segunda copia no repite el nombre: «Copia de Vivos (2)»');
+      await axe(q, 'editor de una copia');
+      await q.evaluate(() => { UI.draft = null; go({ top: 'scans', page: 'scans', folder: 'my' }); }); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => document.querySelectorAll('main button[aria-label="Copiar"]').length === S.scans.filter(s => s.folder === 'my').length), 'cada fila de Mis escaneos tiene su botón «Copiar»');
+      await q.evaluate(() => { S.scans = S.scans.filter(s => !/^Copia de Vivos/.test(s.name)); delete S.events.scanCopy; S.prog = JSON.parse(window._prog); save(); });
       await q.evaluate(() => { S.scans = S.scans.filter(s => s.id !== 901 && s.id !== 902); UI.draft = null; save(); });
       await q.evaluate(() => { for (const k of ['sortVPR', 'sortVPRgrouped', 'groupsOff']) delete S.events[k]; delete S.prog.e7; UI.groups = true; save(); go({ top: 'scans', page: 'scans', folder: 'my' }); toggleDrawer(true, 'ex', 0); }); await q.waitForTimeout(500);
       await q.evaluate(() => { delete S.prog.e0; delete S.events.welcome; delete S.events.glossary; save(); drawerEx = 0; renderDrawer(); });

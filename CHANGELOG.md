@@ -1,5 +1,13 @@
 # Cambios
 
+## 2.4.0 · noviembre de 2026
+
+- **Copiar un escaneo**, como «More ▸ Copy to» de Nessus. Hay un botón «Copiar» en la pantalla del escaneo, junto a «Configurar», y en cada fila de Mis escaneos. La copia se llama «Copia de …» y hereda plantilla, objetivos, credenciales y ajustes, pero no los resultados. Se abre en el editor para cambiar lo que haga falta. Sirve para los ejercicios que repiten el mismo escaneo con otra configuración.
+- En el ejercicio de escaneo con credenciales, «Dónde se hace» ofrece «Copiar «tu escaneo de los equipos vivos»»: así comparas el mismo escaneo con y sin credenciales.
+- Con un filtro activo, el botón «Clear Filters» salía en inglés con la interfaz en español; ahora dice «Quitar filtros».
+- Imágenes del manual regeneradas: muestran «Desagrupar» junto a «Filtro» y el botón «Copiar».
+- Accesibilidad del editor de escaneos y políticas. Las etiquetas de los campos (Descripción, Carpeta, Subir objetivos…) no estaban asociadas a su control, y un lector de pantalla no decía qué campo era. Ahora cada etiqueta apunta a su campo. Los títulos del menú del editor pasan de h6 a h2, para no saltar niveles. axe sin infracciones en el editor, que antes no se comprobaba.
+
 ## 2.3.4 · noviembre de 2026
 
 - La práctica del ejercicio 7 nunca se marcaba en español. El filtro «Exploit disponible · es igual a · sí» devolvía siempre una lista vacía: la opción no tenía valor propio y, al traducir «true» por «sí», el navegador tomaba «sí» como valor. Pasaba lo mismo con las familias de plugins («Servidores web» frente a «Web Servers»). Ahora cada opción lleva su valor fijo y la traducción solo cambia el texto.
