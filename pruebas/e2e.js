@@ -491,6 +491,43 @@ async function axe(page, label) {
       await page.evaluate(() => { closeModal(); setLang('es'); });
       ok(await page.evaluate(() => document.querySelector('.disclaimer .d-short').getBoundingClientRect().height < 24), 'el aviso legal ocupa una línea en móvil');
     }
+    if (vp.n === 'desk') {
+      // 2.3.1 · Progreso: lo empezado se ve, se guarda y se continúa donde lo dejaste (navegador nuevo, sin datos)
+      const c2 = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'es-ES', acceptDownloads: true });
+      const q = await c2.newPage(); q.on('pageerror', e => errors.push(String(e)));
+      await q.goto(FILE); await q.waitForTimeout(700);
+      await q.click('.hero >> text=Empezar el ejercicio 1'); await q.waitForTimeout(400);
+      await q.locator('#quiz label').nth(1).click(); await q.click('text=Comprobar respuesta'); await q.waitForTimeout(300);
+      await q.evaluate(() => { drawerEx = 2; renderDrawer(); toggleDrawer(false); });
+      await q.reload(); await q.waitForTimeout(700);
+      ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 3'), 'tras recargar, la portada ofrece continuar en el último ejercicio abierto');
+      await q.evaluate(() => { toggleDrawer(true, 'ex'); drawerEx = null; renderDrawer(); }); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => document.querySelector('.ex[data-ex=e0]').classList.contains('half') && /Quiz hecho · falta la práctica/.test(document.querySelector('.ex[data-ex=e0]').textContent) && /0 completados · 1 en curso/.test(document.querySelector('.ov-sum').textContent)), 'un ejercicio con el quiz hecho se marca «en curso» y se guarda');
+      ok(await q.isVisible('.ex-cont >> text=Continuar: ejercicio 3'), 'el panel tiene «Continuar» con el ejercicio en el que ibas');
+      await q.evaluate(() => { const n = Date.now(); ['e0', 'e1'].forEach(id => { S.prog[id] = n; S.quiz[id] = n; }); S.lastEx = 'e1'; save(); toggleDrawer(false); go({ top: 'scans', page: 'scans', folder: 'my' }); });
+      await q.waitForTimeout(450);
+      ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 3') && await q.isVisible('.hero >> text=siguiente: ejercicio 3'), 'con los ejercicios 1 y 2 completados, la portada sigue en el 3');
+      await q.evaluate(() => { const n = Date.now(); ['e2', 'e3', 'e4'].forEach(id => { S.prog[id] = n; S.quiz[id] = n; }); S.quiz.e0 = 0; S.lastEx = 'e4'; save(); render(); });
+      await q.waitForTimeout(300);
+      ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 6'), 'el botón avanza con los ejercicios aunque quede uno anterior a medias');
+      await q.evaluate(() => { S.quiz.e0 = Date.now(); S.lastEx = 'e2'; save(); render(); });
+      await axe(q, 'panel con progreso a medias');
+      // Copia de seguridad: descargar y restaurar
+      await q.evaluate(() => { toggleDrawer(false); go({ top: 'settings', page: 'settings', sub: 'lab' }); }); await q.waitForTimeout(450);
+      const [dl] = await Promise.all([q.waitForEvent('download'), q.click('main button:has-text("Descargar progreso")')]);
+      const bk = path.join(SHOTS, 'copia.json'); await dl.saveAs(bk);
+      await q.evaluate(() => { S.quiz = {}; S.prog = {}; save(); render(); });
+      await q.setInputFiles('main input[type=file]', bk); await q.waitForTimeout(500);
+      ok(await q.evaluate(() => !!S.quiz.e0 && S.lastEx === 'e2'), 'restaurar la copia recupera el progreso');
+      fs.writeFileSync(path.join(SHOTS, 'mala.json'), '{"x":1}');
+      await q.setInputFiles('main input[type=file]', path.join(SHOTS, 'mala.json')); await q.waitForTimeout(300);
+      ok(await q.isVisible('text=no es una copia de WhiteFox') && !!(await q.evaluate(() => S.quiz.e0)), 'un archivo que no es una copia se rechaza sin tocar el progreso');
+      // Si el navegador no deja guardar, se avisa
+      await q.evaluate(() => { Storage.prototype.setItem = () => { throw new DOMException('lleno', 'QuotaExceededError'); }; save(); });
+      await q.waitForTimeout(300);
+      ok(await q.isVisible('text=no deja guardar el progreso'), 'si el navegador no deja guardar, avisa en vez de fallar en silencio');
+      await c2.close();
+    }
     ok(errors.length === 0, `sin errores de consola${errors.length ? ': ' + errors.join(' | ') : ''}`);
     ok(external.length === 0, `sin peticiones externas${external.length ? ': ' + external.join(', ') : ''}`);
     await ctx.close();
