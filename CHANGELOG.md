@@ -1,5 +1,11 @@
 # Cambios
 
+## 2.3.2 · noviembre de 2026
+
+- El botón «Continuar» se quedaba en el ejercicio 1. La regla de la 2.3.1 seguía el último ejercicio abierto: al pulsar «Continuar con el ejercicio 1» ese pasaba a ser el último abierto, y vuelta a empezar. Además, el recuadro «Siguiente paso» usaba otra regla. Ahora la regla es una sola, en la portada, el panel y «Siguiente paso»: tu sitio es el último ejercicio cuyo quiz has respondido. Si está a medias, sigues en él; si está completo, pasas al siguiente sin terminar. Las prácticas que el simulador marca solas no te cambian de sitio.
+- La línea de progreso de la portada dice «2 de 32 completados» en vez de «2 de 32 ejercicios», para no confundirlo con el ejercicio en el que vas.
+- El botón azul de la portada, con el ratón encima, no llegaba al contraste mínimo (4,04:1); ahora tiene 5,9:1.
+
 ## 2.3.1 · noviembre de 2026
 
 - El progreso parecía perderse. Se guardaba, pero un ejercicio solo cuenta como completado con la práctica y el quiz, y los que tenían una sola de las dos partes no se marcaban. Además, la portada y el panel volvían siempre al ejercicio 1. Ahora:

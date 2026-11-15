@@ -560,7 +560,7 @@ td.empty{display:table-cell}
 .hero .lead b{color:#fff}
 .hero-cta{display:flex;gap:10px;flex-wrap:wrap;text-shadow:none}
 .hero-cta .btn.primary{background:#1f6fe0;color:#fff;box-shadow:0 1px 2px rgba(3,12,32,.3),0 6px 18px rgba(3,12,32,.25)}
-.hero-cta .btn.primary:hover{background:#2b7bf0}
+.hero-cta .btn.primary:hover{background:#1863c0}
 .hero-cta .btn:not(.primary){background:rgba(8,24,58,.42);color:#fff;border:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .hero-cta .btn:not(.primary):hover{background:rgba(8,24,58,.58)}
 .btn.lg{min-height:46px;padding:11px 20px;font-size:15px;border-radius:12px}
@@ -2063,8 +2063,11 @@ function exDone(e){return!!(S.prog[e.id]&&S.quiz[e.id]);}
 function exHalf(e){return!exDone(e)&&!!(S.prog[e.id]||S.quiz[e.id]);}
 function exNote(e){return exDone(e)?'':S.prog[e.id]?LG('Práctica hecha · falta el quiz','Practice done · quiz pending'):S.quiz[e.id]?LG('Quiz hecho · falta la práctica','Quiz done · practice pending'):'';}
 /* Dónde seguir: el último ejercicio abierto si no está terminado; si no, el primero sin terminar */
-function exNext(){const l=EXERCISES.findIndex(e=>e.id===S.lastEx);if(l>=0&&!exDone(EXERCISES[l]))return l;
- let last=-1;EXERCISES.forEach((e,i)=>{if(exDone(e))last=i;});const after=EXERCISES.findIndex((e,i)=>i>last&&!exDone(e));return after>=0?after:EXERCISES.findIndex(e=>!exDone(e));}
+/* Dónde vas: el último ejercicio cuyo quiz has respondido (o que has completado). Si está a medias, sigues en él;
+   si está completo, el siguiente sin terminar. Las prácticas que el simulador marca solas no te cambian de sitio. */
+function exNext(){let f=-1;EXERCISES.forEach((e,i)=>{if(S.quiz[e.id]||exDone(e))f=i;});
+ if(f>=0&&!exDone(EXERCISES[f]))return f;
+ const after=EXERCISES.findIndex((e,i)=>i>f&&!exDone(e));return after>=0?after:EXERCISES.findIndex(e=>!exDone(e));}
 function modCheck(){S.modDone=S.modDone||{};MODS.forEach(([n,ids])=>{if(!S.modDone[n]&&ids.every(id=>exDone(EXERCISES.find(x=>x.id===id)))){S.modDone[n]=Date.now();save();toast(LG(n+' completado. Abre «Lo que ya sabes» en Entrenamiento.',modName(n)+' completed. Open «What you now know» in Training.'),'trophy');}});}
 function checkExercises(){
  let any=false;
@@ -2761,7 +2764,7 @@ const TRX=[
  [/^Ejercicio (\d+): comprobación superada\. Responde el quiz para completarlo\.$/,'Exercise $1: check passed. Answer the quiz to complete it.'],
  [/^(.+) · opcional · falta el quiz$/,'$1 · optional · quiz pending'],[/^(.+) · falta el quiz$/,'$1 · quiz pending'],[/^(.+) · opcional$/,'$1 · optional'],
  [/^laboratorio estilo (.+)$/,'$1-style lab'],[/^(\d+) · (\d+) plugins de laboratorio$/,'$1 · $2 lab plugins'],
- [/^(\d+) de (\d+) ejercicios · (\d+)%$/,'$1 of $2 exercises · $3%'],[/^· siguiente: ejercicio (\d+)$/,'· next: exercise $1'],[/^· siguiente: (.+)$/,'· next: $1'],[/^(\d+) por hacer$/,'$1 to go'],
+ [/^(\d+) de (\d+) ejercicios · (\d+)%$/,'$1 of $2 exercises · $3%'],[/^(\d+) de (\d+) completados · (\d+)%$/,'$1 of $2 completed · $3%'],[/^· siguiente: ejercicio (\d+)$/,'· next: exercise $1'],[/^· siguiente: (.+)$/,'· next: $1'],[/^(\d+) por hacer$/,'$1 to go'],
  [/^Último: (.+)$/,'Last: $1'],[/^Siguiente paso: ejercicio (\d+), (.+)$/,'Next step: exercise $1, $2'],[/^Siguiente paso · ejercicio (\d+) de (\d+)$/,'Next step · exercise $1 of $2'],
  [/^Qué es: (.+)$/,'What it is: $1'],[/^(\d+) completados?( · (\d+) en curso)?$/,(m,a,b,c)=>a+' completed'+(c?' · '+c+' in progress':'')],[/^Continuar: ejercicio (\d+)$/,'Continue: exercise $1'],[/^Continuar con el ejercicio (\d+)$/,'Continue with exercise $1'],[/^Algo ha fallado.*Detalle técnico: (.+)$/,'Your data is still saved. Technical detail: $1'],[/^Tus datos siguen guardados\. Detalle técnico: (.+)$/,'Your data is still saved. Technical detail: $1'],[/^(\d+) pasos$/,'$1 steps'],[/^Capítulo (\d+) de (\d+)$/,'Chapter $1 of $2'],
  [/^Va en el puesto (\d+)\. /,'It goes in position $1. '],[/^(\d+) de (\d+) en su sitio\. Lee el porqué de las que están en rojo y vuelve a intentarlo\.$/,'$1 of $2 in place. Read why for the red ones and try again.'],
@@ -3008,7 +3011,7 @@ addEventListener('scroll',heroVis,{capture:true,passive:true});addEventListener(
 function renderCoach(){
  heroVis();
  let el=document.getElementById('coach');
- const i=EXERCISES.findIndex(e=>!exDone(e));
+ const i=exNext();
  if(TOUR||drawerOpen||coachHidden||i<0||document.getElementById('modal').innerHTML){if(el)el.remove();return;}
  if(!el){el=document.createElement('button');el.id='coach';el.className='coach';document.body.appendChild(el);}
  const e=EXERCISES[i],pend=S.prog[e.id]&&!S.quiz[e.id];
@@ -3042,7 +3045,7 @@ function vHero(){
    <h1 id="hero-t" aria-label="${l1}. ${l2}"><span aria-hidden="true"><span class="l1">${words(l1,0)}</span><span class="l2">${words(l2,l1.split(' ').length)}</span></span></h1>
    <p class="lead">${estado?`<b>${estado}</b> `:''}Descubre la red, escanea con y sin credenciales, prioriza por VPR, gestiona falsos positivos y presenta un informe a dirección. Todo simulado, sin conexión y sin riesgo.</p>
    <div class="hero-cta">${cta}<button class="btn lg" onclick="welcome()">${ic('book','sm')}Cómo funciona</button></div>
-   <div class="hero-prog"><div class="row"><span class="dot" aria-hidden="true"></span><span class="num">${done} de ${n} ejercicios · ${pct}%</span>${k>=0?`<span>· siguiente: ejercicio ${k+1}</span>`:''}</div><div class="meter" role="progressbar" aria-label="Progreso de la ruta" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}"><i style="width:${pct}%"></i></div></div>
+   <div class="hero-prog"><div class="row"><span class="dot" aria-hidden="true"></span><span class="num">${done} de ${n} completados · ${pct}%</span>${k>=0?`<span>· siguiente: ejercicio ${k+1}</span>`:''}</div><div class="meter" role="progressbar" aria-label="Progreso de la ruta" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${done}"><i style="width:${pct}%"></i></div></div>
   </div></section>
  <h2 class="sec-t">${ic('gauge','sm')}Tu práctica</h2>
  <div class="hstats">

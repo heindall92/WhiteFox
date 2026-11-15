@@ -500,17 +500,23 @@ async function axe(page, label) {
       await q.locator('#quiz label').nth(1).click(); await q.click('text=Comprobar respuesta'); await q.waitForTimeout(300);
       await q.evaluate(() => { drawerEx = 2; renderDrawer(); toggleDrawer(false); });
       await q.reload(); await q.waitForTimeout(700);
-      ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 3'), 'tras recargar, la portada ofrece continuar en el último ejercicio abierto');
+      ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 1'), 'tras recargar, la portada ofrece continuar el ejercicio que dejaste a medias');
       await q.evaluate(() => { toggleDrawer(true, 'ex'); drawerEx = null; renderDrawer(); }); await q.waitForTimeout(300);
       ok(await q.evaluate(() => document.querySelector('.ex[data-ex=e0]').classList.contains('half') && /Quiz hecho · falta la práctica/.test(document.querySelector('.ex[data-ex=e0]').textContent) && /0 completados · 1 en curso/.test(document.querySelector('.ov-sum').textContent)), 'un ejercicio con el quiz hecho se marca «en curso» y se guarda');
-      ok(await q.isVisible('.ex-cont >> text=Continuar: ejercicio 3'), 'el panel tiene «Continuar» con el ejercicio en el que ibas');
+      ok(await q.isVisible('.ex-cont >> text=Continuar: ejercicio 1'), 'el panel tiene «Continuar» con el ejercicio en el que ibas');
       await q.evaluate(() => { const n = Date.now(); ['e0', 'e1'].forEach(id => { S.prog[id] = n; S.quiz[id] = n; }); S.lastEx = 'e1'; save(); toggleDrawer(false); go({ top: 'scans', page: 'scans', folder: 'my' }); });
       await q.waitForTimeout(450);
       ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 3') && await q.isVisible('.hero >> text=siguiente: ejercicio 3'), 'con los ejercicios 1 y 2 completados, la portada sigue en el 3');
       await q.evaluate(() => { const n = Date.now(); ['e2', 'e3', 'e4'].forEach(id => { S.prog[id] = n; S.quiz[id] = n; }); S.quiz.e0 = 0; S.lastEx = 'e4'; save(); render(); });
       await q.waitForTimeout(300);
       ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 6'), 'el botón avanza con los ejercicios aunque quede uno anterior a medias');
-      await q.evaluate(() => { S.quiz.e0 = Date.now(); S.lastEx = 'e2'; save(); render(); });
+      // Caso real: 1 a medias, 2 y 3 completos, prácticas de ejercicios posteriores marcadas solas por el simulador
+      await q.evaluate(() => { const n = Date.now(); S.prog = {}; S.quiz = { e0: n }; ['e1', 'e2'].forEach(id => { S.prog[id] = n; S.quiz[id] = n; }); ['e17', 'e20', 'e13', 'e14'].forEach(id => S.prog[id] = n); S.lastEx = 'e0'; coachHidden = false; save(); render(); });
+      await q.waitForTimeout(400);
+      ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 4') && await q.isVisible('.hero >> text=siguiente: ejercicio 4') && /ejercicio 4 de 32/.test(await q.evaluate(() => (document.getElementById('coach') || {}).textContent || '')), 'portada, línea de progreso y «Siguiente paso» coinciden: ejercicio 4');
+      await q.click('.hero >> text=Continuar con el ejercicio 4'); await q.waitForTimeout(300);
+      await q.evaluate(() => { toggleDrawer(false); go({ top: 'scans', page: 'scans', folder: 'my' }); }); await q.waitForTimeout(400);
+      ok(await q.isVisible('.hero >> text=Continuar con el ejercicio 4'), 'pulsar «Continuar» no hace volver atrás el botón');
       await axe(q, 'panel con progreso a medias');
       // Copia de seguridad: descargar y restaurar
       await q.evaluate(() => { toggleDrawer(false); go({ top: 'settings', page: 'settings', sub: 'lab' }); }); await q.waitForTimeout(450);
@@ -518,7 +524,7 @@ async function axe(page, label) {
       const bk = path.join(SHOTS, 'copia.json'); await dl.saveAs(bk);
       await q.evaluate(() => { S.quiz = {}; S.prog = {}; save(); render(); });
       await q.setInputFiles('main input[type=file]', bk); await q.waitForTimeout(500);
-      ok(await q.evaluate(() => !!S.quiz.e0 && S.lastEx === 'e2'), 'restaurar la copia recupera el progreso');
+      ok(await q.evaluate(() => !!S.quiz.e0 && !!S.quiz.e1), 'restaurar la copia recupera el progreso');
       fs.writeFileSync(path.join(SHOTS, 'mala.json'), '{"x":1}');
       await q.setInputFiles('main input[type=file]', path.join(SHOTS, 'mala.json')); await q.waitForTimeout(300);
       ok(await q.isVisible('text=no es una copia de WhiteFox') && !!(await q.evaluate(() => S.quiz.e0)), 'un archivo que no es una copia se rechaza sin tocar el progreso');
