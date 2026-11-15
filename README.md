@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <img alt="Uso privado" src="https://img.shields.io/badge/uso-privado-1A4F8A?style=flat"/>
-  <img alt="Versión 2.2.0" src="https://img.shields.io/badge/versi%C3%B3n-2.2.0-4A97E8?style=flat"/>
+  <img alt="Licencia: todos los derechos reservados" src="https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-1A4F8A?style=flat"/>
+  <img alt="Versión 2.2.1" src="https://img.shields.io/badge/versi%C3%B3n-2.2.1-4A97E8?style=flat"/>
   <img alt="Idiomas ES y EN" src="https://img.shields.io/badge/idiomas-ES%20%C2%B7%20EN-7C4DFF?style=flat"/>
   <img alt="32 ejercicios" src="https://img.shields.io/badge/ejercicios-32-7C4DFF?style=flat"/>
   <img alt="Manual de 12 capítulos" src="https://img.shields.io/badge/manual-12%20cap%C3%ADtulos-4A97E8?style=flat"/>
@@ -362,9 +362,13 @@ WhiteFox/
 
 ## <img src="docs/assets/icons/scale.svg" width="20" height="20" valign="middle"/> Licencia
 
-© 2026 Yoandy Ramírez Delgado. Repositorio privado de uso personal.
+© 2026 Yoandy Ramírez Delgado. **Todos los derechos reservados.** WhiteFox no tiene licencia abierta: sin permiso escrito del autor no se puede copiar, modificar, distribuir ni crear obras derivadas. El texto completo, en español y en inglés, está en [`LICENSE`](LICENSE).
 
-Componentes de terceros: iconos de [Lucide](https://lucide.dev) (ISC). WhiteFox es una herramienta de estudio independiente: no está afiliada ni respaldada por Tenable. *Nessus* y *Tenable* son marcas de sus propietarios. La interfaz se ha recreado a partir de la documentación pública, sin código, logotipos ni textos de Tenable. Empresa, equipos y hallazgos son inventados; los CVE son públicos.
+Componentes de terceros, con su propia licencia, en [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md):
+- los iconos de [Lucide](https://lucide.dev) (ISC), cuyo aviso va también dentro de `index.html`;
+- Playwright (Apache-2.0) y axe-core (MPL-2.0), solo en las pruebas.
+
+WhiteFox es una herramienta de estudio independiente: no está afiliada ni respaldada por Tenable. *Nessus* y *Tenable* son marcas de sus propietarios. La interfaz se ha recreado a partir de la documentación pública, sin código, logotipos ni textos de Tenable. Empresa, equipos y hallazgos son inventados; los CVE son públicos.
 
 ## <img src="docs/assets/icons/user-round.svg" width="20" height="20" valign="middle"/> Autor
 
