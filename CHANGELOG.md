@@ -1,5 +1,22 @@
 # Cambios
 
+## 2.5.1 · noviembre de 2026
+
+- **Tarjetas rediseñadas con el estilo del zorro polar**: blancas y limpias, sin cuadrícula, con la huella de WhiteFox, verde para lo conseguido y texto alineado a la izquierda (guía de diseño de Apple).
+  - Tarjeta de logros: las 7 insignias en una fila uniforme, con margen para que ninguna se corte, y «Lo que sé hacer» con marcas de verificación verdes.
+  - Tarjeta por insignia: la insignia a la izquierda y, a la derecha, el nombre, el módulo, lo que sabes hacer y la fecha.
+  - El texto de las tarjetas pasa por el traductor: ya no sale «scan» ni «Policies».
+- **Compartir**:
+  - en WhatsApp, LinkedIn, X, Telegram y correo, con el texto ya escrito;
+  - «Copiar texto»;
+  - en el móvil, «Compartir con la imagen», que la envía directamente con el menú del sistema.
+
+  Las redes no aceptan una imagen desde un enlace: al pulsar una, se descarga la imagen y se abre la red en una pestaña nueva para adjuntarla. La aplicación no hace ninguna petición por su cuenta.
+- **«Guardar cambios» borraba la foto de perfil.** El perfil se guardaba de nuevo sin ella; ahora se conserva.
+- El avatar de Mi cuenta pasa de 48 a 88 px.
+- La rejilla de insignias es de 4 + 3, centrada (2 columnas en el móvil), y las conseguidas llevan el nombre y el recuento en verde.
+- Los enlaces con aspecto de botón («Descargar PNG», compartir) ya no salen subrayados.
+
 ## 2.5.0 · noviembre de 2026
 
 - **Insignias por módulo.** Al terminar un módulo (práctica y quiz de todos sus ejercicios) se consigue su insignia. Hay siete: Explorador de red, Analista de hallazgos, Escaneo autenticado, Especialista en plantillas, Gestor del riesgo, Configurador experto y Risk Manager en práctica. Son hexagonales, con el color y el icono de cada módulo. Salen en Mi cuenta y en el panel de Entrenamiento, junto a «Lo que ya sabes»; las pendientes se ven en gris con su progreso.

@@ -238,14 +238,14 @@ img.avatar{object-fit:cover;padding:0;background:#2a3c50}
 .badges-sec{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
 .bdg-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
 .bdg-head h2{font-size:17px;margin:0 0 4px}.bdg-head p{margin:0;max-width:52ch}
-.bdg-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(max(140px,calc((100% - 36px)/4)),1fr));gap:12px}
+.bdg-grid{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.bdg-grid>.bdg{flex:0 0 calc((100% - 36px)/4);min-width:140px}@media (max-width:640px){.bdg-grid>.bdg{flex-basis:calc((100% - 12px)/2)}}
 .bdg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:16px 12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .bdg svg{margin-bottom:6px;transition:transform .2s var(--ease-out)}.bdg.on:hover svg{transform:translateY(-2px) scale(1.03)}
 .bdg:not(.on) svg{opacity:.5}
-.bdg b{font-size:13.5px;line-height:1.3}.bdg .muted{font-size:12px;line-height:1.35}
+.bdg b{font-size:13.5px;line-height:1.3}.bdg.on b{color:var(--ok)}.bdg.on{border-color:color-mix(in srgb,var(--ok) 28%,var(--line))}.bdg-head .num-ok{color:var(--ok);font-weight:700}.bdg .muted{font-size:12px;line-height:1.35}
 .bdg-at{display:flex;gap:5px;align-items:center;font-size:12.5px;color:var(--ok);font-weight:600;margin-top:6px}.bdg-at+.muted{margin-bottom:8px}
 .bdg-p{display:grid;gap:6px;width:100%;font-size:12px;color:var(--text-2);margin-top:6px}.bdg-p .meter{height:6px;display:block}
-.card-modal{width:min(640px,94vw)}.card-prev{display:block;width:100%;height:auto;border-radius:12px;box-shadow:var(--ring-hi)}
+a.btn,a.btn:hover{text-decoration:none}.card-modal{width:min(660px,94vw)}.card-prev{display:block;width:auto;max-width:100%;max-height:min(56vh,600px);height:auto;margin:0 auto;border-radius:14px;border:1px solid var(--line);box-shadow:0 10px 30px rgba(15,27,42,.12)}.share{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}.share-l{font-size:13px;font-weight:600;color:var(--text-2);margin-right:2px}.share-h{font-size:12.5px;margin:10px 0 0}#share-txt{margin-top:10px;min-height:90px;width:100%}
 .mod-sum summary{display:flex;gap:8px;align-items:center}.mod-sum summary svg{flex:none}.mod-sum .btn{margin-top:8px}
 
 @media (min-width:1360px){body.dw .app>.body,body.dw .app>.disclaimer{margin-right:460px}body.dw .toasts{left:calc(50% - 230px)}}
@@ -520,8 +520,8 @@ td.empty{display:table-cell}
 .langsw{margin-right:6px}
 .user{display:flex;align-items:center;gap:8px;border:0;background:none;color:inherit;font:inherit;padding:4px 6px;border-radius:9px;cursor:pointer}
 .user:hover{background:rgba(255,255,255,.08)}
-.acct{display:flex;align-items:center;gap:12px;margin:0 0 20px}
-.avatar.lg{width:48px;height:48px;font-size:17px;display:grid;place-items:center;border-radius:50%}
+.acct{display:flex;align-items:center;gap:18px;margin:0 0 24px}
+.avatar.lg{width:88px;height:88px;font-size:30px;display:grid;place-items:center;border-radius:50%;box-shadow:0 0 0 4px var(--surface),0 6px 18px rgba(15,27,42,.16)}.acct b{font-size:18px}
 .tcard2{display:flex;flex-direction:column;gap:8px}
 .tcard2 p{flex:1 1 auto}
 .tcard2>div:last-child{margin-top:8px}
@@ -910,6 +910,12 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
    PERFORMANCE OF THIS SOFTWARE. */
 const ICONS={
+ share2:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+ msgCircle:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+ linkedin:'<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>',
+ twitter:'<path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>',
+ send:'<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>',
+ mail:'<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
  copy:'<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
  grid:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',radar:'<path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/><path d="m13.41 10.59 5.66-5.66"/>',
  folder:'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
@@ -1015,8 +1021,8 @@ const modDoneAt=i=>{const M=MODS[i];return M[1].every(id=>exDone(EXERCISES.find(
 const modProg=i=>{const ids=MODS[i][1];return[ids.filter(id=>exDone(EXERCISES.find(x=>x.id===id))).length,ids.length];};
 let BADGE_N=0;
 /* Insignia hexagonal: degradado del módulo, anillo, icono Lucide y cinta con el número de módulo */
-function badgeSVG(i,on=true,px=96,label=true){const b=BADGES[i],g='bdg'+(++BADGE_N),c=on?b.c:['#a3adb8','#6b7785'];
- return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 132" width="${px}" height="${Math.round(px*1.1)}" ${label?`role="img" aria-label="${esc(LG('Insignia','Badge')+': '+bName(i)+(on?'':' · '+LG('pendiente','locked')))}"`:'aria-hidden="true"'}><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient><linearGradient id="${g}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`+
+function badgeSVG(i,on=true,px=96,label=true){const b=BADGES[i],g='bdg'+(++BADGE_N),c=on?b.c:['#d3dbe3','#a9b5c1'];
+ return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -4 132 140" width="${px}" height="${Math.round(px*140/132)}" ${label?`role="img" aria-label="${esc(LG('Insignia','Badge')+': '+bName(i)+(on?'':' · '+LG('pendiente','locked')))}"`:'aria-hidden="true"'}><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient><linearGradient id="${g}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`+
  `<path d="M60 4 108 32v56L60 116 12 88V32Z" fill="url(#${g})"/><path d="M60 4 108 32v56L60 116 12 88V32Z" fill="url(#${g}s)"/>`+
  `<path d="M60 15 98.5 37.5v45L60 105 21.5 82.5v-45Z" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>`+
  `<circle cx="60" cy="58" r="25" fill="#fff" fill-opacity=".17"/>`+
@@ -1046,71 +1052,98 @@ function rrect(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,
 function wrapLines(x,t,maxW,maxL=2){const w=String(t).split(/\s+/),out=[];let l='';for(const s of w){const tt=l?l+' '+s:s;if(x.measureText(tt).width>maxW&&l){out.push(l);l=s;}else l=tt;}if(l)out.push(l);
  if(out.length>maxL){out.length=maxL;let last=out[maxL-1];while(x.measureText(last+'…').width>maxW&&last.length)last=last.slice(0,-1);out[maxL-1]=last.replace(/\s+$/,'')+'…';}return out;}
 function fitFont(x,t,weight,size,maxW,min=18){let s=size;do{x.font=`${weight} ${s}px ${CF}`;}while(x.measureText(t).width>maxW&&--s>min);return s;}
-function cardBg(x,W,H,c1,c2){const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,c1);g.addColorStop(1,c2);x.fillStyle=g;x.fillRect(0,0,W,H);
- x.strokeStyle='rgba(255,255,255,.035)';x.lineWidth=1;for(let i=40;i<Math.max(W,H);i+=40){x.beginPath();x.moveTo(i+.5,0);x.lineTo(i+.5,H);x.stroke();x.beginPath();x.moveTo(0,i+.5);x.lineTo(W,i+.5);x.stroke();}
- const r=x.createRadialGradient(W*.85,H*.08,10,W*.85,H*.08,W*.6);r.addColorStop(0,'rgba(74,151,232,.28)');r.addColorStop(1,'rgba(74,151,232,0)');x.fillStyle=r;x.fillRect(0,0,W,H);}
-async function drawAvatar(x,cx,cy,r){x.save();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.closePath();x.clip();
- if(hasPhoto()){try{const im=await loadImg(S.profile.photo);x.drawImage(im,cx-r,cy-r,r*2,r*2);}catch(e){}}
- else{const g=x.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,'#2f80ed');g.addColorStop(1,'#1b3f7a');x.fillStyle=g;x.fillRect(cx-r,cy-r,r*2,r*2);x.fillStyle='#fff';x.font=`700 ${Math.round(r*.8)}px ${CF}`;x.textAlign='center';x.textBaseline='middle';x.fillText(initials(S.profile.name),cx,cy+2);}
- x.restore();x.beginPath();x.arc(cx,cy,r+3,0,Math.PI*2);x.strokeStyle='rgba(255,255,255,.85)';x.lineWidth=5;x.stroke();x.textAlign='left';x.textBaseline='alphabetic';}
 const fDay=t=>new Date(t).toLocaleDateString(S.lang==='en'?'en-GB':'es-ES',{day:'numeric',month:'long',year:'numeric'});
-function cardFooter(x,W,H){x.fillStyle='rgba(255,255,255,.55)';x.font=`500 17px ${CF}`;x.textAlign='center';
- x.fillText(LG('Practicado en WhiteFox, laboratorio offline de gestión de vulnerabilidades. Sin afiliación con Tenable.','Practised in WhiteFox, an offline vulnerability management lab. Not affiliated with Tenable.'),W/2,H-34);x.textAlign='left';}
-function brand(x,X,Y){x.fillStyle='#9cc3f2';x.font=`700 20px ${CF}`;x.fillText('WHITEFOX',X,Y);const w=x.measureText('WHITEFOX').width;x.fillStyle='rgba(255,255,255,.5)';x.font=`500 20px ${CF}`;x.fillText('  ·  '+LG('Laboratorio de gestión de vulnerabilidades','Vulnerability management lab'),X+w,Y);}
+/* Tarjetas «zorro polar»: blanco, limpio, sin cuadrícula; verde para lo conseguido. Alineación a la izquierda. */
+/* el texto del lienzo no pasa por el traductor del DOM: se traduce aquí (p. ej. «scan» → «escaneo») */
+const cvTx=s=>{const r=trText(String(s));return r==null?String(s):r;};
+const ARC={ink:'#0f1b2a',ink2:'#4f5f70',ink3:'#8794a3',line:'#e2e8ee',track:'#e7edf2',green:'#13795b',green2:'#25a46f'};
+const BR=140/132;/* proporción del SVG de la insignia (con margen para que nunca se corte) */
+function track(x,px){if('letterSpacing'in x)x.letterSpacing=px+'px';}
+function cardBg(x,W,H,tint){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#f3f7fa');x.fillStyle=g;x.fillRect(0,0,W,H);
+ const glow=(cx,cy,r,col)=>{const rg=x.createRadialGradient(cx,cy,0,cx,cy,r);rg.addColorStop(0,col);rg.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=rg;x.fillRect(0,0,W,H);};
+ glow(W*.95,0,W*.6,'rgba(190,216,240,.42)');glow(0,H,W*.55,'rgba(196,236,218,.38)');if(tint)glow(W*.26,H*.42,W*.36,tint);}
+async function brand(x,X,Y){const im=await svgToImg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="${ARC.ink}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS.paw}</svg>`);
+ x.drawImage(im,X,Y-24,30,30);x.fillStyle=ARC.ink;x.font=`700 24px ${CF}`;track(x,-.3);x.fillText('WhiteFox',X+42,Y);const w=x.measureText('WhiteFox').width;track(x,0);
+ x.fillStyle=ARC.ink3;x.font=`500 20px ${CF}`;x.fillText('·  '+LG('Laboratorio de gestión de vulnerabilidades','Vulnerability management lab'),X+42+w+14,Y);}
+async function drawAvatar(x,cx,cy,r){x.save();x.shadowColor='rgba(15,27,42,.16)';x.shadowBlur=28;x.shadowOffsetY=10;x.beginPath();x.arc(cx,cy,r+6,0,Math.PI*2);x.fillStyle='#fff';x.fill();x.restore();
+ x.save();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.closePath();x.clip();
+ if(hasPhoto()){try{const im=await loadImg(S.profile.photo);x.drawImage(im,cx-r,cy-r,r*2,r*2);}catch(e){}}
+ else{const g=x.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,'#dbe9f6');g.addColorStop(1,'#b9d3ec');x.fillStyle=g;x.fillRect(cx-r,cy-r,r*2,r*2);x.fillStyle='#24476e';x.font=`700 ${Math.round(r*.78)}px ${CF}`;x.textAlign='center';x.textBaseline='middle';x.fillText(initials(S.profile.name),cx,cy+2);}
+ x.restore();x.textAlign='left';x.textBaseline='alphabetic';}
+function checkMark(x,X,Y,r=11){x.beginPath();x.arc(X+r,Y-r+3,r,0,Math.PI*2);x.fillStyle='rgba(37,164,111,.14)';x.fill();
+ x.beginPath();x.moveTo(X+r-4.5,Y-r+3);x.lineTo(X+r-1,Y-r+6.5);x.lineTo(X+r+5,Y-r-.5);x.strokeStyle=ARC.green;x.lineWidth=2.4;x.lineCap='round';x.lineJoin='round';x.stroke();}
+async function drawBadge(x,i,on,X,Y,w){const im=await svgToImg(badgeSVG(i,on,w,false)),h=w*BR;
+ x.save();if(on){x.shadowColor=BADGES[i].c[1]+'55';x.shadowBlur=w*.16;x.shadowOffsetY=w*.06;}x.drawImage(im,X,Y,w,h);x.restore();return h;}
+const fDayS=t=>new Date(t).toLocaleDateString(S.lang==='en'?'en-GB':'es-ES',{day:'numeric',month:'short',year:'numeric'});
+function cardFooter(x,W,H,M,right=''){x.fillStyle=ARC.ink3;x.font=`500 16px ${CF}`;
+ x.fillText(LG('Practicado en WhiteFox, laboratorio offline. Sin afiliación con Tenable.','Practised in WhiteFox, an offline lab. Not affiliated with Tenable.'),M,H-56);
+ if(right){x.textAlign='right';x.fillText(right,W-M,H-56);x.textAlign='left';}}
 
-/* Tarjeta de logros: 1200 × 1200, para LinkedIn o el portfolio */
-async function renderAchCard(){const W=1200,H=1200,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
- cardBg(x,W,H,'#0a1424','#14284a');brand(x,80,92);
- await drawAvatar(x,175,225,88);
- const p=S.profile;x.fillStyle='#fff';fitFont(x,p.name,700,54,820);x.fillText(p.name,300,212);
- x.fillStyle='#b8c7da';x.font=`500 28px ${CF}`;x.fillText(p.role||'',300,256);
+/* Tarjeta de logros: 1200 × 1200 */
+async function renderAchCard(){const W=1200,H=1200,M=88,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ cardBg(x,W,H);await brand(x,M,108);
+ await drawAvatar(x,M+86,262,86);
+ const p=S.profile,TX=M+206;x.fillStyle=ARC.ink;track(x,-1.4);fitFont(x,p.name,700,56,W-TX-M,30);x.fillText(p.name,TX,250);track(x,0);
+ x.fillStyle=ARC.ink2;x.font=`500 28px ${CF}`;x.fillText(p.role||'',TX,296);
  const done=EXERCISES.filter(e=>exDone(e)).length,earned=MODS.map((m,i)=>modDoneAt(i)),nb=earned.filter(Boolean).length;
- x.fillStyle='#fff';x.font=`700 30px ${CF}`;const t1=`${done} / ${EXERCISES.length}`;x.fillText(t1,80,372);let w=x.measureText(t1).width;
- x.fillStyle='#b8c7da';x.font=`500 26px ${CF}`;x.fillText(' '+LG('ejercicios','exercises'),80+w,372);w+=x.measureText(' '+LG('ejercicios','exercises')).width+40;
- x.fillStyle='#fff';x.font=`700 30px ${CF}`;const t2=`${nb} / ${MODS.length}`;x.fillText(t2,80+w,372);const w2=x.measureText(t2).width;
- x.fillStyle='#b8c7da';x.font=`500 26px ${CF}`;x.fillText(' '+LG('insignias','badges'),80+w+w2,372);
- rrect(x,80,394,W-160,14,7);x.fillStyle='rgba(255,255,255,.12)';x.fill();if(done){rrect(x,80,394,Math.max(14,(W-160)*done/EXERCISES.length),14,7);const g=x.createLinearGradient(80,0,W-80,0);g.addColorStop(0,'#4a97e8');g.addColorStop(1,'#14b8a6');x.fillStyle=g;x.fill();}
- const rows=[[0,1,2,3],[4,5,6]],bw=150,bh=165,cw=250;
- for(let r=0;r<2;r++){const ids=rows[r],x0=(W-ids.length*cw)/2,y0=448+r*262;
-  for(let k=0;k<ids.length;k++){const i=ids[k],on=!!earned[i],im=await svgToImg(badgeSVG(i,on,bw,false)),cx=x0+k*cw+cw/2;
-   x.globalAlpha=on?1:.45;x.drawImage(im,cx-bw/2,y0,bw,bh);x.globalAlpha=1;
-   x.fillStyle=on?'#fff':'rgba(255,255,255,.5)';x.font=`600 20px ${CF}`;x.textAlign='center';wrapLines(x,bName(i),cw-20,2).forEach((l,j)=>x.fillText(l,cx,y0+bh+30+j*24));x.textAlign='left';}}
- const skills=MODS.flatMap((m,i)=>earned[i]?(m[2].sum||[]):[]);
- x.fillStyle='#9cc3f2';x.font=`700 20px ${CF}`;x.fillText(LG('LO QUE SÉ HACER','WHAT I CAN DO'),80,990);
- x.font=`500 21px ${CF}`;x.fillStyle='#e6eef8';
- if(!skills.length){x.fillStyle='rgba(255,255,255,.6)';x.fillText(LG('Aún sin insignias: el primer módulo está a unos 20 minutos.','No badges yet: the first module takes about 20 minutes.'),80,1028);}
- else{const col=(W-200)/2,list=skills.slice(0,6);list.forEach((s,j)=>{const X=80+(j%2)*(col+40),Y=1028+Math.floor(j/2)*32;x.fillStyle='#14b8a6';x.beginPath();x.arc(X+6,Y-7,5,0,Math.PI*2);x.fill();x.fillStyle='#e6eef8';x.fillText(wrapLines(x,s,col-24,1)[0],X+22,Y);});
-  if(skills.length>6){x.fillStyle='rgba(255,255,255,.55)';x.fillText(LG(`y ${skills.length-6} más`,`and ${skills.length-6} more`),80+22,1028+3*32);}}
- cardFooter(x,W,H);return c;}
+ let X=M;const stat=(n,l)=>{x.fillStyle=ARC.green;x.font=`700 32px ${CF}`;x.fillText(n,X,420);X+=x.measureText(n).width+10;x.fillStyle=ARC.ink2;x.font=`500 26px ${CF}`;x.fillText(l,X,420);X+=x.measureText(l).width+44;};
+ stat(`${done}/${EXERCISES.length}`,LG('ejercicios','exercises'));stat(`${nb}/${MODS.length}`,LG('insignias','badges'));
+ rrect(x,M,446,W-2*M,12,6);x.fillStyle=ARC.track;x.fill();
+ if(done){rrect(x,M,446,Math.max(12,(W-2*M)*done/EXERCISES.length),12,6);const g=x.createLinearGradient(M,0,W-M,0);g.addColorStop(0,ARC.green2);g.addColorStop(1,ARC.green);x.fillStyle=g;x.fill();}
+ const cw=(W-2*M)/MODS.length,bw=118;
+ for(let i=0;i<MODS.length;i++){const cx=M+cw*i+cw/2,on=!!earned[i],h=await drawBadge(x,i,on,cx-bw/2,508,bw);
+  x.textAlign='center';x.fillStyle=on?ARC.ink:ARC.ink3;x.font=`600 18px ${CF}`;wrapLines(x,bName(i),cw-14,2).forEach((l,j)=>x.fillText(l,cx,508+h+34+j*23));x.textAlign='left';}
+ x.fillStyle=ARC.line;x.fillRect(M,768,W-2*M,1);
+ x.fillStyle=ARC.green;x.font=`700 18px ${CF}`;track(x,2);x.fillText(LG('LO QUE SÉ HACER','WHAT I CAN DO'),M,826);track(x,0);
+ const skills=MODS.flatMap((m,i)=>earned[i]?(m[2].sum||[]):[]).map(cvTx);x.font=`500 22px ${CF}`;
+ if(!skills.length){x.fillStyle=ARC.ink2;x.fillText(LG('Aún sin insignias: el primer módulo se hace en unos 20 minutos.','No badges yet: the first module takes about 20 minutes.'),M,874);}
+ else{const col=(W-2*M-40)/2,list=skills.slice(0,8);list.forEach((s,j)=>{const X0=M+(j%2)*(col+40),Y=876+Math.floor(j/2)*46;checkMark(x,X0,Y);x.fillStyle=ARC.ink;x.font=`500 22px ${CF}`;x.fillText(wrapLines(x,s,col-38,1)[0],X0+34,Y);});
+  if(skills.length>8){x.fillStyle=ARC.ink3;x.font=`500 20px ${CF}`;x.fillText(LG(`y ${skills.length-8} más`,`and ${skills.length-8} more`),M+34,876+4*46);}}
+ cardFooter(x,W,H,M,fDayS(Date.now()));return c;}
 
-/* Tarjeta de una insignia: 1080 × 1080 */
-async function renderBadgeCard(i){const W=1080,H=1080,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),b=BADGES[i];
- cardBg(x,W,H,'#0a1424','#13233f');
- const r=x.createRadialGradient(W/2,370,20,W/2,370,420);r.addColorStop(0,b.c[0]+'66');r.addColorStop(1,b.c[0]+'00');x.fillStyle=r;x.fillRect(0,0,W,H);
- brand(x,70,84);
- const im=await svgToImg(badgeSVG(i,true,330,false));x.drawImage(im,(W-330)/2,140,330,363);
- x.textAlign='center';x.fillStyle=b.c[0];x.font=`700 22px ${CF}`;x.fillText(LG('INSIGNIA CONSEGUIDA','BADGE EARNED'),W/2,560);
- x.fillStyle='#fff';fitFont(x,bName(i),800,58,W-140,30);x.fillText(bName(i),W/2,628);
- x.fillStyle='#b8c7da';x.font=`500 26px ${CF}`;x.fillText(modName(MODS[i][0]),W/2,672);
- x.font=`500 23px ${CF}`;x.fillStyle='#e6eef8';(MODS[i][2].sum||[]).slice(0,4).forEach((s,j)=>x.fillText('✓  '+wrapLines(x,s,W-220,1)[0],W/2,730+j*36));
- x.textAlign='left';
- const at=modDoneAt(i);await drawAvatar(x,120,930,48);x.fillStyle='#fff';fitFont(x,S.profile.name,700,28,620,18);x.fillText(S.profile.name,190,922);
- x.fillStyle='#b8c7da';x.font=`500 21px ${CF}`;x.fillText([S.profile.role,at?fDay(at):''].filter(Boolean).join(' · '),190,955);
- cardFooter(x,W,H);return c;}
+/* Tarjeta de una insignia: 1080 × 1080, insignia a la izquierda y texto alineado a la izquierda */
+async function renderBadgeCard(i){const W=1080,H=1080,M=80,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),b=BADGES[i];
+ cardBg(x,W,H,b.c[0]+'2e');await brand(x,M,104);
+ const bw=360,bh=await drawBadge(x,i,true,M,296,bw);
+ const TX=M+bw+56,TW=W-TX-M;let y=368;
+ x.fillStyle=ARC.green;x.font=`700 19px ${CF}`;track(x,2);x.fillText(LG('INSIGNIA CONSEGUIDA','BADGE EARNED'),TX,y);track(x,0);
+ x.fillStyle=ARC.ink;x.font=`800 50px ${CF}`;track(x,-1.2);const nl=wrapLines(x,bName(i),TW,2);nl.forEach((l,j)=>x.fillText(l,TX,y+64+j*56));track(x,0);y+=64+(nl.length-1)*56;
+ x.fillStyle=ARC.ink2;x.font=`500 23px ${CF}`;x.fillText(cvTx(modName(MODS[i][0])),TX,y+42);y+=78;
+ x.fillStyle=ARC.line;x.fillRect(TX,y,TW,1);y+=50;
+ x.font=`500 21px ${CF}`;for(const s of (MODS[i][2].sum||[]).slice(0,4).map(cvTx)){const ls=wrapLines(x,s,TW-36,2);checkMark(x,TX,y);x.fillStyle=ARC.ink;ls.forEach((l,j)=>x.fillText(l,TX+34,y+j*28));y+=ls.length*28+18;}
+ const at=modDoneAt(i);x.fillStyle=ARC.line;x.fillRect(M,868,W-2*M,1);
+ await drawAvatar(x,M+44,938,44);x.fillStyle=ARC.ink;track(x,-.4);fitFont(x,S.profile.name,700,28,W-M*2-120,18);x.fillText(S.profile.name,M+112,930);track(x,0);
+ x.fillStyle=ARC.ink2;x.font=`500 21px ${CF}`;x.fillText([S.profile.role,at?LG('conseguida el ','earned on ')+fDay(at):''].filter(Boolean).join(' · '),M+112,962);
+ cardFooter(x,W,H,M);return c;}
 
-/* Vista previa y descarga */
-let CARD_URL=null;
+/* Compartir: la imagen va directa con la hoja nativa (móvil); en el resto se descarga y se abre la red con el texto listo */
+let CARD_URL=null,CARD_BLOB=null,CARD_NAME='',CARD_TEXT='';
+function shareText(kind,i){const done=EXERCISES.filter(e=>exDone(e)).length,earned=MODS.map((m,k)=>modDoneAt(k)?bName(k):null).filter(Boolean);
+ return kind==='badge'?LG(`He conseguido la insignia «${bName(i)}» en WhiteFox, un laboratorio para practicar gestión de vulnerabilidades con un escáner estilo Nessus. Ya sé: ${(MODS[i][2].sum||[]).map(cvTx).join('; ')}. #Ciberseguridad #GestiónDeVulnerabilidades #RiskManagement`,`I earned the «${bName(i)}» badge in WhiteFox, a lab to practise vulnerability management with a Nessus-style scanner. I can now: ${(MODS[i][2].sum||[]).map(cvTx).join('; ')}. #Cybersecurity #VulnerabilityManagement #RiskManagement`)
+  :LG(`Mi progreso en WhiteFox, un laboratorio de gestión de vulnerabilidades: ${done} de ${EXERCISES.length} ejercicios y ${earned.length} de ${MODS.length} insignias${earned.length?' ('+earned.join(', ')+')':''}. #Ciberseguridad #GestiónDeVulnerabilidades #RiskManagement`,`My progress in WhiteFox, a vulnerability management lab: ${done} of ${EXERCISES.length} exercises and ${earned.length} of ${MODS.length} badges${earned.length?' ('+earned.join(', ')+')':''}. #Cybersecurity #VulnerabilityManagement #RiskManagement`);}
+function shareDl(){if(!CARD_URL)return;const a=document.createElement('a');a.href=CARD_URL;a.download=CARD_NAME;document.body.appendChild(a);a.click();a.remove();ev('cardDownload');}
+async function shareNative(){try{await navigator.share({files:[new File([CARD_BLOB],CARD_NAME,{type:'image/png'})],text:CARD_TEXT});ev('cardShare');}catch(e){if(e&&e.name!=='AbortError')toast(LG('No se ha podido abrir el menú de compartir.','The share menu could not be opened.'),'alert');}}
+async function copyShare(){try{await navigator.clipboard.writeText(CARD_TEXT);toast(LG('Texto copiado. Pégalo junto a la imagen.','Text copied. Paste it with the image.'),'copy');}catch(e){const t=document.getElementById('share-txt');if(t){t.hidden=false;t.select();}toast(LG('Selecciona el texto y cópialo con Ctrl+C.','Select the text and copy it with Ctrl+C.'),'copy');}}
 async function cardModal(kind,i){let c;try{c=kind==='badge'?await renderBadgeCard(i):await renderAchCard();}catch(e){console.error(e);toast(LG('No se ha podido generar la imagen en este navegador.','The image could not be generated in this browser.'),'alert');return;}
  c.toBlob(b=>{if(!b){toast(LG('No se ha podido generar la imagen en este navegador.','The image could not be generated in this browser.'),'alert');return;}
-  if(CARD_URL)URL.revokeObjectURL(CARD_URL);CARD_URL=URL.createObjectURL(b);
-  const u=slug(S.profile.user||'yo')||'yo',name=kind==='badge'?`whitefox-insignia-${i+1}-${u}.png`:`whitefox-logros-${u}.png`;
-  const title=kind==='badge'?bName(i):LG('Tu tarjeta de logros','Your achievements card');
-  modal(title,`<img class="card-prev" src="${CARD_URL}" alt="${esc(kind==='badge'?LG('Tarjeta de la insignia','Badge card')+' '+bName(i):LG('Tarjeta de logros','Achievements card'))}" data-w="${c.width}"><p class="muted" style="margin:10px 0 0">${LG(`Imagen PNG de ${c.width} × ${c.height} px, generada en tu navegador. Lista para LinkedIn o tu portfolio.`,`${c.width} × ${c.height} px PNG image, generated in your browser. Ready for LinkedIn or your portfolio.`)}</p>`,
-   `<button class="btn" onclick="closeModal()">${LG('Cerrar','Close')}</button><a class="btn primary" href="${CARD_URL}" download="${name}" onclick="ev('cardDownload')">${ic('download','sm')}${LG('Descargar PNG','Download PNG')}</a>`,'card-modal');},'image/png');}
+  if(CARD_URL)URL.revokeObjectURL(CARD_URL);CARD_BLOB=b;CARD_URL=URL.createObjectURL(b);
+  const u=slug(S.profile.user||'yo')||'yo';CARD_NAME=kind==='badge'?`whitefox-insignia-${i+1}-${u}.png`:`whitefox-logros-${u}.png`;CARD_TEXT=shareText(kind,i);
+  const title=kind==='badge'?bName(i):LG('Tu tarjeta de logros','Your achievements card'),e=encodeURIComponent(CARD_TEXT);
+  let canFile=false;try{canFile=!!(navigator.canShare&&navigator.canShare({files:[new File([b],CARD_NAME,{type:'image/png'})]}));}catch(x){}
+  const ext=(href,icon,label)=>`<a class="btn sm" href="${href}" target="_blank" rel="noopener noreferrer" onclick="shareDl()">${ic(icon,'sm')}${label}</a>`;
+  modal(title,`<img class="card-prev" src="${CARD_URL}" alt="${esc(kind==='badge'?LG('Tarjeta de la insignia','Badge card')+' '+bName(i):LG('Tarjeta de logros','Achievements card'))}" data-w="${c.width}">
+   <div class="share" role="group" aria-label="${LG('Compartir','Share')}"><span class="share-l">${LG('Compartir en','Share on')}</span>
+   ${canFile?`<button class="btn sm primary" onclick="shareNative()">${ic('share2','sm')}${LG('Compartir con la imagen','Share with the image')}</button>`:''}
+   ${ext('https://wa.me/?text='+e,'msgCircle','WhatsApp')}${ext('https://www.linkedin.com/feed/?shareActive=true&text='+e,'linkedin','LinkedIn')}${ext('https://x.com/intent/post?text='+e,'twitter','X')}${ext('https://t.me/share/url?url='+e,'send','Telegram')}
+   <a class="btn sm" href="mailto:?subject=${encodeURIComponent(title+' · WhiteFox')}&body=${e}" onclick="shareDl()">${ic('mail','sm')}${LG('Correo','Email')}</a>
+   <button class="btn sm" onclick="copyShare()">${ic('copy','sm')}${LG('Copiar texto','Copy text')}</button></div>
+   <textarea id="share-txt" class="in" hidden readonly aria-label="${LG('Texto para compartir','Text to share')}">${esc(CARD_TEXT)}</textarea>
+   <p class="muted share-h">${LG(`PNG de ${c.width} × ${c.height} px generado en tu navegador. Las redes no aceptan una imagen desde un enlace: al pulsar una se descarga la imagen y se abre con el texto listo; solo tienes que adjuntarla.${canFile?' «Compartir con la imagen» la envía directamente.':''}`,`${c.width} × ${c.height} px PNG generated in your browser. Networks do not accept an image from a link: choosing one downloads the image and opens it with the text ready; just attach it.${canFile?' «Share with the image» sends it directly.':''}`)}</p>`,
+   `<button class="btn" onclick="closeModal()">${LG('Cerrar','Close')}</button><a class="btn primary" href="${CARD_URL}" download="${CARD_NAME}" onclick="ev('cardDownload')">${ic('download','sm')}${LG('Descargar PNG','Download PNG')}</a>`,'card-modal');},'image/png');}
 
 /* Mi cuenta: foto e insignias */
 function badgesSection(){const nb=MODS.filter((m,i)=>modDoneAt(i)).length;
- return`<section class="badges-sec" aria-labelledby="bdg-h"><div class="bdg-head"><div><h2 id="bdg-h">${LG('Mis insignias','My badges')}</h2><p class="muted">${LG(`${nb} de ${MODS.length}. Se consigue una al terminar cada módulo: práctica y quiz de todos sus ejercicios.`,`${nb} of ${MODS.length}. You earn one when you finish each module: practice and quiz of all its exercises.`)}</p></div>
+ return`<section class="badges-sec" aria-labelledby="bdg-h"><div class="bdg-head"><div><h2 id="bdg-h">${LG('Mis insignias','My badges')}</h2><p class="muted">${LG(`<span class="num-ok">${nb} de ${MODS.length}</span>. Se consigue una al terminar cada módulo: práctica y quiz de todos sus ejercicios.`,`<span class="num-ok">${nb} of ${MODS.length}</span>. You earn one when you finish each module: practice and quiz of all its exercises.`)}</p></div>
   <button class="btn primary" onclick="cardModal('all')">${ic('trophy','sm')}${LG('Ver y descargar mi tarjeta de logros','View and download my achievements card')}</button></div>
   <ul class="bdg-grid">${MODS.map((m,i)=>{const at=modDoneAt(i),[d,n]=modProg(i);return`<li class="bdg ${at?'on':''}">${badgeSVG(i,!!at,84)}<b>${bName(i)}</b><span class="muted">${modName(m[0])}</span>${at?`<span class="bdg-at">${ic('check','sm')}${LG('Conseguida','Earned')}</span><span class="muted">${fDay(at)}</span><button class="btn sm" onclick="cardModal('badge',${i})">${ic('download','sm')}${LG('Descargar','Download')}</button>`:`<span class="bdg-p"><span class="meter" aria-hidden="true"><i style="width:${d/n*100}%"></i></span>${LG(`${d} de ${n} ejercicios`,`${d} of ${n} exercises`)}</span>`}</li>`;}).join('')}</ul></section>`;}
 function photoField(){return fld(LG('Foto de perfil','Profile photo'),`<div class="bk"><label class="btn">${ic('upload','sm')}${hasPhoto()?LG('Cambiar foto','Change photo'):LG('Subir foto','Upload photo')}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="sr" onchange="photoUpload(this)"></label>${hasPhoto()?`<button class="btn ghost" onclick="photoRemove()">${ic('trash','sm')}${LG('Quitar','Remove')}</button>`:''}</div>`,LG('Se recorta en cuadrado y se guarda solo en este navegador. Sale en tu avatar, tus insignias y tu tarjeta de logros.','It is cropped square and stored only in this browser. It shows on your avatar, your badges and your achievements card.'));}
@@ -1118,7 +1151,7 @@ function photoField(){return fld(LG('Foto de perfil','Profile photo'),`<div clas
 function saveProfile(){const g=id=>(document.getElementById(id)||{}).value||'',name=g('pf-name').trim(),user=g('pf-user').trim(),email=g('pf-email').trim(),role=g('pf-role').trim(),out=document.getElementById('pf-msg');
  const err=!name?LG('Escribe tu nombre.','Enter your name.'):!/^[a-z0-9._-]{2,32}$/i.test(user)?LG('El usuario admite de 2 a 32 letras, números, punto, guion o guion bajo.','The username takes 2 to 32 letters, digits, dots, hyphens or underscores.'):email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?LG('El correo no tiene un formato válido.','The email address is not valid.'):'';
  if(err){out.innerHTML=`<div class="st">${ic('x','sm')}<span data-notr>${esc(err)}</span></div>`;return;}
- S.profile={name,user,email,role};save();renderTop();render();toast(LG('Perfil guardado','Profile saved'),'check');}
+ S.profile={...S.profile,name,user,email,role};save();renderTop();render();toast(LG('Perfil guardado','Profile saved'),'check');}
 function fresh(){return{v:1,profile:{...PROFILE0},lang:(typeof S!=='undefined'&&S&&LANGS[S.lang])?S.lang:(/^es\b/i.test(navigator.language||'es')?'es':'en'),theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',seq:10,scans:[],policies:[],rules:[],events:{},prog:{},quiz:{},
  settings:{proxyHost:'',proxyPort:'',smtpHost:'',smtpPort:'25',smtpFrom:'',maxHosts:'5',maxChecks:'5',uiTimeout:'30',pwdMin:'8',caCert:'',tier:'plus'},fixed:{},speed:2,view:{top:'scans',page:'scans',folder:'my'}}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1)return s;}catch(e){}return null;}
