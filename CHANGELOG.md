@@ -1,5 +1,14 @@
 # Cambios
 
+## 2.3.1 · noviembre de 2026
+
+- El progreso parecía perderse. Se guardaba, pero un ejercicio solo cuenta como completado con la práctica y el quiz, y los que tenían una sola de las dos partes no se marcaban. Además, la portada y el panel volvían siempre al ejercicio 1. Ahora:
+  - cada ejercicio a medias se marca «en curso», con «Quiz hecho · falta la práctica» o «Práctica hecha · falta el quiz»;
+  - el panel resume «N completados · M en curso» y tiene un botón «Continuar» con el ejercicio en el que ibas;
+  - el botón de la portada avanza con los ejercicios: te lleva al último que abriste si no está terminado o, si no, al siguiente después del último completado. La línea de progreso dice «siguiente: ejercicio N».
+- Copia de seguridad en Configuración ▸ Simulador: descarga el progreso en un `.json` y restáuralo en otro navegador o en otra copia de `index.html`. Los navegadores guardan los datos por ubicación del archivo, así que una copia nueva en otra carpeta empieza vacía. Un archivo que no es una copia se rechaza sin tocar nada.
+- Si el navegador no deja guardar (modo privado o sin espacio), se avisa en vez de fallar en silencio.
+
 ## 2.3.0 · noviembre de 2026
 
 - En español, todo en español. La parte imitada de Nessus también: menús, botones, pestañas, tablas, plantillas, severidades, Configuración, ventanas y avisos. Los 74 plugins tienen nombre, sinopsis, descripción, solución y acción de remediación en español, y la salida del escáner se traduce línea a línea. En inglés se ve el texto original.
