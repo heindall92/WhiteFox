@@ -11,5 +11,7 @@
     "axe-core": "4.10.2",
     "playwright": "1.63.0"
   },
-  "version": null
+  "version": "2.2.1",
+  "license": "UNLICENSED",
+  "author": "Yoandy Ramírez Delgado"
 }

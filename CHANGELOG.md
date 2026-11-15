@@ -1,5 +1,12 @@
 # Cambios
 
+## 2.2.1 · noviembre de 2026
+
+- Licencia: «Todos los derechos reservados» a nombre de Yoandy Ramírez Delgado, en `LICENSE` (en español y en inglés). Sin licencia abierta.
+- `THIRD-PARTY-NOTICES.md` recoge las licencias de terceros. El aviso ISC completo de Lucide va también dentro de `index.html`, como exige su licencia.
+- `index.html` lleva el aviso de copyright y las etiquetas `author` y `copyright`.
+- `pruebas/package.json` pasa a `UNLICENSED` y corrige el campo `version`, que estaba vacío.
+
 ## 2.2.0 · noviembre de 2026
 
 - Inglés completo. El selector ES · EN está en la barra superior, en Ajustes y en «Más» (móvil). El cambio es inmediato y se guarda; la primera vez sigue el idioma del navegador. Están traducidos los 32 ejercicios, los 12 capítulos del manual, los 6 recorridos, el glosario, la entrevista, la guía, las 14 notas del instructor, los avisos y el informe descargado. Las capturas del manual siguen en español; su texto alternativo sale en inglés.
