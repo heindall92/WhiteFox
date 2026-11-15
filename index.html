@@ -1131,7 +1131,7 @@ function runView(run){return run?{...run,hosts:visibleHosts(run)}:null;}
 /* ===== Render principal ===== */
 function render(){
  document.documentElement.dataset.theme=S.theme;
- renderTop();renderSide();renderTabbar();
+ renderTop();renderSide();renderTabbar();{const t=document.getElementById('sidetip');if(t)t.hidden=true;}
  const p=S.view.page;let h='';
  try{
  if(p==='scans')h=vScans();else if(p==='templates')h=vTemplates();else if(p==='editor')h=vEditor();
@@ -1145,7 +1145,7 @@ function render(){
 }
 /* Barra superior: menús «?» (ayuda) y Ajustes del laboratorio */
 function topPop(id,icon,label,inner){return`<div class="dd"><button class="iconbtn" data-tour="top-${id}" aria-label="${label}" title="${label}" aria-haspopup="true" aria-expanded="${UI.menu===id}" onclick="event.stopPropagation();toggleMenu('${id}')">${ic(icon)}</button><div class="menu pop" id="${id}" role="group" aria-label="${label}">${inner}</div></div>`;}
-const seg=(name,cur,opts,fn)=>`<div class="seg" role="group" aria-label="${name}">${opts.map(([v,l])=>`<button aria-pressed="${String(cur)===String(v)}" onclick="${fn}(${typeof v==='string'?`'${v}'`:v})">${l}</button>`).join('')}</div>`;
+const seg=(name,cur,opts,fn)=>`<div class="seg" role="group" aria-label="${name}">${opts.map(([v,l])=>`<button ${fn==='setLang'?`lang="${v}" `:''}aria-pressed="${String(cur)===String(v)}" onclick="${fn}(${typeof v==='string'?`'${v}'`:v})">${l}</button>`).join('')}</div>`;
 function setSpeed(v){S.speed=v;save();renderTop();toast('Velocidad de simulación: '+({1:'lenta',2:'normal',4:'rápida',10:'instantánea'})[v],'timer');}
 function setTheme(t){if(S.theme!==t)toggleTheme();}
 function ajustesPop(){return`<p class="pop-h">Ajustes del laboratorio</p>
@@ -1190,13 +1190,13 @@ function renderTabbar(){const v=S.view,el=document.getElementById('tabbar');if(!
 function sheetDrag(m){const h=m&&m.querySelector('header');if(!h||!matchMedia('(max-width:640px)').matches)return;let y0=null,dy=0;
  h.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;m.style.transition='none';},{passive:true});
  h.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);m.style.transform=`translateY(${dy}px)`;},{passive:true});
- h.addEventListener('touchend',()=>{m.style.transition='transform .24s var(--ease-sheet)';if(dy>80){m.style.transform='translateY(100%)';setTimeout(closeModal,200);}else m.style.transform='';y0=null;});}
+ h.addEventListener('touchend',()=>{m.style.transition='transform .24s var(--ease-sheet)';if(dy>80){m.style.transform='translateY(100%)';setTimeout(()=>{if(m.isConnected)closeModal();},200);}else m.style.transform='';y0=null;});}
 function moreSheet(){const r=(icon,label,act)=>`<button class="pi" onclick="closeModal();${act}">${ic(icon,'sm')}${label}</button>`;
  modal('Más',`<div class="more">
+  <div class="pop-row"><span>Idioma</span>${seg('Idioma',S.lang,[['es','Español'],['en','English']],'setLang')}</div><div class="pop-sep"></div>
   ${r('file','Policies',"go({top:'scans',page:'policies'})")}${r('flag','Plugin Rules',"go({top:'scans',page:'rules'})")}${r('trash','Trash',"go({top:'scans',page:'scans',folder:'trash'})")}
   <div class="pop-sep"></div>${r('route','Recorridos guiados',"go({top:'scans',page:'tours'})")}${r('book','Glosario',"UI.gl=null;toggleDrawer(true,'glossary')")}${r('info','Cómo funciona','welcome()')}
   <div class="pop-sep"></div>
-  <div class="pop-row"><span>Idioma</span>${seg('Idioma',S.lang,[['es','Español'],['en','English']],'setLang')}</div>
   <div class="pop-row"><span>Tema</span>${seg('Tema',S.theme,[['light','Claro'],['dark','Oscuro']],'setTheme')}</div></div>`,false,'sheet');sheetDrag(document.querySelector('#modal .modal.sheet'));}
 /* Barra lateral plegada (tableta): etiqueta emergente con el nombre de cada botón */
 function sideTip(e){const tip=document.getElementById('sidetip'),b=e.target.closest&&e.target.closest('#side button');
@@ -1204,6 +1204,7 @@ function sideTip(e){const tip=document.getElementById('sidetip'),b=e.target.clos
  const r=b.getBoundingClientRect();tip.textContent=b.getAttribute('aria-label');tip.hidden=false;tip.style.top=(r.top+r.height/2)+'px';tip.style.left=(r.right+10)+'px';}
 ['mouseover','mouseout','focusin','focusout'].forEach(k=>document.addEventListener(k,e=>{if(e.target.closest&&e.target.closest('#side'))sideTip(e);}));
 document.addEventListener('scroll',()=>{const t=document.getElementById('sidetip');if(t)t.hidden=true;},{capture:true,passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const t=document.getElementById('sidetip');if(t)t.hidden=true;}});
 /* Estado vacío reutilizable: qué pasa, por qué y qué hacer */
 function empty(icon,title,desc='',cta=''){return`<div class="empty"><span class="empty-i" aria-hidden="true">${ic(icon)}</span><b>${title}</b>${desc?`<p>${desc}</p>`:''}${cta?`<div class="empty-a">${cta}</div>`:''}</div>`;}
 function renderSide(){
@@ -1244,7 +1245,7 @@ function vScans(){
  const f=S.view.folder||'my';const list=S.scans.filter(s=>f==='all'?s.folder!=='trash':s.folder===f);
  const title=f==='my'?'My Scans':f==='all'?'All Scans':'Trash';
  const rows=list.map(s=>{const r=curRun(s);const running=r&&(r.status==='running'||r.status==='paused');
-  return`<tr class="click" onclick="openScan(${s.id})"><td class="name">${esc(s.name)}<div class="muted" style="font-weight:400;font-size:12.5px">${esc(tpl(s.template).name)}${s.policyId?' · policy: '+esc((S.policies.find(p=>p.id===s.policyId)||{}).name||''):''}</div></td>
+  return`<tr class="click" onclick="openScan(${s.id})"><td class="name"><span data-notr>${esc(s.name)}</span><div class="muted" style="font-weight:400;font-size:12.5px">${esc(tpl(s.template).name)}${s.policyId?' · policy: '+esc((S.policies.find(p=>p.id===s.policyId)||{}).name||''):''}</div></td>
   <td class="muted">${s.settings.schedule.enabled?ic('clock','sm')+' '+s.settings.schedule.freq:'On Demand'}</td><td>${statusCell(s)}</td>
   <td style="text-align:right;white-space:nowrap" onclick="event.stopPropagation()">${f==='trash'?`<button class="btn sm" onclick="restoreScan(${s.id})">Restore</button>`:
    running?`<button class="btn sm" onclick="pauseScan(${s.id})" aria-label="Pause">${ic(r.status==='paused'?'play':'pause','sm')}</button> <button class="btn sm" onclick="stopScan(${s.id})" aria-label="Stop">${ic('stop','sm')}</button>`:
@@ -1422,7 +1423,7 @@ function vScan(){
  const act=running?`<button class="btn" onclick="pauseScan(${s.id})">${ic(run.status==='paused'?'play':'pause','sm')}${run.status==='paused'?'Resume':'Pause'}</button><button class="btn" onclick="stopScan(${s.id})">${ic('stop','sm')}Stop</button>`:
   dd('m-launch',ic('play','sm')+'Launch',[['Default',`launch(${s.id})`],['Custom Targets',`customTargets(${s.id})`]]);
  const filterBar=(tab==='vulns'||tab==='hosts'||tab==='rem')&&run&&!v.host?filterUI():'';
- return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'scans'})">${ic('chevL','sm')} Back to My Scans</a>${v.host?` / <a onclick="S.view.host=null;render()">${esc(s.name)}</a>`:''}</div><h1>${v.host?esc(v.host):esc(s.name)}</h1></div>
+ return`<div class="ph"><div><div class="crumb"><a onclick="go({page:'scans'})">${ic('chevL','sm')} Back to My Scans</a>${v.host?` / <a onclick="S.view.host=null;render()"><span data-notr>${esc(s.name)}</span></a>`:''}</div><h1 data-notr>${v.host?esc(v.host):esc(s.name)}</h1></div>
  <div class="actions"><button class="btn" onclick="editScan(${s.id})">${ic('gear','sm')}Configure</button><button class="btn" onclick="auditTrail(${s.id})">Audit Trail</button>${act}
  <button class="btn" ${run&&!running?'':'disabled'} onclick="reportModal(${s.id})">${ic('file','sm')}Report</button>${dd('m-export','Export',[['Nessus',`exportNessus(${s.id})`],['CSV',`reportModal(${s.id},'csv')`],['Nessus DB',`exportDbModal(${s.id})`]],'btn'+(run&&!running?'':'" disabled="'))}</div></div>
  <div class="results"><div class="card">${v.host?'':`<div class="tabs" role="tablist">${tabs.map(([k,l,n])=>`<button class="tab" role="tab" aria-selected="${tab===k}" onclick="setTab('${k}')">${l} <span class="count num">${n}</span></button>`).join('')}</div>`}${filterBar}${body}</div>
@@ -1632,7 +1633,7 @@ function vSettings(){
  if(sub==='ca')return wrap('Custom CA',`<div class="form">${fld('Certificate',`<textarea class="in" oninput="S.settings.caCert=this.value;save()" placeholder="-----BEGIN CERTIFICATE-----">${esc(st.caCert)}</textarea>`,'Permite confiar en la CA interna (evita hallazgos "SSL Certificate Cannot Be Trusted" en servicios internos).')}</div>`);
  if(sub==='pwd')return wrap('Password Management',`<div class="form">${sf('Minimum password length','pwdMin','number')}</div>`);
  if(sub==='account')return wrap('My Account',`<div class="form">${fld('Username','<input class="in" value="yoandy" disabled>')}${fld('Full Name','<input class="in" value="Yoandy Ramírez Delgado" disabled>')}${fld('Role','<input class="in" value="System Administrator" disabled>','Essentials y Essentials Plus solo permiten un usuario.')}</div>`);
- if(sub==='lab')return wrap('Simulador (laboratorio)',`<div class="form">${fld('Velocidad de simulación',`<select class="in" onchange="S.speed=+this.value;save()">${[[1,'Lenta'],[2,'Normal'],[4,'Rápida'],[10,'Instantánea']].map(([v,l])=>`<option value="${v}" ${S.speed===v?'selected':''}>${l}</option>`).join('')}</select>`)}
+ if(sub==='lab')return wrap('Simulador (laboratorio)',`<div class="form">${fld('Idioma',seg('Idioma',S.lang,[['es','Español'],['en','English']],'setLang'))}${fld('Velocidad de simulación',`<select class="in" onchange="S.speed=+this.value;save()">${[[1,'Lenta'],[2,'Normal'],[4,'Rápida'],[10,'Instantánea']].map(([v,l])=>`<option value="${v}" ${S.speed===v?'selected':''}>${l}</option>`).join('')}</select>`)}
   ${fld('Tema',`<button class="btn" onclick="toggleTheme()">${ic(S.theme==='dark'?'sun':'moon','sm')}Cambiar a ${S.theme==='dark'?'claro':'oscuro'}</button>`)}
   ${fld('Inventario del lab',`<table class="t"><thead><tr><th>IP</th><th>Host</th><th>Rol</th></tr></thead><tbody>${HOSTS.map(h=>`<tr><td class="num">${h.ip}</td><td>${h.fqdn}</td><td class="muted">${esc(h.os)}</td></tr>`).join('')}</tbody></table>`,'Spoiler: normalmente lo descubrirías con Host Discovery.')}
   ${fld('Parches simulados',`<div><span class="num"><b>${Object.keys(S.fixed||{}).length}</b></span> hallazgos marcados como corregidos ${Object.keys(S.fixed||{}).length?`<button class="btn sm" style="margin-left:8px" onclick="S.fixed={};save();toast('Parches simulados deshechos','refresh');render()">${ic('refresh','sm')}Deshacer todos</button>`:''}</div>`,'Se marcan con «Simular parche» en la pestaña Remediations. Afectan a los escaneos que lances después.')}
@@ -2693,22 +2694,31 @@ function applyLang(){const en=S.lang==='en';
  document.title=en?'WhiteFox · Nessus Essentials Plus-style lab':'WhiteFox · laboratorio estilo Nessus Essentials Plus';
 }
 const TR_ATTR=['aria-label','title','placeholder','alt','data-label'];
-function trText(v){const t=v.trim();if(!t)return null;let r=EN_UI.get(t);
+const TR_MISS=new Set(),TR_ORIG=new WeakMap();
+function trText(v){const t=v.trim();if(!t||TR_MISS.has(t))return null;let r=EN_UI.get(t);
  if(r==null){for(const [re,f] of TRX){if(re.test(t)){r=t.replace(re,f);break;}}}
- return r==null||r===t?null:v.replace(t,()=>r);}
+ if(r==null||r===t){if(TR_MISS.size<5000)TR_MISS.add(t);return null;}
+ return v.replace(t,()=>r);}
+const trSkip=el=>!el||el.nodeName==='SCRIPT'||el.nodeName==='STYLE'||!!el.closest('[data-notr]');
+function trSetText(n){if(trSkip(n.parentNode))return;const r=trText(n.nodeValue);if(r!=null){if(!TR_ORIG.has(n))TR_ORIG.set(n,n.nodeValue);n.nodeValue=r;}}
+function trSetAttr(el,a){if(trSkip(el))return;const v=el.getAttribute(a);if(!v)return;const r=trText(v);if(r!=null){const o=TR_ORIG.get(el)||{};if(!(a in o))o[a]=v;TR_ORIG.set(el,o);el.setAttribute(a,r);}}
+/* Vuelta a español: restaura lo que el traductor cambió en nodos que nadie vuelve a pintar */
+function trRestore(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let n;
+ while((n=w.nextNode())){const o=TR_ORIG.get(n);if(o==null)continue;if(n.nodeType===3)n.nodeValue=o;else for(const a in o)n.setAttribute(a,o[a]);TR_ORIG.delete(n);}}
 function trNode(root){if(!S||S.lang!=='en'||!root)return;
- if(root.nodeType===3){const r=trText(root.nodeValue);if(r!=null)root.nodeValue=r;return;}
+ if(root.nodeType===3){trSetText(root);return;}
  if(root.nodeType!==1)return;
  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let n=root;
- do{if(n.nodeType===3){const p=n.parentNode;if(p&&(p.nodeName==='SCRIPT'||p.nodeName==='STYLE'||p.closest('[data-notr]')))continue;const r=trText(n.nodeValue);if(r!=null)n.nodeValue=r;}
-  else{for(const a of TR_ATTR){const v=n.getAttribute(a);if(v){const r=trText(v);if(r!=null)n.setAttribute(a,r);}}}
- }while((n=w.nextNode()));}
+ do{if(n.nodeType===3)trSetText(n);else for(const a of TR_ATTR)trSetAttr(n,a);}while((n=w.nextNode()));}
 const trObs=new MutationObserver(ms=>{if(!S||S.lang!=='en')return;
- for(const m of ms){if(m.type==='childList')m.addedNodes.forEach(trNode);else if(m.type==='characterData')trNode(m.target);
-  else{const v=m.target.getAttribute(m.attributeName);if(v){const r=trText(v);if(r!=null)m.target.setAttribute(m.attributeName,r);}}}});
+ for(const m of ms){if(m.type==='childList')m.addedNodes.forEach(trNode);else if(m.type==='characterData')trSetText(m.target);else trSetAttr(m.target,m.attributeName);}
+ trObs.takeRecords();});
 function setLang(l){if(!LANGS[l]||S.lang===l)return;S.lang=l;save();applyLang();
  {const b=document.querySelector('#tour .tour-bub');if(b)b.dataset.k='';}
- render();if(document.getElementById('modal-bg'))closeModal();if(TOUR)tourSync();trNode(document.body);
+ const sheet=!!document.querySelector('#modal .modal.sheet');
+ if(l==='es')trRestore(document.body);
+ render();if(sheet)moreSheet();if(TOUR)tourSync();trNode(document.body);
+ if(sheet)setTimeout(()=>{const f=document.querySelector(`#modal .seg button[lang="${l}"]`);if(f)f.focus({preventScroll:true});},40);
  toast(l==='en'?'Language: English':'Idioma: español','globe');}
 
 function welcome(){
@@ -2771,7 +2781,7 @@ function vHero(){
 
 /* ===== Datos de ejemplo e inicio ===== */
 function seed(){
- const s={id:uid(),name:'Ejemplo - web01 (sin credenciales)',template:'basic',policyId:null,settings:{...defaultSettings('basic'),targets:'192.168.56.30',desc:'Scan de ejemplo precargado'},creds:defaultCreds(),folder:'my',runs:[],cur:null,mod:Date.now()};
+ const s={id:uid(),name:S.lang==='en'?'Example - web01 (no credentials)':'Ejemplo - web01 (sin credenciales)',template:'basic',policyId:null,settings:{...defaultSettings('basic'),targets:'192.168.56.30',desc:S.lang==='en'?'Preloaded example scan':'Scan de ejemplo precargado'},creds:defaultCreds(),folder:'my',runs:[],cur:null,mod:Date.now()};
  const hosts=genResults(s,['192.168.56.30']);const st=Date.now()-36e5*20;
  s.runs.push({id:uid(),start:st,end:st+9*60000,status:'completed',progress:100,dur:1,simMs:9*60000,ips:1,hosts,cred:{ssh:'none',win:'none'}});s.cur=s.runs[0].id;S.scans.push(s);
 }

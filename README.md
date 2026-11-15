@@ -315,7 +315,7 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 
 ## <img src="docs/assets/icons/flask-conical.svg" width="20" height="20" valign="middle"/> Pruebas
 
-`pruebas/e2e.js` abre el laboratorio en Chromium y hace 113 comprobaciones:
+`pruebas/e2e.js` abre el laboratorio en Chromium y hace 116 comprobaciones:
 
 - completa los 32 ejercicios usando la aplicación, responde un quiz (mal y bien) y ordena la cola de remediación con las flechas;
 - recorre los 6 recorridos guiados de principio a fin con un conductor que pulsa o rellena solo lo que señala cada paso, y abre los 12 capítulos del manual;

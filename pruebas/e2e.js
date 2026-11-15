@@ -373,6 +373,14 @@ async function axe(page, label) {
       await page.evaluate(() => setLang('es'));
       await page.waitForTimeout(200);
       ok(await page.evaluate(() => document.documentElement.lang === 'es' && EXERCISES[0].title.startsWith('Antes') && TOURS.consola.steps[0].x.startsWith('Aquí')), 'la vuelta a español restaura todo el contenido original');
+      ok(await page.evaluate(() => document.querySelector('.disclaimer .d-long').textContent.startsWith('Herramienta') && document.getElementById('tabbar').getAttribute('aria-label') === 'Navegación principal' && document.getElementById('drawer').getAttribute('aria-label') === 'Entrenamiento'), 'la vuelta a español también restaura el aviso legal y las etiquetas que no se repintan');
+      // Los nombres de scan son datos del usuario: no se traducen aunque coincidan con el diccionario
+      await page.evaluate(() => { S.scans[0].name = 'Ruta completada'; save(); setLang('en'); go({ top: 'scans', page: 'scans', folder: 'my' }); });
+      await page.waitForTimeout(450);
+      ok(await page.evaluate(() => [...document.querySelectorAll('td.name [data-notr]')].some(x => x.textContent === 'Ruta completada')), 'en inglés el nombre de un scan no se traduce');
+      await page.evaluate(() => { setLang('es'); go({ top: 'settings', page: 'settings', sub: 'lab' }); });
+      await page.waitForTimeout(450);
+      ok(await page.isVisible('main .seg button[lang=en]'), 'Settings ▸ Simulador también tiene el selector de idioma');
       // Estados vacíos con explicación y acción
       await page.evaluate(() => { openScan(S.scans.find(s => s.name === 'Hosts vivos con credenciales').id, 'vulns'); UI.search = 'zzzz-sin-resultados'; render(); }); await page.waitForTimeout(450);
       ok(await page.isVisible('.empty .empty-i') && await page.isVisible('.empty button:has-text("Clear filters")'), 'un filtro sin resultados explica qué pasa y ofrece quitar los filtros');
