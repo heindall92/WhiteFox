@@ -41,7 +41,7 @@ const CAPS = [
 
 (async () => {
   const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, deviceScaleFactor: SCALE, colorScheme: 'light', reducedMotion: 'reduce' });
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, deviceScaleFactor: SCALE, colorScheme: 'light', reducedMotion: 'reduce', locale: 'es-ES' });
   const page = await ctx.newPage();
   page.on('pageerror', e => { console.error('Error en la página:', e.message); process.exitCode = 1; });
   await page.goto('file://' + HTML);

@@ -1,5 +1,19 @@
 # Cambios
 
+## 2.2.0 · noviembre de 2026
+
+- Inglés completo. El selector ES · EN está en la barra superior, en Ajustes y en «Más» (móvil). El cambio es inmediato y se guarda; la primera vez sigue el idioma del navegador. Están traducidos los 32 ejercicios, los 12 capítulos del manual, los 6 recorridos, el glosario, la entrevista, la guía, las 14 notas del instructor, los avisos y el informe descargado. Las capturas del manual siguen en español; su texto alternativo sale en inglés.
+- Prueba nueva `npm run idioma`: recorre unas 700 pantallas en los dos idiomas y falla si con la interfaz en inglés queda un texto en español. Detecta marcadores del español y textos que salen idénticos en ES y EN sin ser datos de Nessus.
+- Móvil: barra de pestañas abajo (Scans, Aprender, Práctica, Settings, Más). «Más» es una hoja que se cierra deslizando hacia abajo, con Policies, Plugin Rules, Trash, recorridos, glosario, idioma y tema.
+- Tableta: con la barra lateral plegada, al pasar el ratón o el foco por un icono aparece su nombre.
+- Manual: los pasos se partían en una columna de 28 px y se leían palabra a palabra. Ahora cada paso es una tarjeta junto a la imagen, y «Errores típicos» y «Qué le dirías a dirección» van lado a lado.
+- Portada: el texto se separa del borde izquierdo y queda en una columna más estrecha.
+- Estados vacíos con icono, explicación y acción (Plugin Rules, Policies, carpetas, scan sin lanzar, notas, remediaciones, VPR, filtros sin resultados). Si una vista falla, se explica y hay un botón para volver a My Scans.
+- Pulido según la skill unslop de @heydamir: etiquetas en tipo frase en vez de mayúsculas espaciadas, logo de un solo color, títulos a peso 600, tarjetas de cifras sin iconos de relleno y ninguna exclamación en la interfaz.
+- Tokens de tipografía (base 14, ratio 1,2) y de espaciado (múltiplos de 4).
+- Se corrige: el editor se salía de su tarjeta a 820 px, y el aviso y el recuadro «Siguiente paso» se pisaban en tableta. En móvil el aviso legal ocupa una línea.
+- Diseño: `docs/designs/2.2-idioma-y-diseno.md`.
+
 ## 2.1.0 · noviembre de 2026
 
 - **El laboratorio se llama WhiteFox.** Logo con el icono paw-print de Lucide (no hay zorro en Lucide) y portada con el título «WhiteFox · Aprende a escanear, priorizar y decidir».

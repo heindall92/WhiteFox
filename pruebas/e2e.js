@@ -21,7 +21,7 @@ async function axe(page, label) {
   const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
   for (const vp of [{ w: 1440, h: 900, n: 'desk' }, { w: 390, h: 844, n: 'movil' }]) {
     console.log(`\n== Viewport ${vp.w}px ==`);
-    const ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, deviceScaleFactor: 2, colorScheme: 'light' });
+    const ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, deviceScaleFactor: 2, colorScheme: 'light', locale: 'es-ES' });
     const page = await ctx.newPage();
     const errors = [], external = [];
     page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
@@ -303,7 +303,7 @@ async function axe(page, label) {
       let imgs = 0;
       for (const id of ids) { await page.evaluate(i => manOpen(i), id); await page.waitForTimeout(350); imgs += await page.evaluate(() => document.querySelectorAll('.mframe img.ok').length); }
       ok(ids.length === 12 && imgs === 12, `12 capítulos con su imagen cargada (${imgs})`);
-      await page.evaluate(() => manOpen('priorizar'));
+      await page.evaluate(() => manOpen('priorizar')); await page.waitForSelector('#man-t'); await page.waitForTimeout(400);
       await page.waitForTimeout(500);
       await page.screenshot({ path: `${SHOTS}/${vp.n}-16-manual.png` });
       await axe(page, 'manual');
@@ -352,6 +352,61 @@ async function axe(page, label) {
       await page.evaluate(() => go({ page: 'templates', mode: 'scan', ttab: 'scanner' }));
       await page.screenshot({ path: `${SHOTS}/${vp.n}-14-plantillas-oscuro.png`, fullPage: true });
       await axe(page, 'plantillas en oscuro');
+      // Idioma: cambio en vivo a inglés, persistencia, accesibilidad y vuelta a español
+      await page.evaluate(() => { S.theme = 'light'; go({ top: 'scans', page: 'scans', folder: 'my' }); });
+      await page.click('.langsw button[lang=en]');
+      await page.waitForTimeout(300);
+      ok(await page.evaluate(() => document.documentElement.lang === 'en' && S.lang === 'en' && document.querySelector('.trainbtn .lbl').textContent === 'Training' && EXERCISES[0].title.startsWith('Before')), 'ES · EN cambia la interfaz y el contenido a inglés al instante');
+      await page.screenshot({ path: `${SHOTS}/${vp.n}-20-ingles.png` });
+      await axe(page, 'portada en inglés');
+      await page.evaluate(() => manOpen('priorizar')); await page.waitForSelector('#man-t'); await page.waitForTimeout(400);
+      ok(await page.evaluate(() => document.querySelector('#man-t').textContent.startsWith('Prioritising') && /Screenshot of/.test(document.querySelector('.mimg img').alt)), 'el manual y el texto alternativo de su imagen salen en inglés');
+      await axe(page, 'manual en inglés');
+      await page.evaluate(() => toggleDrawer(true, 'ex', 3));
+      await page.waitForTimeout(300);
+      ok(await page.evaluate(() => document.querySelector('.drawer header h2').textContent === 'Training' && [...document.querySelectorAll('.drawer .tab')].map(t => t.textContent).join(',') === 'Exercises,Glossary,Interview,Guide' && /^Exercise 4 · /.test(document.querySelector('.drawer .lvl').textContent)), 'el panel de entrenamiento sale en inglés');
+      await axe(page, 'ejercicio en inglés');
+      await page.evaluate(() => toggleDrawer(false));
+      await page.reload(); await page.waitForTimeout(400);
+      ok(await page.evaluate(() => S.lang === 'en' && document.documentElement.lang === 'en'), 'el idioma elegido se guarda');
+      ok(await page.evaluate(() => fresh().lang === 'en'), 'restablecer el laboratorio conserva el idioma (no mezcla ES y EN)');
+      await page.evaluate(() => setLang('es'));
+      await page.waitForTimeout(200);
+      ok(await page.evaluate(() => document.documentElement.lang === 'es' && EXERCISES[0].title.startsWith('Antes') && TOURS.consola.steps[0].x.startsWith('Aquí')), 'la vuelta a español restaura todo el contenido original');
+      ok(await page.evaluate(() => document.querySelector('.disclaimer .d-long').textContent.startsWith('Herramienta') && document.getElementById('tabbar').getAttribute('aria-label') === 'Navegación principal' && document.getElementById('drawer').getAttribute('aria-label') === 'Entrenamiento'), 'la vuelta a español también restaura el aviso legal y las etiquetas que no se repintan');
+      // Los nombres de scan son datos del usuario: no se traducen aunque coincidan con el diccionario
+      await page.evaluate(() => { S.scans[0].name = 'Ruta completada'; save(); setLang('en'); go({ top: 'scans', page: 'scans', folder: 'my' }); });
+      await page.waitForTimeout(450);
+      ok(await page.evaluate(() => [...document.querySelectorAll('td.name [data-notr]')].some(x => x.textContent === 'Ruta completada')), 'en inglés el nombre de un scan no se traduce');
+      await page.evaluate(() => { setLang('es'); go({ top: 'settings', page: 'settings', sub: 'lab' }); });
+      await page.waitForTimeout(450);
+      ok(await page.isVisible('main .seg button[lang=en]'), 'Settings ▸ Simulador también tiene el selector de idioma');
+      // Estados vacíos con explicación y acción
+      await page.evaluate(() => { openScan(S.scans.find(s => s.name === 'Hosts vivos con credenciales').id, 'vulns'); UI.search = 'zzzz-sin-resultados'; render(); }); await page.waitForTimeout(450);
+      ok(await page.isVisible('.empty .empty-i') && await page.isVisible('.empty button:has-text("Clear filters")'), 'un filtro sin resultados explica qué pasa y ofrece quitar los filtros');
+      await page.click('.empty button:has-text("Clear filters")'); await page.waitForTimeout(200);
+      ok(await page.evaluate(() => !document.querySelector('main .empty') && UI.search === ''), '«Clear filters» vuelve a mostrar los resultados');
+      // Manual: cada paso en un bloque, sin columnas estrechas
+      await page.evaluate(() => manOpen('resultados')); await page.waitForTimeout(450);
+      const narrow = await page.evaluate(() => [...document.querySelectorAll('.man-steps li>span')].filter(x => x.getBoundingClientRect().width < 200).length);
+      ok(narrow === 0, 'los pasos del manual no se parten en una columna estrecha');
+      // Sin desbordamiento horizontal en tableta y escritorio
+      for (const w of [820, 1100, 1440]) {
+        await page.setViewportSize({ width: w, height: 900 });
+        for (const f of ["go({top:'scans',page:'scans',folder:'my'})", "S.view.mode='scan';newDraft('basic')", "go({top:'settings',page:'settings',sub:'lab'})", "manOpen('remediar')"]) {
+          await page.evaluate(f); await page.waitForTimeout(450);
+          const o = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth + Math.max(0, document.querySelector('main').scrollWidth - document.querySelector('main').clientWidth));
+          if (o > 0) ok(false, `desbordamiento a ${w} px en ${f}: ${o}`);
+        }
+      }
+      ok(true, 'sin desbordamiento horizontal a 820, 1100 y 1440 px');
+      await page.setViewportSize({ width: vp.w, height: vp.h });
+      // Barra lateral plegada: etiqueta emergente con el nombre
+      await page.setViewportSize({ width: 900, height: 800 });
+      await page.evaluate(() => go({ top: 'scans', page: 'scans', folder: 'my' })); await page.waitForTimeout(450);
+      await page.hover('#side button[data-tour="side-policies"]');
+      ok(await page.evaluate(() => { const t = document.getElementById('sidetip'); return !t.hidden && t.textContent.startsWith('Policies'); }), 'la barra lateral plegada muestra el nombre al pasar el ratón');
+      await page.setViewportSize({ width: vp.w, height: vp.h });
       // Persistencia
       await page.reload();
       await page.waitForTimeout(300);
@@ -373,6 +428,23 @@ async function axe(page, label) {
       await page.evaluate(() => toggleDrawer(true, 'ex', 0));
       await page.waitForTimeout(400);
       await page.screenshot({ path: `${SHOTS}/${vp.n}-06-entrenamiento.png` });
+      // Barra de pestañas inferior y hoja «Más»
+      await page.evaluate(() => { toggleDrawer(false); go({ top: 'scans', page: 'scans', folder: 'my' }); });
+      await page.waitForTimeout(200);
+      ok(await page.isVisible('#tabbar') && await page.evaluate(() => document.querySelectorAll('#tabbar button').length === 5 && document.querySelector('#tabbar [aria-current=page]').dataset.tab === 'scans'), 'la barra de pestañas tiene 5 destinos y marca Scans');
+      await page.click('#tabbar [data-tab=learn]'); await page.waitForTimeout(200);
+      ok(await page.evaluate(() => S.view.page === 'manual' && document.querySelector('#tabbar [aria-current=page]').dataset.tab === 'learn'), 'la pestaña Aprender abre el manual');
+      await page.click('#tabbar [data-tab=train]'); await page.waitForTimeout(300);
+      ok(await page.evaluate(() => drawerOpen), 'la pestaña Práctica abre el entrenamiento');
+      await page.evaluate(() => toggleDrawer(false));
+      await page.click('#tabbar [data-tab=more]'); await page.waitForTimeout(400);
+      ok(await page.isVisible('.modal.sheet >> text=Policies') && !(await page.isVisible('.modal.sheet footer')), 'la hoja «Más» se abre sin pie de ventana');
+      await page.screenshot({ path: `${SHOTS}/${vp.n}-07-mas.png` });
+      await axe(page, 'hoja «Más»');
+      await page.click('.modal.sheet button:has-text("English")'); await page.waitForTimeout(300);
+      ok(await page.evaluate(() => S.lang === 'en' && document.querySelector('#tabbar [data-tab=train] span').textContent === 'Practice'), 'el idioma se cambia desde «Más» en móvil');
+      await page.evaluate(() => { closeModal(); setLang('es'); });
+      ok(await page.evaluate(() => document.querySelector('.disclaimer .d-short').getBoundingClientRect().height < 24), 'el aviso legal ocupa una línea en móvil');
     }
     ok(errors.length === 0, `sin errores de consola${errors.length ? ': ' + errors.join(' | ') : ''}`);
     ok(external.length === 0, `sin peticiones externas${external.length ? ': ' + external.join(', ') : ''}`);

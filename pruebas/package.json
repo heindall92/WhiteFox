@@ -4,10 +4,12 @@
   "description": "Prueba e2e del laboratorio (32 ejercicios, 6 recorridos, 12 capítulos del manual) y generador de las imágenes del manual.",
   "scripts": {
     "test": "node e2e.js",
-    "manual": "node manual-capturas.js"
+    "manual": "node manual-capturas.js",
+    "idioma": "node idioma.js"
   },
   "devDependencies": {
     "axe-core": "4.10.2",
     "playwright": "1.63.0"
-  }
+  },
+  "version": null
 }
