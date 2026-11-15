@@ -1,7 +1,7 @@
-<img src="docs/assets/nessuslab-header.svg" alt="Vuln Scanner Lab · Aprende a usar Nessus desde cero, antes de tu primer día como Risk Manager" width="100%"/>
+<img width="2056" height="765" alt="WhiteFox · Laboratorio Nessus · Risk Manager · Aprende a escanear, priorizar y decidir" src="docs/assets/whitefox-portada.jpg" />
 
 <p align="center">
-  <b>Un escáner de vulnerabilidades al estilo de Nessus Essentials Plus para aprender desde cero: una red de 9 equipos con fallos reales, 24 ejercicios que se corrigen solos y las preguntas que te harán en la entrevista. Un solo HTML, sin servidor, sin cuenta y sin una sola petición a Internet.</b>
+  <b>Un escáner de vulnerabilidades al estilo de Nessus Essentials Plus para aprender desde cero: una red de 9 equipos con fallos reales, un manual con imágenes, recorridos guiados sobre la pantalla real, 32 ejercicios que se corrigen solos y las preguntas que te harán en la entrevista. Un solo HTML, sin servidor, sin cuenta y sin una sola petición a Internet.</b>
 </p>
 
 <p align="center">
@@ -10,8 +10,10 @@
 
 <p align="center">
   <img alt="Uso privado" src="https://img.shields.io/badge/uso-privado-1A4F8A?style=flat"/>
-  <img alt="Versión 2.0.0" src="https://img.shields.io/badge/versi%C3%B3n-2.0.0-4A97E8?style=flat"/>
-  <img alt="24 ejercicios" src="https://img.shields.io/badge/ejercicios-24-7C4DFF?style=flat"/>
+  <img alt="Versión 2.1.0" src="https://img.shields.io/badge/versi%C3%B3n-2.1.0-4A97E8?style=flat"/>
+  <img alt="32 ejercicios" src="https://img.shields.io/badge/ejercicios-32-7C4DFF?style=flat"/>
+  <img alt="Manual de 12 capítulos" src="https://img.shields.io/badge/manual-12%20cap%C3%ADtulos-4A97E8?style=flat"/>
+  <img alt="6 recorridos guiados" src="https://img.shields.io/badge/recorridos-6-2E9E7A?style=flat"/>
   <img alt="11 plantillas" src="https://img.shields.io/badge/plantillas-11-2E9E7A?style=flat"/>
   <img alt="Essentials Plus 20 IPs" src="https://img.shields.io/badge/Essentials%20Plus-20%20IPs-C9373D?style=flat"/>
   <img alt="VPR, CVSS, EPSS y KEV" src="https://img.shields.io/badge/prioriza-VPR%20%C2%B7%20EPSS%20%C2%B7%20KEV-E07B39?style=flat"/>
@@ -21,25 +23,26 @@
 </p>
 
 <p align="center">
-  <img src="docs/capturas/desk-06-vpr-top-threats.png" alt="Resultados de un Basic Network Scan en la pestaña VPR Top Threats: las diez vulnerabilidades con más VPR, encabezadas por Log4Shell (9.9), MS17-010 y Zerologon, cada una con sus motivos (en CISA KEV, exploit público, actividad muy alta) y, a la derecha, el gráfico de severidades del scan" width="880"/>
+  <img src="docs/capturas/hero-desk-light.png" alt="Portada de WhiteFox en modo claro: barra lateral con carpetas, recursos y la sección Aprender; a la derecha el título «WhiteFox · Aprende a escanear, priorizar y decidir» sobre la imagen de un zorro ártico en la nieve, los botones para empezar el ejercicio 1 y ver cómo funciona, y debajo las tarjetas de práctica" width="880"/>
 </p>
 
-En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS y VPR, y por cómo decides qué se parchea primero. Leer la documentación ayuda a saberlo, pero no a hacerlo: crear un scan, entender por qué no ve nada sin credenciales, distinguir un falso positivo o explicar a dirección qué está en riesgo. **Vuln Scanner Lab te da la herramienta y la práctica:**
+En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS y VPR, y por cómo decides qué se parchea primero. Leer la documentación ayuda a saberlo, pero no a hacerlo: crear un scan, entender por qué no ve nada sin credenciales, distinguir un falso positivo o explicar a dirección qué está en riesgo. **WhiteFox te da la herramienta y la práctica:**
 
 - una **red ficticia de 9 equipos** con fallos conocidos (MS17-010, Zerologon, Log4Shell, Kerberoasting, una API de IA abierta, malware en un puesto) y también ruido, falsos positivos y riesgos que se aceptan;
 - la **consola de Nessus Essentials Plus 10.x** con sus nombres en inglés: las 11 plantillas, credenciales, filtros, VPR Top Threats, Remediations, Plugin Rules, informes y exportaciones;
-- **24 ejercicios** que empiezan por «¿qué es un escáner?» y se comprueban solos mientras trabajas;
+- **32 ejercicios en 7 módulos** que empiezan por «¿qué es un escáner?», se comprueban solos mientras trabajas y terminan con un caso de una semana completa;
+- un **manual de 12 capítulos** con la imagen numerada de cada pantalla y **6 recorridos guiados** que te señalan el botón real y avanzan cuando lo pulsas;
 - una **bienvenida**, un recuadro de **siguiente paso** y botones de ayuda en cada término, para quien no lo ha abierto nunca;
 - **12 preguntas de entrevista** de Risk Manager con su respuesta modelo.
 
 <div align="center">
 
-## `$ cat nessus-lab.yaml`
+## `$ cat whitefox.yaml`
 
 <table>
   <thead>
     <tr>
-      <th colspan="2" align="left"><code>lab:~$ cat nessus-lab.yaml</code></th>
+      <th colspan="2" align="left"><code>whitefox:~$ cat whitefox.yaml</code></th>
     </tr>
   </thead>
   <tbody>
@@ -47,8 +50,9 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
       <td width="50%" valign="top"><code>├─ ⚑ contenido:</code><br><br>
         <img alt="Hosts" src="https://img.shields.io/badge/hosts-9-4A97E8?style=for-the-badge"/>
         <img alt="Plugins" src="https://img.shields.io/badge/plugins-74-7C4DFF?style=for-the-badge"/>
-        <img alt="Ejercicios" src="https://img.shields.io/badge/ejercicios-24-2E9E7A?style=for-the-badge"/><br>
-        <sub><code>5 módulos · glosario de 20 términos · 12 preguntas de entrevista · CVE reales · plugins 900000+ inventados para el lab</code></sub>
+        <img alt="Ejercicios" src="https://img.shields.io/badge/ejercicios-32-2E9E7A?style=for-the-badge"/>
+        <img alt="Manual" src="https://img.shields.io/badge/manual-12-4A97E8?style=for-the-badge"/><br>
+        <sub><code>7 módulos · 6 recorridos guiados · glosario de 20 términos · 12 preguntas de entrevista · CVE reales · plugins 900000+ inventados para el lab</code></sub>
       </td>
       <td width="50%" valign="top"><code>├─ ✦ aplicacion:</code><br><br>
         <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"/>
@@ -73,9 +77,9 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
     </tr>
     <tr>
       <td valign="top"><code>├─ ◈ pruebas:</code><br><br>
-        <img alt="E2E" src="https://img.shields.io/badge/e2e-55-2E8B57?style=for-the-badge"/>
+        <img alt="E2E" src="https://img.shields.io/badge/e2e-92-2E8B57?style=for-the-badge"/>
         <img alt="axe" src="https://img.shields.io/badge/axe-0%20infracciones-2E8B57?style=for-the-badge"/><br>
-        <sub><code>los 24 ejercicios resueltos usando la app · red y consola vigiladas · claro y oscuro, 1440 y 390 px</code></sub>
+        <sub><code>los 32 ejercicios, los 6 recorridos y los 12 capítulos usando la app · red y consola vigiladas · claro y oscuro, 1440 y 390 px</code></sub>
       </td>
       <td valign="top"><code>╰─ ⌁ privacidad:</code><br><br>
         <img alt="Sin servidor" src="https://img.shields.io/badge/sin-servidor-2E8B57?style=for-the-badge"/>
@@ -87,7 +91,7 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
   </tbody>
   <tfoot>
     <tr>
-      <td colspan="2"><code>version: 2.0.0&nbsp;&nbsp;·&nbsp;&nbsp;licencia simulada: Essentials Plus (20 IPs) o Essentials (5 IPs)&nbsp;&nbsp;·&nbsp;&nbsp;red: 192.168.56.0/24 (ficticia)</code></td>
+      <td colspan="2"><code>version: 2.1.0&nbsp;&nbsp;·&nbsp;&nbsp;licencia simulada: Essentials Plus (20 IPs) o Essentials (5 IPs)&nbsp;&nbsp;·&nbsp;&nbsp;red: 192.168.56.0/24 (ficticia)</code></td>
     </tr>
   </tfoot>
 </table>
@@ -97,6 +101,36 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 ---
 
 ## <img src="docs/assets/icons/sparkles.svg" width="20" height="20" valign="middle"/> Novedades
+
+### 2.1.0 · noviembre de 2026 · WhiteFox: aprender haciendo
+
+- **Barra superior con «?» y Ajustes**: ayuda (manual, recorridos, glosario, atajos) y ajustes del laboratorio (tema, velocidad, licencia) a un clic.
+- **Se llama WhiteFox.** Nuevo nombre, nuevo logo (el icono paw-print de Lucide) y nuevo título en la portada: «WhiteFox · Aprende a escanear, priorizar y decidir». El repositorio pasa a ser `heindall92/WhiteFox` (las direcciones antiguas redirigen).
+- **Manual en la barra lateral** (Aprender ▸ Manual, o la tecla `?`). Son 12 capítulos, de «La consola de un vistazo» a «Policies y programación». Cada uno trae la imagen numerada de la pantalla real, los pasos con esos mismos números, los errores típicos y un recuadro **«Qué le dirías a dirección»**. Las imágenes se generan desde la propia aplicación (`npm run manual`), así que no se quedan viejas, y se amplían con un clic.
+- **Recorridos guiados.** Oscurecen la pantalla, señalan el botón real y avanzan cuando haces la acción: la consola en 60 segundos, tu primer scan, leer los resultados, credenciales, una Plugin Rule y remediar y verificar. Si te sales, te ofrecen volver. Cada ejercicio tiene **Muéstrame dónde** y **Ver en el manual**.
+- **8 ejercicios nuevos** (32 en 7 módulos):
+  - el servicio escondido en un puerto no estándar;
+  - Audit Trail;
+  - credenciales que fallan;
+  - Accuracy;
+  - pruebas web;
+  - familias de plugins;
+  - **ordenar la cola de remediación**, una pregunta de arrastrar en la que el empate entre Zerologon y MS17-010 cuenta como acierto;
+  - un **caso final de una semana**, en el que solo cuenta lo que haces después de empezarlo.
+- **Ruta más clara:**
+  - tiempo estimado por módulo;
+  - módulo técnico opcional para el perfil de riesgo;
+  - «Lo que ya sabes» al terminar cada módulo;
+  - la primera pista se abre sola tras dos fallos.
+- **Fluidez** con los patrones de Atlas GRC y de ai-job-search-es:
+  - transición entre vistas (View Transitions);
+  - entrada coreografiada con un máximo de 7 bloques;
+  - **esqueletos** solo mientras un scan está en marcha, que no revelan cuántos hosts faltan;
+  - avisos apilados que se despliegan al pasar el ratón;
+  - píldora del elemento activo en la barra lateral.
+- **Portada nueva**: un zorro ártico sobre la nieve (35 KB en WebP, sin peticiones externas), con el texto sobre el cielo y el mismo contraste AA en claro y oscuro.
+- **Rendimiento.** Durante un scan la vista ya no se redibuja 4 veces por segundo, solo cuando aparece un host nuevo.
+- **Diseño revisado con el método [Elephant-Goldfish](https://github.com/google/elephant-goldfish-model).** Un revisor sin contexto encontró 12 problemas antes de construir; están resueltos y documentados en [`docs/designs/2.1-pedagogia.md`](docs/designs/2.1-pedagogia.md).
 
 ### 2.0.0 · noviembre de 2026 · Essentials Plus y desde cero
 
@@ -120,6 +154,7 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 - [Novedades](#-novedades)
 - [Cómo se usa](#-cómo-se-usa)
 - [Ruta de aprendizaje](#-ruta-de-aprendizaje)
+- [Manual y recorridos guiados](#-manual-y-recorridos-guiados)
 - [Qué reproduce de Nessus](#-qué-reproduce-de-nessus)
 - [La red del laboratorio](#-la-red-del-laboratorio)
 - [Capturas](#-capturas)
@@ -144,15 +179,55 @@ El progreso se guarda en tu navegador. Para empezar de cero: **Settings ▸ Simu
 
 Cada ejercicio trae el objetivo, por qué importa, los pasos y las pistas, y termina con un quiz.
 
-| Módulo | Ejercicios |
-|---|---|
-| **1 · Primeros pasos** | Qué es un escáner · Consola y licencia · Host Discovery · Límite de licencia |
-| **2 · Leer los resultados** | MS17-010 · Vista Hosts · Filtros · CVSS frente a VPR · VPR Top Threats |
-| **3 · Escanear mejor** | Credential Validation · Scan con credenciales · Lo que solo se ve con credenciales · Policies y Schedule |
-| **4 · Plantillas especializadas** | «¿Nos afecta esta CVE?» con Advanced Dynamic Scan · Active Directory Starter · Shadow IT (Find AI y RMM) · Malware Scan |
-| **5 · Gestión del riesgo** | Falso positivo · Aceptación temporal de riesgo · Remediations · 5 IPs: qué escanear primero · Informe ejecutivo · Plan en CSV · Remediar y verificar en History |
+| Módulo | Tiempo | Ejercicios |
+|---|---|---|
+| **1 · Primeros pasos** | ≈ 20 min | Qué es un escáner · Consola y licencia · Host Discovery · Límite de licencia |
+| **2 · Leer los resultados** | ≈ 30 min | MS17-010 · Vista Hosts · Filtros · CVSS frente a VPR · VPR Top Threats |
+| **3 · Escanear mejor** | ≈ 30 min | Credential Validation · Scan con credenciales · Lo que solo se ve con credenciales · Policies y Schedule |
+| **4 · Plantillas especializadas** | ≈ 35 min | «¿Nos afecta esta CVE?» con Advanced Dynamic Scan · Active Directory Starter · Shadow IT (Find AI y RMM) · Malware Scan |
+| **5 · Gestión del riesgo** | ≈ 45 min | Falso positivo · Aceptación temporal de riesgo · Remediations · **Ordena la cola** (arrastrar) · 5 IPs: qué escanear primero · Informe ejecutivo · Plan en CSV · Remediar y verificar en History |
+| **6 · Configura como un profesional** *(opcional)* | ≈ 35 min | Puertos no estándar · Audit Trail · Credenciales que fallan · Accuracy · Pruebas web · Familias de plugins |
+| **7 · Caso final** | ≈ 40 min | Tu primera semana: inventario, scan con credenciales, Active Directory, una excepción justificada, una remediación verificada y el informe a dirección |
+
+Si fallas dos veces un quiz, se abre la primera pista y se te sugiere el capítulo del manual. Al terminar un módulo aparece «Lo que ya sabes».
 
 En el mismo panel están el **Glosario** (20 términos en lenguaje llano), la **Entrevista** (12 preguntas con respuesta modelo: CVSS frente a VPR, falsos positivos, aceptación de riesgo, métricas para dirección, respuesta a una CVE en las noticias…) y una **Guía** con el ciclo de gestión de vulnerabilidades.
+
+## <img src="docs/assets/icons/route.svg" width="20" height="20" valign="middle"/> Manual y recorridos guiados
+
+En la barra lateral, **Aprender** tiene dos entradas.
+
+**Manual** (también con la tecla `?`). Son 12 capítulos:
+
+1. La consola
+2. Host Discovery
+3. Basic Network Scan y licencia
+4. Leer los resultados
+5. Priorizar con CVSS, VPR, EPSS y KEV
+6. Credenciales
+7. Filtros
+8. Plugin Rules
+9. Remediations e History
+10. Informes
+11. Plantillas especializadas
+12. Policies y programación
+
+Cada capítulo explica para qué sirve la pantalla y trae una imagen con números sobre la interfaz real. Debajo van los pasos con esos mismos números, los errores típicos y lo que le dirías a dirección.
+
+<p align="center"><img src="docs/capturas/desk-16-manual.png" alt="Capítulo 5 del manual, «Priorizar: CVSS, VPR, EPSS y KEV»: índice de capítulos a la izquierda y, a la derecha, la explicación y la captura de VPR Top Threats con los números 1 a 4 sobre VPR, Severity, Reasons y Hosts" width="880"/></p>
+
+**Recorridos guiados.** Oscurecen la pantalla, dejan a la vista solo el botón que toca y avanzan cuando haces la acción, no cuando pulsas «Siguiente». Hay 6 recorridos:
+
+- la consola en 60 segundos;
+- tu primer scan;
+- leer los resultados;
+- credenciales;
+- una Plugin Rule;
+- remediar y verificar.
+
+`Esc` sale del recorrido. Si te vas a otra pantalla, te ofrece volver.
+
+<p align="center"><img src="docs/capturas/desk-15-recorrido.png" alt="Recorrido «La consola en 60 segundos» con la pantalla oscurecida, el botón Scans resaltado y una burbuja con el texto del paso, el progreso y el botón Siguiente" width="880"/></p>
 
 ## <img src="docs/assets/icons/scan-search.svg" width="20" height="20" valign="middle"/> Qué reproduce de Nessus
 
@@ -216,6 +291,7 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 ## <img src="docs/assets/icons/wand-sparkles.svg" width="20" height="20" valign="middle"/> Movimiento y diseño
 
 - **Iconos de [Lucide](https://lucide.dev)** copiados en el HTML, sin CDN. Ningún logotipo de Tenable.
+- **Transiciones y carga** con los patrones de Atlas GRC y ai-job-search-es: View Transitions entre vistas, entrada coreografiada (cabecera y como mucho 7 bloques, 45 ms entre ellos), esqueletos solo mientras un scan está en marcha y avisos apilados como Sonner.
 - **Movimiento con los criterios de Emil Kowalski:** curvas `ease-out`, duraciones entre 150 y 320 ms, solo `transform` y `opacity`. Los botones responden al pulsar con escala 0,97, los menús crecen desde su botón, los modales entran desde 0,96 y los avisos salen con un fundido corto. El panel de entrenamiento se desliza con la curva de las hojas de iOS.
 - **Lo frecuente no se anima** (pestañas, filas, navegación); el movimiento queda para lo ocasional.
 - **Con «reducir movimiento»** solo hay fundidos.
@@ -230,18 +306,21 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 
 ## <img src="docs/assets/icons/flask-conical.svg" width="20" height="20" valign="middle"/> Pruebas
 
-`pruebas/e2e.js` abre el laboratorio en Chromium y hace 55 comprobaciones:
+`pruebas/e2e.js` abre el laboratorio en Chromium y hace 92 comprobaciones:
 
-- completa los 24 ejercicios usando la aplicación y responde un quiz (mal y bien);
+- completa los 32 ejercicios usando la aplicación, responde un quiz (mal y bien) y ordena la cola de remediación con las flechas;
+- recorre los 6 recorridos guiados de principio a fin con un conductor que pulsa o rellena solo lo que señala cada paso, y abre los 12 capítulos del manual;
+- comprueba que las imágenes incrustadas son las de `manual/img`, que el HTML pesa menos de 1,5 MB y que los esqueletos solo aparecen mientras un scan está en marcha;
 - comprueba los límites de las dos licencias, el scan dinámico, AD sin dominio, el ciclo de parche y verificación y las descargas;
-- pasa axe-core (WCAG 2.2 AA) 21 veces: 16 pantallas en escritorio y 5 en móvil, en claro y en oscuro;
+- pasa axe-core (WCAG 2.2 AA) 31 veces: 25 pantallas en escritorio y 6 en móvil, en claro y en oscuro;
 - falla si hay errores de consola, peticiones externas o desplazamiento horizontal a 390 px.
 
 ```bash
 cd pruebas
 npm install
 npx playwright install chromium
-npm test
+npm test          # la prueba completa
+npm run manual    # vuelve a generar e incrustar las imágenes del manual tras cambiar la interfaz
 ```
 
 GitHub Actions ejecuta lo mismo en cada push y en cada PR (`.github/workflows/pruebas.yml`).
@@ -255,12 +334,15 @@ GitHub Actions ejecuta lo mismo en cada push y en cada PR (`.github/workflows/pr
 ## <img src="docs/assets/icons/folder-tree.svg" width="20" height="20" valign="middle"/> Estructura
 
 ```
-nessus-lab/
-├── 🌐 index.html                 El laboratorio completo (HTML, CSS y JS en un archivo)
-├── 🧪 pruebas/                   e2e.js (Playwright + axe-core) y package.json
+WhiteFox/
+├── 🌐 index.html                 El laboratorio completo (HTML, CSS, JS e imágenes en un archivo)
+├── 🏔️ hero/                      Estilos, script e incrustación de la portada
+├── 📖 manual/img/                Las 12 imágenes del manual en WebP (las incrusta npm run manual)
+├── 🧪 pruebas/                   e2e.js (Playwright + axe-core), manual-capturas.js y package.json
 ├── 📄 docs/
 │   ├── assets/                   Cabecera, pie e iconos del README
-│   └── capturas/                 Capturas en claro, oscuro y móvil
+│   ├── capturas/                 Capturas en claro, oscuro y móvil
+│   └── designs/                  Diseños revisados con el método Elephant-Goldfish
 ├── ⚙️ .github/workflows/         pruebas.yml
 └── 📝 README.md · CHANGELOG.md
 ```
@@ -269,7 +351,7 @@ nessus-lab/
 
 © 2026 Yoandy Ramírez Delgado. Repositorio privado de uso personal.
 
-Componentes de terceros: iconos de [Lucide](https://lucide.dev) (ISC). Vuln Scanner Lab es una herramienta de estudio independiente: no está afiliada ni respaldada por Tenable. *Nessus* y *Tenable* son marcas de sus propietarios. La interfaz se ha recreado a partir de la documentación pública, sin código, logotipos ni textos de Tenable. Empresa, equipos y hallazgos son inventados; los CVE son públicos.
+Componentes de terceros: iconos de [Lucide](https://lucide.dev) (ISC). WhiteFox es una herramienta de estudio independiente: no está afiliada ni respaldada por Tenable. *Nessus* y *Tenable* son marcas de sus propietarios. La interfaz se ha recreado a partir de la documentación pública, sin código, logotipos ni textos de Tenable. Empresa, equipos y hallazgos son inventados; los CVE son públicos.
 
 ## <img src="docs/assets/icons/user-round.svg" width="20" height="20" valign="middle"/> Autor
 
@@ -278,7 +360,7 @@ Componentes de terceros: iconos de [Lucide](https://lucide.dev) (ISC). Vuln Scan
 <td align="center" width="100%" valign="top">
 <img src="https://avatars.githubusercontent.com/u/238087465?v=4" alt="Yoandy Ramírez Delgado" width="110"/><br/>
 <b>Yoandy Ramírez Delgado</b><br/>
-<sub><b>Diseño y desarrollo de Vuln Scanner Lab</b></sub><br/>
+<sub><b>Diseño y desarrollo de WhiteFox</b></sub><br/>
 <sub>Junior Pentester · eJPTv2 · AI Governance (ISO 42001) · SysAdmin</sub><br/><br/>
 <a href="https://www.linkedin.com/in/yoandyrd92/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white"/></a>
 <a href="https://github.com/heindall92"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white"/></a>
@@ -291,5 +373,5 @@ Componentes de terceros: iconos de [Lucide](https://lucide.dev) (ISC). Vuln Scan
 Otras herramientas del autor: [Blue-Jr](https://github.com/heindall92/Blue-Jr) (turnos de SOC de nivel 1), [Rosetta](https://github.com/heindall92/rosetta_multinorma) (mapa multinorma), [Atlas GRC](https://github.com/heindall92/atlas-grc) (aprender ISO/IEC 27001 desde cero), [CTEM-Nexus](https://github.com/heindall92/ctem-nexus) (exposición y rutas de ataque), [ARGOS](https://github.com/heindall92/argos-grc) (laboratorio GRC), [KAIROS](https://github.com/heindall92/kairos) (continuidad de negocio) y [Astrolabio](https://github.com/heindall92/astrolabio) (entrevistas con el método STAR).
 
 <p align="center">
-  <img src="docs/assets/nessuslab-footer.svg" alt="Vuln Scanner Lab · primero lo que de verdad importa" width="100%"/>
+  <img src="docs/assets/whitefox-footer.svg" alt="WhiteFox · primero lo que de verdad importa" width="100%"/>
 </p>

@@ -4,7 +4,7 @@
 .hero{position:relative;min-width:0;max-width:100%;border-radius:22px;background:#0d2a5c;box-shadow:var(--ring);aspect-ratio:5/2;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);isolation:isolate;margin-bottom:18px;color:#fff}
 /* La portada sigue la proporción de la imagen (como mucho 5:2) y la imagen se ancla abajo a la derecha:
    así nunca se cortan los pies del hombre ni la cima donde está, solo algo de cielo */
-.hero-art{position:absolute;inset:0;z-index:-2;border-radius:inherit;overflow:hidden;background:#0d2a5c 66% 78%/cover no-repeat}
+.hero-art{position:absolute;inset:0;z-index:-2;border-radius:inherit;overflow:hidden;background:#0d2a5c 72% 45%/cover no-repeat}
 .hero-art::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,20,50,.74) 0%,rgba(5,20,50,.67) 44%,rgba(5,20,50,.34) 62%,rgba(5,20,50,0) 78%)}
 .hero-txt{padding:44px 12px 38px 44px;display:flex;flex-direction:column;justify-content:center;gap:16px;max-width:620px;text-shadow:0 1px 2px rgba(3,12,32,.6),0 2px 18px rgba(3,12,32,.35)}
 .hero .eyebrow{display:flex;align-items:center;gap:8px;font:600 11.5px/1.2 var(--mono);letter-spacing:1.4px;text-transform:uppercase;color:#d6e8ff}
@@ -27,10 +27,6 @@
 .hero-prog .dot{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
 .hero-prog .meter{margin:0;height:8px;background:rgba(255,255,255,.26);box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
 .hero-prog .meter i{background:#fff}
-.hero-tools{position:absolute;top:16px;right:16px;display:flex;gap:6px;padding:4px;border-radius:12px;background:rgba(8,24,58,.34);box-shadow:inset 0 0 0 1px rgba(255,255,255,.26);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.hero-tools button{width:36px;height:36px;border:0;border-radius:9px;background:none;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background-color .15s,color .15s}
-.hero-tools button:hover{background:rgba(255,255,255,.16)}
-.hero-tools button[aria-pressed=true]{background:#fff;color:#0f2547}
 .hstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
 .hstat{background:var(--surface);border-radius:16px;box-shadow:var(--ring);padding:16px 18px;display:flex;gap:14px;align-items:flex-start}
 .hstat .si{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--primary-soft);color:var(--link)}
@@ -43,7 +39,7 @@
 @media (max-width:900px){
  /* Móvil y tablet: la imagen arriba, detrás del texto, y se funde hacia abajo en azul oscuro (sin blanco) */
  .hero{grid-template-columns:minmax(0,1fr);min-height:0;aspect-ratio:auto;align-items:end}
- .hero-art{inset:0 0 auto 0;height:440px;background-position:66% 70%;-webkit-mask-image:linear-gradient(180deg,#000 80%,transparent 100%);mask-image:linear-gradient(180deg,#000 80%,transparent 100%)}
+ .hero-art{inset:0 0 auto 0;height:440px;background-position:86% 60%;-webkit-mask-image:linear-gradient(180deg,#000 80%,transparent 100%);mask-image:linear-gradient(180deg,#000 80%,transparent 100%)}
  .hero-art::after{background:linear-gradient(180deg,rgba(5,20,50,0) 70%,rgba(5,20,50,.6) 100%)}
  .hero-txt{padding:400px 20px 24px;max-width:none}
  .hero .lead{font-size:15px}
