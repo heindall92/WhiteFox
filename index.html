@@ -234,6 +234,20 @@ textarea.in{min-height:80px;resize:vertical;font-family:var(--mono);font-size:13
 /* Training drawer */
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,96vw);background:var(--surface);box-shadow:var(--ring-hi);z-index:50;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .32s var(--ease-sheet);will-change:transform}
 .drawer.open{transform:none}
+img.avatar{object-fit:cover;padding:0;background:#2a3c50}
+.badges-sec{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+.bdg-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.bdg-head h2{font-size:17px;margin:0 0 4px}.bdg-head p{margin:0;max-width:52ch}
+.bdg-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(max(140px,calc((100% - 36px)/4)),1fr));gap:12px}
+.bdg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:16px 12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.bdg svg{margin-bottom:6px;transition:transform .2s var(--ease-out)}.bdg.on:hover svg{transform:translateY(-2px) scale(1.03)}
+.bdg:not(.on) svg{opacity:.5}
+.bdg b{font-size:13.5px;line-height:1.3}.bdg .muted{font-size:12px;line-height:1.35}
+.bdg-at{display:flex;gap:5px;align-items:center;font-size:12.5px;color:var(--ok);font-weight:600;margin-top:6px}.bdg-at+.muted{margin-bottom:8px}
+.bdg-p{display:grid;gap:6px;width:100%;font-size:12px;color:var(--text-2);margin-top:6px}.bdg-p .meter{height:6px;display:block}
+.card-modal{width:min(640px,94vw)}.card-prev{display:block;width:100%;height:auto;border-radius:12px;box-shadow:var(--ring-hi)}
+.mod-sum summary{display:flex;gap:8px;align-items:center}.mod-sum summary svg{flex:none}.mod-sum .btn{margin-top:8px}
+
 @media (min-width:1360px){body.dw .app>.body,body.dw .app>.disclaimer{margin-right:460px}body.dw .toasts{left:calc(50% - 230px)}}
 /* con el panel abierto el área útil es 460 px más estrecha: los diseños de dos columnas pasan a una hasta que vuelve a caber */
 @media (min-width:1360px) and (max-width:1680px){body.dw .results,body.dw .pd{grid-template-columns:1fr}body.dw .hstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -985,6 +999,122 @@ const KEY='vslab-nessus-v1';
 let S;
 const PROFILE0={name:'Yoandy Ramírez Delgado',user:'yoandy',email:'',role:'Risk Manager'};
 const initials=n=>String(n||'').trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('')||'?';
+/* ===== Insignias, foto de perfil y tarjeta de logros =====
+   Todo se dibuja en el navegador (SVG y canvas): sin red, sin servicios externos. La foto no sale del equipo. */
+const BADGES=[
+ {icon:'radar',c:['#14b8a6','#0b6e8f'],es:'Explorador de red',en:'Network Explorer'},
+ {icon:'scanSearch',c:['#3b8cf0','#1b4fa8'],es:'Analista de hallazgos',en:'Findings Analyst'},
+ {icon:'key',c:['#7070e8','#3a2f9e'],es:'Escaneo autenticado',en:'Authenticated Scanning'},
+ {icon:'target',c:['#b06ae8','#6a2bb0'],es:'Especialista en plantillas',en:'Template Specialist'},
+ {icon:'shieldCheck',c:['#f0b429','#b86e00'],es:'Gestor del riesgo',en:'Risk Handler'},
+ {icon:'sliders',c:['#6b8aa8','#2c3e55'],es:'Configurador experto',en:'Scan Tuner'},
+ {icon:'crown',c:['#f7d154','#c98a00'],es:'Risk Manager en práctica',en:'Risk Manager in Practice'}
+];
+const bName=i=>LG(BADGES[i].es,BADGES[i].en);
+const modDoneAt=i=>{const M=MODS[i];return M[1].every(id=>exDone(EXERCISES.find(x=>x.id===id)))?(S.modDone&&S.modDone[M[0]])||Date.now():0;};
+const modProg=i=>{const ids=MODS[i][1];return[ids.filter(id=>exDone(EXERCISES.find(x=>x.id===id))).length,ids.length];};
+let BADGE_N=0;
+/* Insignia hexagonal: degradado del módulo, anillo, icono Lucide y cinta con el número de módulo */
+function badgeSVG(i,on=true,px=96,label=true){const b=BADGES[i],g='bdg'+(++BADGE_N),c=on?b.c:['#a3adb8','#6b7785'];
+ return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 132" width="${px}" height="${Math.round(px*1.1)}" ${label?`role="img" aria-label="${esc(LG('Insignia','Badge')+': '+bName(i)+(on?'':' · '+LG('pendiente','locked')))}"`:'aria-hidden="true"'}><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient><linearGradient id="${g}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`+
+ `<path d="M60 4 108 32v56L60 116 12 88V32Z" fill="url(#${g})"/><path d="M60 4 108 32v56L60 116 12 88V32Z" fill="url(#${g}s)"/>`+
+ `<path d="M60 15 98.5 37.5v45L60 105 21.5 82.5v-45Z" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>`+
+ `<circle cx="60" cy="58" r="25" fill="#fff" fill-opacity=".17"/>`+
+ `<g transform="translate(42 40) scale(1.5)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[on?b.icon:'lock']}</g>`+
+ `<path d="M18 100h84l-7 9.5 7 9.5H18l7-9.5Z" fill="${on?'#fff':'#e6eaef'}"/>`+
+ `<text x="60" y="113.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif" font-size="10.5" font-weight="700" letter-spacing="1" fill="${c[1]}">${LG('MÓDULO','MODULE')} ${i+1}</text></svg>`;}
+
+/* Foto de perfil: se recorta en cuadrado a 320 px y se guarda como JPEG en este navegador */
+const PHOTO_RE=/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+const hasPhoto=()=>typeof S.profile.photo==='string'&&PHOTO_RE.test(S.profile.photo);
+function avatarHTML(cls=''){return hasPhoto()?`<img class="avatar ${cls}" src="${S.profile.photo}" alt="">`:`<span class="avatar ${cls}" aria-hidden="true">${esc(initials(S.profile.name))}</span>`;}
+function photoUpload(inp){const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+ if(!/^image\/(png|jpeg|webp|gif)$/.test(f.type)){toast(LG('Elige una imagen PNG, JPG, WebP o GIF.','Choose a PNG, JPG, WebP or GIF image.'),'alert');return;}
+ if(f.size>15e6){toast(LG('La imagen pesa más de 15 MB.','The image is larger than 15 MB.'),'alert');return;}
+ const url=URL.createObjectURL(f),img=new Image();
+ img.onload=()=>{const w=img.naturalWidth,h=img.naturalHeight,s=Math.min(w,h),c=document.createElement('canvas');c.width=c.height=320;const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(img,(w-s)/2,(h-s)/2,s,s,0,0,320,320);URL.revokeObjectURL(url);
+  S.profile.photo=c.toDataURL('image/jpeg',.86);save();toast(LG('Foto guardada en este navegador. Ya sale en tu avatar, tus insignias y tu tarjeta.','Photo saved in this browser. It now shows on your avatar, badges and card.'),'user');render();};
+ img.onerror=()=>{URL.revokeObjectURL(url);toast(LG('No se ha podido leer la imagen.','The image could not be read.'),'alert');};
+ img.src=url;}
+function photoRemove(){delete S.profile.photo;save();toast(LG('Foto quitada.','Photo removed.'),'user');render();}
+
+/* Lienzo: utilidades */
+const CF='system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif';
+const loadImg=src=>new Promise((ok,ko)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=ko;im.src=src;});
+async function svgToImg(svg){const u=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));try{return await loadImg(u);}finally{setTimeout(()=>URL.revokeObjectURL(u),1000);}}
+function rrect(x,X,Y,W,H,R){x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+W,Y,X+W,Y+H,R);x.arcTo(X+W,Y+H,X,Y+H,R);x.arcTo(X,Y+H,X,Y,R);x.arcTo(X,Y,X+W,Y,R);x.closePath();}
+function wrapLines(x,t,maxW,maxL=2){const w=String(t).split(/\s+/),out=[];let l='';for(const s of w){const tt=l?l+' '+s:s;if(x.measureText(tt).width>maxW&&l){out.push(l);l=s;}else l=tt;}if(l)out.push(l);
+ if(out.length>maxL){out.length=maxL;let last=out[maxL-1];while(x.measureText(last+'…').width>maxW&&last.length)last=last.slice(0,-1);out[maxL-1]=last.replace(/\s+$/,'')+'…';}return out;}
+function fitFont(x,t,weight,size,maxW,min=18){let s=size;do{x.font=`${weight} ${s}px ${CF}`;}while(x.measureText(t).width>maxW&&--s>min);return s;}
+function cardBg(x,W,H,c1,c2){const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,c1);g.addColorStop(1,c2);x.fillStyle=g;x.fillRect(0,0,W,H);
+ x.strokeStyle='rgba(255,255,255,.035)';x.lineWidth=1;for(let i=40;i<Math.max(W,H);i+=40){x.beginPath();x.moveTo(i+.5,0);x.lineTo(i+.5,H);x.stroke();x.beginPath();x.moveTo(0,i+.5);x.lineTo(W,i+.5);x.stroke();}
+ const r=x.createRadialGradient(W*.85,H*.08,10,W*.85,H*.08,W*.6);r.addColorStop(0,'rgba(74,151,232,.28)');r.addColorStop(1,'rgba(74,151,232,0)');x.fillStyle=r;x.fillRect(0,0,W,H);}
+async function drawAvatar(x,cx,cy,r){x.save();x.beginPath();x.arc(cx,cy,r,0,Math.PI*2);x.closePath();x.clip();
+ if(hasPhoto()){try{const im=await loadImg(S.profile.photo);x.drawImage(im,cx-r,cy-r,r*2,r*2);}catch(e){}}
+ else{const g=x.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,'#2f80ed');g.addColorStop(1,'#1b3f7a');x.fillStyle=g;x.fillRect(cx-r,cy-r,r*2,r*2);x.fillStyle='#fff';x.font=`700 ${Math.round(r*.8)}px ${CF}`;x.textAlign='center';x.textBaseline='middle';x.fillText(initials(S.profile.name),cx,cy+2);}
+ x.restore();x.beginPath();x.arc(cx,cy,r+3,0,Math.PI*2);x.strokeStyle='rgba(255,255,255,.85)';x.lineWidth=5;x.stroke();x.textAlign='left';x.textBaseline='alphabetic';}
+const fDay=t=>new Date(t).toLocaleDateString(S.lang==='en'?'en-GB':'es-ES',{day:'numeric',month:'long',year:'numeric'});
+function cardFooter(x,W,H){x.fillStyle='rgba(255,255,255,.55)';x.font=`500 17px ${CF}`;x.textAlign='center';
+ x.fillText(LG('Practicado en WhiteFox, laboratorio offline de gestión de vulnerabilidades. Sin afiliación con Tenable.','Practised in WhiteFox, an offline vulnerability management lab. Not affiliated with Tenable.'),W/2,H-34);x.textAlign='left';}
+function brand(x,X,Y){x.fillStyle='#9cc3f2';x.font=`700 20px ${CF}`;x.fillText('WHITEFOX',X,Y);const w=x.measureText('WHITEFOX').width;x.fillStyle='rgba(255,255,255,.5)';x.font=`500 20px ${CF}`;x.fillText('  ·  '+LG('Laboratorio de gestión de vulnerabilidades','Vulnerability management lab'),X+w,Y);}
+
+/* Tarjeta de logros: 1200 × 1200, para LinkedIn o el portfolio */
+async function renderAchCard(){const W=1200,H=1200,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ cardBg(x,W,H,'#0a1424','#14284a');brand(x,80,92);
+ await drawAvatar(x,175,225,88);
+ const p=S.profile;x.fillStyle='#fff';fitFont(x,p.name,700,54,820);x.fillText(p.name,300,212);
+ x.fillStyle='#b8c7da';x.font=`500 28px ${CF}`;x.fillText(p.role||'',300,256);
+ const done=EXERCISES.filter(e=>exDone(e)).length,earned=MODS.map((m,i)=>modDoneAt(i)),nb=earned.filter(Boolean).length;
+ x.fillStyle='#fff';x.font=`700 30px ${CF}`;const t1=`${done} / ${EXERCISES.length}`;x.fillText(t1,80,372);let w=x.measureText(t1).width;
+ x.fillStyle='#b8c7da';x.font=`500 26px ${CF}`;x.fillText(' '+LG('ejercicios','exercises'),80+w,372);w+=x.measureText(' '+LG('ejercicios','exercises')).width+40;
+ x.fillStyle='#fff';x.font=`700 30px ${CF}`;const t2=`${nb} / ${MODS.length}`;x.fillText(t2,80+w,372);const w2=x.measureText(t2).width;
+ x.fillStyle='#b8c7da';x.font=`500 26px ${CF}`;x.fillText(' '+LG('insignias','badges'),80+w+w2,372);
+ rrect(x,80,394,W-160,14,7);x.fillStyle='rgba(255,255,255,.12)';x.fill();if(done){rrect(x,80,394,Math.max(14,(W-160)*done/EXERCISES.length),14,7);const g=x.createLinearGradient(80,0,W-80,0);g.addColorStop(0,'#4a97e8');g.addColorStop(1,'#14b8a6');x.fillStyle=g;x.fill();}
+ const rows=[[0,1,2,3],[4,5,6]],bw=150,bh=165,cw=250;
+ for(let r=0;r<2;r++){const ids=rows[r],x0=(W-ids.length*cw)/2,y0=448+r*262;
+  for(let k=0;k<ids.length;k++){const i=ids[k],on=!!earned[i],im=await svgToImg(badgeSVG(i,on,bw,false)),cx=x0+k*cw+cw/2;
+   x.globalAlpha=on?1:.45;x.drawImage(im,cx-bw/2,y0,bw,bh);x.globalAlpha=1;
+   x.fillStyle=on?'#fff':'rgba(255,255,255,.5)';x.font=`600 20px ${CF}`;x.textAlign='center';wrapLines(x,bName(i),cw-20,2).forEach((l,j)=>x.fillText(l,cx,y0+bh+30+j*24));x.textAlign='left';}}
+ const skills=MODS.flatMap((m,i)=>earned[i]?(m[2].sum||[]):[]);
+ x.fillStyle='#9cc3f2';x.font=`700 20px ${CF}`;x.fillText(LG('LO QUE SÉ HACER','WHAT I CAN DO'),80,990);
+ x.font=`500 21px ${CF}`;x.fillStyle='#e6eef8';
+ if(!skills.length){x.fillStyle='rgba(255,255,255,.6)';x.fillText(LG('Aún sin insignias: el primer módulo está a unos 20 minutos.','No badges yet: the first module takes about 20 minutes.'),80,1028);}
+ else{const col=(W-200)/2,list=skills.slice(0,6);list.forEach((s,j)=>{const X=80+(j%2)*(col+40),Y=1028+Math.floor(j/2)*32;x.fillStyle='#14b8a6';x.beginPath();x.arc(X+6,Y-7,5,0,Math.PI*2);x.fill();x.fillStyle='#e6eef8';x.fillText(wrapLines(x,s,col-24,1)[0],X+22,Y);});
+  if(skills.length>6){x.fillStyle='rgba(255,255,255,.55)';x.fillText(LG(`y ${skills.length-6} más`,`and ${skills.length-6} more`),80+22,1028+3*32);}}
+ cardFooter(x,W,H);return c;}
+
+/* Tarjeta de una insignia: 1080 × 1080 */
+async function renderBadgeCard(i){const W=1080,H=1080,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),b=BADGES[i];
+ cardBg(x,W,H,'#0a1424','#13233f');
+ const r=x.createRadialGradient(W/2,370,20,W/2,370,420);r.addColorStop(0,b.c[0]+'66');r.addColorStop(1,b.c[0]+'00');x.fillStyle=r;x.fillRect(0,0,W,H);
+ brand(x,70,84);
+ const im=await svgToImg(badgeSVG(i,true,330,false));x.drawImage(im,(W-330)/2,140,330,363);
+ x.textAlign='center';x.fillStyle=b.c[0];x.font=`700 22px ${CF}`;x.fillText(LG('INSIGNIA CONSEGUIDA','BADGE EARNED'),W/2,560);
+ x.fillStyle='#fff';fitFont(x,bName(i),800,58,W-140,30);x.fillText(bName(i),W/2,628);
+ x.fillStyle='#b8c7da';x.font=`500 26px ${CF}`;x.fillText(modName(MODS[i][0]),W/2,672);
+ x.font=`500 23px ${CF}`;x.fillStyle='#e6eef8';(MODS[i][2].sum||[]).slice(0,4).forEach((s,j)=>x.fillText('✓  '+wrapLines(x,s,W-220,1)[0],W/2,730+j*36));
+ x.textAlign='left';
+ const at=modDoneAt(i);await drawAvatar(x,120,930,48);x.fillStyle='#fff';fitFont(x,S.profile.name,700,28,620,18);x.fillText(S.profile.name,190,922);
+ x.fillStyle='#b8c7da';x.font=`500 21px ${CF}`;x.fillText([S.profile.role,at?fDay(at):''].filter(Boolean).join(' · '),190,955);
+ cardFooter(x,W,H);return c;}
+
+/* Vista previa y descarga */
+let CARD_URL=null;
+async function cardModal(kind,i){let c;try{c=kind==='badge'?await renderBadgeCard(i):await renderAchCard();}catch(e){console.error(e);toast(LG('No se ha podido generar la imagen en este navegador.','The image could not be generated in this browser.'),'alert');return;}
+ c.toBlob(b=>{if(!b){toast(LG('No se ha podido generar la imagen en este navegador.','The image could not be generated in this browser.'),'alert');return;}
+  if(CARD_URL)URL.revokeObjectURL(CARD_URL);CARD_URL=URL.createObjectURL(b);
+  const u=slug(S.profile.user||'yo')||'yo',name=kind==='badge'?`whitefox-insignia-${i+1}-${u}.png`:`whitefox-logros-${u}.png`;
+  const title=kind==='badge'?bName(i):LG('Tu tarjeta de logros','Your achievements card');
+  modal(title,`<img class="card-prev" src="${CARD_URL}" alt="${esc(kind==='badge'?LG('Tarjeta de la insignia','Badge card')+' '+bName(i):LG('Tarjeta de logros','Achievements card'))}" data-w="${c.width}"><p class="muted" style="margin:10px 0 0">${LG(`Imagen PNG de ${c.width} × ${c.height} px, generada en tu navegador. Lista para LinkedIn o tu portfolio.`,`${c.width} × ${c.height} px PNG image, generated in your browser. Ready for LinkedIn or your portfolio.`)}</p>`,
+   `<button class="btn" onclick="closeModal()">${LG('Cerrar','Close')}</button><a class="btn primary" href="${CARD_URL}" download="${name}" onclick="ev('cardDownload')">${ic('download','sm')}${LG('Descargar PNG','Download PNG')}</a>`,'card-modal');},'image/png');}
+
+/* Mi cuenta: foto e insignias */
+function badgesSection(){const nb=MODS.filter((m,i)=>modDoneAt(i)).length;
+ return`<section class="badges-sec" aria-labelledby="bdg-h"><div class="bdg-head"><div><h2 id="bdg-h">${LG('Mis insignias','My badges')}</h2><p class="muted">${LG(`${nb} de ${MODS.length}. Se consigue una al terminar cada módulo: práctica y quiz de todos sus ejercicios.`,`${nb} of ${MODS.length}. You earn one when you finish each module: practice and quiz of all its exercises.`)}</p></div>
+  <button class="btn primary" onclick="cardModal('all')">${ic('trophy','sm')}${LG('Ver y descargar mi tarjeta de logros','View and download my achievements card')}</button></div>
+  <ul class="bdg-grid">${MODS.map((m,i)=>{const at=modDoneAt(i),[d,n]=modProg(i);return`<li class="bdg ${at?'on':''}">${badgeSVG(i,!!at,84)}<b>${bName(i)}</b><span class="muted">${modName(m[0])}</span>${at?`<span class="bdg-at">${ic('check','sm')}${LG('Conseguida','Earned')}</span><span class="muted">${fDay(at)}</span><button class="btn sm" onclick="cardModal('badge',${i})">${ic('download','sm')}${LG('Descargar','Download')}</button>`:`<span class="bdg-p"><span class="meter" aria-hidden="true"><i style="width:${d/n*100}%"></i></span>${LG(`${d} de ${n} ejercicios`,`${d} of ${n} exercises`)}</span>`}</li>`;}).join('')}</ul></section>`;}
+function photoField(){return fld(LG('Foto de perfil','Profile photo'),`<div class="bk"><label class="btn">${ic('upload','sm')}${hasPhoto()?LG('Cambiar foto','Change photo'):LG('Subir foto','Upload photo')}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="sr" onchange="photoUpload(this)"></label>${hasPhoto()?`<button class="btn ghost" onclick="photoRemove()">${ic('trash','sm')}${LG('Quitar','Remove')}</button>`:''}</div>`,LG('Se recorta en cuadrado y se guarda solo en este navegador. Sale en tu avatar, tus insignias y tu tarjeta de logros.','It is cropped square and stored only in this browser. It shows on your avatar, your badges and your achievements card.'));}
+
 function saveProfile(){const g=id=>(document.getElementById(id)||{}).value||'',name=g('pf-name').trim(),user=g('pf-user').trim(),email=g('pf-email').trim(),role=g('pf-role').trim(),out=document.getElementById('pf-msg');
  const err=!name?LG('Escribe tu nombre.','Enter your name.'):!/^[a-z0-9._-]{2,32}$/i.test(user)?LG('El usuario admite de 2 a 32 letras, números, punto, guion o guion bajo.','The username takes 2 to 32 letters, digits, dots, hyphens or underscores.'):email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)?LG('El correo no tiene un formato válido.','The email address is not valid.'):'';
  if(err){out.innerHTML=`<div class="st">${ic('x','sm')}<span data-notr>${esc(err)}</span></div>`;return;}
@@ -1282,7 +1412,7 @@ function renderTop(){
  <button class="iconbtn" onclick="toggleTheme()" aria-label="Cambiar tema claro/oscuro" title="Tema claro/oscuro">${ic(S.theme==='dark'?'sun':'moon')}</button>
  ${topPop('m-help','help2','Ayuda',helpPop())}${topPop('m-ajustes','gear','Ajustes',ajustesPop())}
  <button class="iconbtn" aria-label="Notifications" onclick="toast('No new notifications','bell')">${ic('bell')}</button>
- <button class="user" data-notr onclick="go({top:'settings',page:'settings',sub:'account'})" aria-label="${esc(S.profile.name)} · ${LG('Mi cuenta','My account')}" title="${esc(S.profile.name)}"><span class="avatar">${esc(initials(S.profile.name))}</span><span>${esc(S.profile.user)}</span></button>`;
+ <button class="user" data-notr onclick="go({top:'settings',page:'settings',sub:'account'})" aria-label="${esc(S.profile.name)} · ${LG('Mi cuenta','My account')}" title="${esc(S.profile.name)}">${avatarHTML()}<span>${esc(S.profile.user)}</span></button>`;
  if(UI.menu){const m=document.getElementById(UI.menu);if(m&&m.closest('#top'))m.classList.add('open');}
 }
 /* Barra de pestañas en móvil: lo principal a un toque del pulgar; el resto en «Más» */
@@ -1816,9 +1946,9 @@ function vSettings(){
  if(sub==='smtp')return wrap('SMTP Server',`<div class="form">${sf('Host','smtpHost')}${sf('Port','smtpPort','number')}${sf('From (sender email)','smtpFrom')}<div class="muted">Simulado: no se envían correos.</div></div>`);
  if(sub==='ca')return wrap('Custom CA',`<div class="form">${fld('Certificate',`<textarea class="in" oninput="S.settings.caCert=this.value;save()" placeholder="-----BEGIN CERTIFICATE-----">${esc(st.caCert)}</textarea>`,'Permite confiar en la CA interna (evita hallazgos "SSL Certificate Cannot Be Trusted" en servicios internos).')}</div>`);
  if(sub==='pwd')return wrap('Password Management',`<div class="form">${sf('Minimum password length','pwdMin','number')}</div>`);
- if(sub==='account'){const p=S.profile;return wrap('My Account',`<div class="acct"><span class="avatar lg" aria-hidden="true">${esc(initials(p.name))}</span><div><b data-notr>${esc(p.name)}</b><div class="muted" data-notr>${esc(p.user)}${p.email?' · '+esc(p.email):''}</div></div></div>
-  <div class="form">${fld('Full name',`<input class="in" id="pf-name" aria-label="Full name" value="${esc(p.name)}" autocomplete="name" maxlength="80">`)}${fld('Username',`<input class="in" id="pf-user" aria-label="Username" value="${esc(p.user)}" autocomplete="username" maxlength="32" spellcheck="false">`,'De 2 a 32 caracteres: letras, números, punto, guion o guion bajo.')}${fld('Email',`<input class="in" id="pf-email" aria-label="Email" type="email" value="${esc(p.email)}" autocomplete="email" maxlength="120" placeholder="nombre@empresa.com">`,'Opcional. Solo se guarda en este navegador.')}${fld('Role',`<input class="in" id="pf-role" aria-label="Role" value="${esc(p.role)}" maxlength="60">`,'Essentials y Essentials Plus solo permiten un usuario.')}
-  <div id="pf-msg" aria-live="polite"></div><div><button class="btn primary" onclick="saveProfile()">${ic('check','sm')}Save changes</button></div></div>`);}
+ if(sub==='account'){const p=S.profile;return wrap('My Account',`<div class="acct">${avatarHTML('lg')}<div><b data-notr>${esc(p.name)}</b><div class="muted" data-notr>${esc(p.user)}${p.email?' · '+esc(p.email):''}</div></div></div>
+  <div class="form">${photoField()}${fld('Full name',`<input class="in" id="pf-name" aria-label="Full name" value="${esc(p.name)}" autocomplete="name" maxlength="80">`)}${fld('Username',`<input class="in" id="pf-user" aria-label="Username" value="${esc(p.user)}" autocomplete="username" maxlength="32" spellcheck="false">`,'De 2 a 32 caracteres: letras, números, punto, guion o guion bajo.')}${fld('Email',`<input class="in" id="pf-email" aria-label="Email" type="email" value="${esc(p.email)}" autocomplete="email" maxlength="120" placeholder="nombre@empresa.com">`,'Opcional. Solo se guarda en este navegador.')}${fld('Role',`<input class="in" id="pf-role" aria-label="Role" value="${esc(p.role)}" maxlength="60">`,'Essentials y Essentials Plus solo permiten un usuario.')}
+  <div id="pf-msg" aria-live="polite"></div><div><button class="btn primary" onclick="saveProfile()">${ic('check','sm')}Save changes</button></div></div>${badgesSection()}`);}
  if(sub==='lab')return wrap('Simulador (laboratorio)',`<div class="form">${fld('Idioma',seg('Idioma',S.lang,[['es','Español'],['en','English']],'setLang'))}${fld('Velocidad de simulación',`<select class="in" onchange="S.speed=+this.value;save()">${[[1,'Lenta'],[2,'Normal'],[4,'Rápida'],[10,'Instantánea']].map(([v,l])=>`<option value="${v}" ${S.speed===v?'selected':''}>${l}</option>`).join('')}</select>`)}
   ${fld('Modo oscuro',sw('Modo oscuro',S.theme==='dark','toggleTheme()'))}
   ${fld('Inventario del lab',`<table class="t"><thead><tr><th>IP</th><th>Host</th><th>Rol</th></tr></thead><tbody>${HOSTS.map(h=>`<tr><td class="num">${h.ip}</td><td>${h.fqdn}</td><td class="muted">${esc(h.os)}</td></tr>`).join('')}</tbody></table>`,'Spoiler: normalmente lo descubrirías con Host Discovery.')}
@@ -2179,7 +2309,7 @@ function exNote(e){return exDone(e)?'':S.prog[e.id]?LG('Práctica hecha · falta
 function exNext(){let f=-1;EXERCISES.forEach((e,i)=>{if(S.quiz[e.id]||exDone(e))f=i;});
  if(f>=0&&!exDone(EXERCISES[f]))return f;
  const after=EXERCISES.findIndex((e,i)=>i>f&&!exDone(e));return after>=0?after:EXERCISES.findIndex(e=>!exDone(e));}
-function modCheck(){S.modDone=S.modDone||{};MODS.forEach(([n,ids])=>{if(!S.modDone[n]&&ids.every(id=>exDone(EXERCISES.find(x=>x.id===id)))){S.modDone[n]=Date.now();save();toast(LG(n+' completado. Abre «Lo que ya sabes» en Entrenamiento.',modName(n)+' completed. Open «What you now know» in Training.'),'trophy');}});}
+function modCheck(){S.modDone=S.modDone||{};MODS.forEach(([n,ids])=>{if(!S.modDone[n]&&ids.every(id=>exDone(EXERCISES.find(x=>x.id===id)))){S.modDone[n]=Date.now();save();{const bi=MODS.findIndex(m=>m[0]===n);toast(LG(`${n} completado. Insignia «${bName(bi)}» conseguida: descárgala en Mi cuenta.`,`${modName(n)} completed. «${bName(bi)}» badge earned: download it in My account.`),'trophy');}}});}
 function checkExercises(){
  let any=false;
  EXERCISES.forEach((e,i)=>{if(!S.prog[e.id]){let ok=false;try{ok=e.check();}catch(x){}if(ok){S.prog[e.id]=Date.now();any=true;toast(`Ejercicio ${i+1}: comprobación superada. Responde el quiz para completarlo.`);}}});
@@ -2201,7 +2331,7 @@ function renderDrawer(){
   ${nx>=0&&(done||half)?`<button class="btn primary ex-cont" onclick="drawerEx=${nx};renderDrawer()">${ic('play','sm')}<span>Continuar: ejercicio ${nx+1}<small>${EXERCISES[nx].title}</small></span></button>`:''}
   <div class="ex-list">${EXERCISES.map((e,i)=>{const m=modOf(e.id),first=!i||modOf(EXERCISES[i-1].id)!==m,ids=MODS.find(x=>x[0]===m)[1];
    const M=MODS.find(x=>x[0]===m),meta=M[2]||{},dn=ids.filter(id=>exDone(EXERCISES.find(x=>x.id===id))).length;
-   return(first?`<div class="mod-h">${modName(m)}<span class="num">${dn===ids.length?ic('check','sm'):''}${dn}/${ids.length} · ≈${meta.min} min</span></div>${dn===ids.length&&meta.sum?`<details class="mod-sum"><summary>${ic('trophy','sm')}Lo que ya sabes</summary><ul>${meta.sum.map(x=>`<li>${x}</li>`).join('')}</ul></details>`:''}${meta.opt&&!dn?`<p class="mod-opt">Opcional para el perfil de Risk Manager: más técnico. Útil para entender lo que te cuente sistemas.</p>`:''}`:'')+`<button class="ex ${exDone(e)?'done':exHalf(e)?'half':''}" data-ex="${e.id}" onclick="drawerEx=${i};renderDrawer()"><span class="n">${exDone(e)?ic('check','sm'):i+1}</span><span><span class="lvl">${e.lvl}${e.opt?' · opcional':''}</span><b>${e.title}</b>${exHalf(e)?`<span class="ex-st">${exNote(e)}</span>`:''}</span></button>`;}).join('')}</div>`;
+   return(first?`<div class="mod-h">${modName(m)}<span class="num">${dn===ids.length?ic('check','sm'):''}${dn}/${ids.length} · ≈${meta.min} min</span></div>${dn===ids.length&&meta.sum?`<details class="mod-sum"><summary>${badgeSVG(MODS.indexOf(M),true,30,false)}<span>${LG('Lo que ya sabes','What you now know')} · <b>${bName(MODS.indexOf(M))}</b></span></summary><ul>${meta.sum.map(x=>`<li>${x}</li>`).join('')}</ul><button class="btn sm" onclick="cardModal('badge',${MODS.indexOf(M)})">${ic('download','sm')}${LG('Descargar la insignia','Download the badge')}</button></details>`:''}${meta.opt&&!dn?`<p class="mod-opt">Opcional para el perfil de Risk Manager: más técnico. Útil para entender lo que te cuente sistemas.</p>`:''}`:'')+`<button class="ex ${exDone(e)?'done':exHalf(e)?'half':''}" data-ex="${e.id}" onclick="drawerEx=${i};renderDrawer()"><span class="n">${exDone(e)?ic('check','sm'):i+1}</span><span><span class="lvl">${e.lvl}${e.opt?' · opcional':''}</span><b>${e.title}</b>${exHalf(e)?`<span class="ex-st">${exNote(e)}</span>`:''}</span></button>`;}).join('')}</div>`;
  }else{
   const e=EXERCISES[drawerEx],ok=!!S.prog[e.id],qd=!!S.quiz[e.id];if(S.lastEx!==e.id){S.lastEx=e.id;save();}
   body=`<button class="btn ghost sm" onclick="drawerEx=null;renderDrawer()">${ic('chevL','sm')}Todos los ejercicios</button>

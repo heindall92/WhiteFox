@@ -1,5 +1,15 @@
 # Cambios
 
+## 2.5.0 · noviembre de 2026
+
+- **Insignias por módulo.** Al terminar un módulo (práctica y quiz de todos sus ejercicios) se consigue su insignia. Hay siete: Explorador de red, Analista de hallazgos, Escaneo autenticado, Especialista en plantillas, Gestor del riesgo, Configurador experto y Risk Manager en práctica. Son hexagonales, con el color y el icono de cada módulo. Salen en Mi cuenta y en el panel de Entrenamiento, junto a «Lo que ya sabes»; las pendientes se ven en gris con su progreso.
+- **Foto de perfil** en Mi cuenta. Se recorta en cuadrado, se guarda como JPEG ligero solo en este navegador y aparece en el avatar, las insignias y la tarjeta. Se rechaza lo que no sea una imagen, y una «foto» manipulada en una copia de seguridad no se usa.
+- **Tarjeta de logros descargable**, para LinkedIn o el portfolio:
+  - una tarjeta general de 1200 × 1200 con tu foto, nombre, puesto, ejercicios hechos, las 7 insignias y «Lo que sé hacer»;
+  - una tarjeta por insignia de 1080 × 1080, con la fecha en que la conseguiste.
+  
+  Se dibujan en el navegador (SVG y canvas), sin conexión, en el idioma de la interfaz y con el aviso de que no hay afiliación con Tenable. Hay vista previa antes de descargar.
+
 ## 2.4.0 · noviembre de 2026
 
 - **Copiar un escaneo**, como «More ▸ Copy to» de Nessus. Hay un botón «Copiar» en la pantalla del escaneo, junto a «Configurar», y en cada fila de Mis escaneos. La copia se llama «Copia de …» y hereda plantilla, objetivos, credenciales y ajustes, pero no los resultados. Se abre en el editor para cambiar lo que haga falta. Sirve para los ejercicios que repiten el mismo escaneo con otra configuración.
