@@ -570,6 +570,8 @@ async function axe(page, label) {
       ok(await q.evaluate(() => /^data:image\/jpeg;base64,/.test(S.profile.photo) && S.profile.photo.length < 60000 && !!document.querySelector('#top img.avatar') && !!document.querySelector('main img.avatar.lg')), 'la foto se recorta, se guarda como JPEG ligero y sale en la barra superior y en Mi cuenta');
       ok(await q.evaluate(() => { S.profile.photo = 'javascript:alert(1)'; render(); const bad = !document.querySelector('#top img.avatar') && !!document.querySelector('#top span.avatar'); return bad; }), 'una «foto» que no es una imagen en base64 (por ejemplo, de una copia manipulada) no se usa');
       await q.setInputFiles('main input[type=file]', { name: 'yo.png', mimeType: 'image/png', buffer: Buffer.from(fotoB64, 'base64') }); await q.waitForTimeout(800);
+      await q.click('main button:has-text("Guardar cambios")'); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => /^data:image\/jpeg/.test(S.profile.photo) && document.querySelector('main img.avatar.lg').getBoundingClientRect().width >= 80), '«Guardar cambios» conserva la foto, y el avatar de Mi cuenta se ve grande (88 px)');
       await q.evaluate(() => { const n = Date.now(); MODS.slice(0, 2).forEach(m => m[1].forEach(id => { S.prog[id] = n; S.quiz[id] = n; })); save(); checkExercises(); render(); }); await q.waitForTimeout(400);
       ok(await q.evaluate(() => document.querySelectorAll('.bdg.on').length === 2 && document.querySelectorAll('.bdg.on button').length === 2 && /Explorador de red/.test(document.querySelector('.bdg.on').textContent)), 'al terminar los módulos 1 y 2 se consiguen sus insignias, con botón de descarga');
       await axe(q, 'Mi cuenta con foto e insignias');
@@ -585,6 +587,10 @@ async function axe(page, label) {
       const [dlB] = await Promise.all([q.waitForEvent('download'), q.click('.modal a:has-text("Descargar PNG")')]);
       const pb = pngInfo(await dlB.path());
       ok(/^whitefox-insignia-1-yoandy\.png$/.test(dlB.suggestedFilename()) && pb.png && pb.w === 1080 && pb.h === 1080, `cada insignia se descarga como PNG de 1080 × 1080 (${dlB.suggestedFilename()}, ${pb.kb} KB)`);
+      ok(await q.evaluate(() => { const h = [...document.querySelectorAll('.modal .share a')].map(a => a.href); return ['https://wa.me/?text=', 'https://www.linkedin.com/feed/?shareActive=true&text=', 'https://x.com/intent/post?text=', 'https://t.me/share/url?url=', 'mailto:'].every(p => h.some(x => x.startsWith(p))) && h.every(x => /Explorador%20de%20red/.test(x)) && [...document.querySelectorAll('.modal .share a[target]')].every(a => a.rel.includes('noopener')); }), 'compartir en WhatsApp, LinkedIn, X, Telegram y correo, con el texto de la insignia y rel="noopener"');
+      await q.click('.modal button:has-text("Copiar texto")'); await q.waitForTimeout(300);
+      ok(await q.isVisible('text=Texto copiado') || await q.isVisible('#share-txt'), '«Copiar texto» copia el texto o, si el navegador no deja, lo muestra para copiarlo');
+      ok(await q.evaluate(() => !/\bscan\b|Policies/.test(MODS[2][2].sum.map(cvTx).join(' '))), 'el texto de las tarjetas también pasa por el traductor: «escaneo» y «Políticas», no «scan» ni «Policies»');
       await q.evaluate(() => { closeModal(); toggleDrawer(true, 'ex'); drawerEx = null; renderDrawer(); }); await q.waitForTimeout(300);
       ok(await q.evaluate(() => { const s = document.querySelector('.mod-sum'); return !!s && !!s.querySelector('summary svg') && /Explorador de red/.test(s.textContent) && !!s.querySelector('button'); }), 'el panel de Entrenamiento muestra la insignia del módulo terminado y permite descargarla');
       await q.evaluate(() => { setLang('en'); go({ top: 'settings', page: 'settings', sub: 'account' }); }); await q.waitForTimeout(400);
