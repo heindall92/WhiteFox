@@ -29,6 +29,16 @@ async function axe(page, label) {
     page.on('request', r => { if (!r.url().startsWith('file:') && !r.url().startsWith('data:') && !r.url().startsWith('blob:')) external.push(r.url()); });
     await page.goto(FILE);
     await page.waitForSelector('.hero');
+    // 2.6.1 · Primera visita: el perfil empieza vacío (nunca con los datos del autor) y se piden los datos
+    await page.waitForSelector('.modal.ob-modal');
+    ok(await page.evaluate(() => S.profile.name === '' && !/Yoandy|yoandy/.test(document.querySelector('#top').textContent) && /invitado/.test(document.querySelector('#top .user').textContent) && /Antes de empezar/.test(document.querySelector('.modal').textContent)), 'la primera vez el perfil está vacío, sin datos del autor, y se piden tus datos');
+    if (vp.n === 'desk') {
+      await axe(page, 'primer arranque: tu perfil');
+      await page.click('.modal button:has-text("Guardar y empezar")'); await page.waitForTimeout(200);
+      ok(await page.isVisible('text=Escribe tu nombre o pulsa «Ahora no»'), 'sin nombre no se guarda y lo explica');
+    }
+    await page.fill('#ob-name', 'Laura Gómez Ruiz'); await page.fill('#ob-role', 'Analista de riesgos'); await page.press('#ob-role', 'Enter'); await page.waitForTimeout(400);
+    ok(await page.evaluate(() => S.profile.name === 'Laura Gómez Ruiz' && S.profile.user === 'laura' && S.profile.role === 'Analista de riesgos' && !document.querySelector('#modal .modal')), 'con Enter se guarda tu perfil y el usuario se deduce del nombre (laura)');
     ok(!(await page.isVisible('.modal')), 'la portada se ve sin modales al entrar');
     await page.waitForTimeout(900);
     await page.screenshot({ path: `${SHOTS}/${vp.n}-00-portada.png` });
@@ -495,7 +505,12 @@ async function axe(page, label) {
       // 2.3.1 · Progreso: lo empezado se ve, se guarda y se continúa donde lo dejaste (navegador nuevo, sin datos)
       const c2 = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'es-ES', acceptDownloads: true });
       const q = await c2.newPage(); q.on('pageerror', e => errors.push(String(e)));
-      await q.goto(FILE); await q.waitForTimeout(700);
+      await q.goto(FILE); await q.waitForTimeout(900);
+      await q.click('.modal.ob-modal button:has-text("Ahora no")'); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => S.profile.name === '' && S.profile.asked && /invitado/.test(document.querySelector('#top .user').textContent) && !!document.querySelector('#top .user .avatar svg')), '«Ahora no» deja un perfil de invitado, con icono genérico, y no vuelve a preguntar');
+      await q.evaluate(() => cardModal('all')); await q.waitForTimeout(300);
+      ok(await q.isVisible('.modal.ob-modal >> text=Tu tarjeta lleva tu nombre'), 'sin nombre, la tarjeta de logros pide primero tu nombre');
+      await q.fill('#ob-name', 'Marta Ruiz'); await q.click('.modal button:has-text("Guardar y empezar")'); await q.waitForTimeout(300);
       await q.click('.hero >> text=Empezar el ejercicio 1'); await q.waitForTimeout(400);
       ok(await q.evaluate(() => document.querySelectorAll('.drawer .req li').length === 2 && !document.querySelector('.drawer .req li.ok')), 'el ejercicio 1 muestra la lista de lo que falta de la práctica');
       await q.evaluate(() => { toggleDrawer(false); welcome(); }); await q.waitForTimeout(300); await q.keyboard.press('Escape'); await q.waitForTimeout(200);
@@ -581,12 +596,12 @@ async function axe(page, label) {
       await axe(q, 'vista previa de la tarjeta');
       const [dlCard] = await Promise.all([q.waitForEvent('download'), q.click('.modal a:has-text("Descargar PNG")')]);
       const pc = pngInfo(await dlCard.path());
-      ok(/^whitefox-logros-yoandy\.png$/.test(dlCard.suggestedFilename()) && pc.png && pc.w === 1200 && pc.h === 1200, `la tarjeta se descarga como PNG de 1200 × 1200 (${dlCard.suggestedFilename()}, ${pc.kb} KB)`);
+      ok(/^whitefox-logros-marta\.png$/.test(dlCard.suggestedFilename()) && pc.png && pc.w === 1200 && pc.h === 1200, `la tarjeta se descarga como PNG de 1200 × 1200 (${dlCard.suggestedFilename()}, ${pc.kb} KB)`);
       await q.evaluate(() => closeModal());
       await q.click('.bdg.on button >> nth=0'); await q.waitForSelector('.modal img.card-prev'); await q.waitForTimeout(400);
       const [dlB] = await Promise.all([q.waitForEvent('download'), q.click('.modal a:has-text("Descargar PNG")')]);
       const pb = pngInfo(await dlB.path());
-      ok(/^whitefox-insignia-1-yoandy\.png$/.test(dlB.suggestedFilename()) && pb.png && pb.w === 1080 && pb.h === 1080, `cada insignia se descarga como PNG de 1080 × 1080 (${dlB.suggestedFilename()}, ${pb.kb} KB)`);
+      ok(/^whitefox-insignia-1-marta\.png$/.test(dlB.suggestedFilename()) && pb.png && pb.w === 1080 && pb.h === 1080, `cada insignia se descarga como PNG de 1080 × 1080 (${dlB.suggestedFilename()}, ${pb.kb} KB)`);
       ok(await q.evaluate(() => { const h = [...document.querySelectorAll('.modal .share a')].map(a => a.href); return ['https://wa.me/?text=', 'https://www.linkedin.com/feed/?shareActive=true&text=', 'https://x.com/intent/post?text=', 'https://t.me/share/url?url=', 'mailto:'].every(p => h.some(x => x.startsWith(p))) && h.every(x => /Explorador%20de%20red/.test(x)) && [...document.querySelectorAll('.modal .share a[target]')].every(a => a.rel.includes('noopener')); }), 'compartir en WhatsApp, LinkedIn, X, Telegram y correo, con el texto de la insignia y rel="noopener"');
       await q.click('.modal button:has-text("Copiar texto")'); await q.waitForTimeout(300);
       ok(await q.isVisible('text=Texto copiado') || await q.isVisible('#share-txt'), '«Copiar texto» copia el texto o, si el navegador no deja, lo muestra para copiarlo');

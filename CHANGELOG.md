@@ -1,5 +1,14 @@
 # Cambios
 
+## 2.6.1 · noviembre de 2026
+
+- **El perfil ya no viene con los datos del autor.** Hasta ahora, quien abría WhiteFox por primera vez (por ejemplo, la web publicada en una ventana privada) aparecía como «Yoandy Ramírez Delgado». Ahora:
+  - el perfil empieza vacío y la primera vez se abre «Antes de empezar: ¿quién eres?», con el nombre y, si quieres, el puesto o el objetivo. Se guarda con Enter o con «Guardar y empezar», y el usuario se deduce del nombre;
+  - «Ahora no» deja un perfil de invitado, con un icono genérico, y no vuelve a preguntar. Todo se puede cambiar después en Mi cuenta;
+  - las tarjetas de logros piden el nombre antes de generarse;
+  - si un navegador ya tenía guardado el perfil por defecto antiguo sin cambios, se vacía al abrir la aplicación y se piden los datos.
+- Mi cuenta muestra textos de ayuda en los campos vacíos.
+
 ## 2.6.0 · noviembre de 2026
 
 - **Acerca de WhiteFox**, como en Rosetta y Blue-Jr, desde la ayuda (?), desde Configuración ▸ Laboratorio y desde «Más» en el móvil:

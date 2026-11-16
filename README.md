@@ -10,7 +10,7 @@
 
 <p align="center">
   <img alt="Licencia: todos los derechos reservados" src="https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-1A4F8A?style=flat"/>
-  <img alt="Versión 2.6.0" src="https://img.shields.io/badge/versi%C3%B3n-2.6.0-4A97E8?style=flat"/>
+  <img alt="Versión 2.6.1" src="https://img.shields.io/badge/versi%C3%B3n-2.6.1-4A97E8?style=flat"/>
   <img alt="Idiomas ES y EN" src="https://img.shields.io/badge/idiomas-ES%20%C2%B7%20EN-7C4DFF?style=flat"/>
   <img alt="32 ejercicios" src="https://img.shields.io/badge/ejercicios-32-7C4DFF?style=flat"/>
   <img alt="Manual de 12 capítulos" src="https://img.shields.io/badge/manual-12%20cap%C3%ADtulos-4A97E8?style=flat"/>
@@ -102,6 +102,10 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 ---
 
 ## <img src="docs/assets/icons/sparkles.svg" width="20" height="20" valign="middle"/> Novedades
+
+### 2.6.1 · noviembre de 2026 · Tu perfil, no el del autor
+
+- La primera vez WhiteFox te pide tu nombre (o entras como invitado). Ya no aparece nadie con los datos del autor.
 
 ### 2.6.0 · noviembre de 2026 · Acerca de WhiteFox y diagramas
 
@@ -223,7 +227,7 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 ## <img src="docs/assets/icons/route.svg" width="20" height="20" valign="middle"/> Cómo se usa
 
 1. Descarga `index.html` y ábrelo con doble clic en Chrome, Edge o Firefox. No necesita servidor ni conexión.
-2. La primera vez se abre una bienvenida. Pulsa **Empezar el ejercicio 1**.
+2. La primera vez te pide tu nombre (se queda en tu navegador; puedes entrar como invitado). Después pulsa **Empezar el ejercicio 1**.
 3. Haz lo que pide el ejercicio en el simulador. Cuando lo consigues, se marca solo; después responde el quiz.
 4. Si te pierdes, mira el recuadro **Siguiente paso** (abajo a la derecha) o pulsa cualquier ⓘ.
 
@@ -458,7 +462,7 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 
 ## <img src="docs/assets/icons/flask-conical.svg" width="20" height="20" valign="middle"/> Pruebas
 
-`pruebas/e2e.js` abre el laboratorio en Chromium y hace 183 comprobaciones:
+`pruebas/e2e.js` abre el laboratorio en Chromium y hace 191 comprobaciones:
 
 - completa los 32 ejercicios usando la aplicación, responde un quiz (mal y bien) y ordena la cola de remediación con las flechas;
 - recorre los 6 recorridos guiados de principio a fin con un conductor que pulsa o rellena solo lo que señala cada paso, y abre los 12 capítulos del manual;
