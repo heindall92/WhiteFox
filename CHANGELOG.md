@@ -1,5 +1,9 @@
 # Cambios
 
+## 2.6.2 · noviembre de 2026
+
+- Primera visita en orden: en la portada se abre primero «Antes de empezar: ¿quién eres?» y, al guardar los datos o pulsar «Ahora no» (o cerrar la ventana), se abre la bienvenida. Antes la bienvenida no salía sola después de los datos. Solo ocurre la primera vez: al recargar no se repite ninguna de las dos.
+
 ## 2.6.1 · noviembre de 2026
 
 - **El perfil ya no viene con los datos del autor.** Hasta ahora, quien abría WhiteFox por primera vez (por ejemplo, la web publicada en una ventana privada) aparecía como «Yoandy Ramírez Delgado». Ahora:
