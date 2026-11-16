@@ -51,6 +51,7 @@ async function crawl(browser, locale) {
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(FILE);
   await page.waitForSelector('.hero');
+  await page.waitForSelector('.modal.ob-modal'); await snap(page, 'primer arranque: perfil'); await page.evaluate(() => closeModal());
   const lang = await page.evaluate(() => S.lang);
   const E = fn => page.evaluate(fn);
   await E(() => { S.speed = 10; save(); });
