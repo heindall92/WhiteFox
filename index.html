@@ -234,6 +234,20 @@ textarea.in{min-height:80px;resize:vertical;font-family:var(--mono);font-size:13
 /* Training drawer */
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,96vw);background:var(--surface);box-shadow:var(--ring-hi);z-index:50;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .32s var(--ease-sheet);will-change:transform}
 .drawer.open{transform:none}
+.about-modal{width:min(760px,94vw)}.about{display:grid;gap:22px}.about section{display:grid;gap:8px}.about p{margin:0;line-height:1.55}
+.ab-author{grid-template-columns:auto 1fr;align-items:center;gap:20px!important;padding:18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(135deg,var(--surface-2),var(--surface))}
+.ab-av{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font:700 28px/1 system-ui,sans-serif;letter-spacing:-.02em;color:#24476e;background:linear-gradient(135deg,#dbe9f6,#b9d3ec);box-shadow:0 0 0 4px var(--surface),0 6px 18px rgba(15,27,42,.14)}
+.ab-k{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--link)}
+.ab-author h3{font-size:20px;letter-spacing:-.02em;margin:4px 0 2px}.ab-role{color:var(--text-2);font-size:13.5px}
+.ab-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.ab-h{display:flex;align-items:center;gap:8px;font-size:15px;margin:0}.ab-v{font-size:12px;font-weight:600;color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent);padding:2px 8px;border-radius:99px}
+.ab-eco{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.ab-eco li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.ab-eco li>div:first-child{display:grid;gap:2px;min-width:0}.ab-eco .muted{font-size:12.5px}.ab-eco-a{display:flex;gap:6px;flex:none}
+.ab-help{padding:16px;border-radius:14px;background:color-mix(in srgb,var(--ok) 7%,var(--surface))}
+.ab-foot{margin-right:auto;font-size:12.5px}
+@media (max-width:640px){.ab-author{grid-template-columns:1fr;text-align:center;justify-items:center}.ab-author .ab-links{justify-content:center}.ab-eco li{flex-direction:column;align-items:flex-start}}
+
 img.avatar{object-fit:cover;padding:0;background:#2a3c50}
 .badges-sec{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
 .bdg-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
@@ -910,6 +924,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
    PERFORMANCE OF THIS SOFTWARE. */
 const ICONS={
+ github:'<path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>',
  share2:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
  msgCircle:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
  linkedin:'<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>',
@@ -1119,8 +1134,8 @@ async function renderBadgeCard(i){const W=1080,H=1080,M=80,c=document.createElem
 /* Compartir: la imagen va directa con la hoja nativa (móvil); en el resto se descarga y se abre la red con el texto listo */
 let CARD_URL=null,CARD_BLOB=null,CARD_NAME='',CARD_TEXT='';
 function shareText(kind,i){const done=EXERCISES.filter(e=>exDone(e)).length,earned=MODS.map((m,k)=>modDoneAt(k)?bName(k):null).filter(Boolean);
- return kind==='badge'?LG(`He conseguido la insignia «${bName(i)}» en WhiteFox, un laboratorio para practicar gestión de vulnerabilidades con un escáner estilo Nessus. Ya sé: ${(MODS[i][2].sum||[]).map(cvTx).join('; ')}. #Ciberseguridad #GestiónDeVulnerabilidades #RiskManagement`,`I earned the «${bName(i)}» badge in WhiteFox, a lab to practise vulnerability management with a Nessus-style scanner. I can now: ${(MODS[i][2].sum||[]).map(cvTx).join('; ')}. #Cybersecurity #VulnerabilityManagement #RiskManagement`)
-  :LG(`Mi progreso en WhiteFox, un laboratorio de gestión de vulnerabilidades: ${done} de ${EXERCISES.length} ejercicios y ${earned.length} de ${MODS.length} insignias${earned.length?' ('+earned.join(', ')+')':''}. #Ciberseguridad #GestiónDeVulnerabilidades #RiskManagement`,`My progress in WhiteFox, a vulnerability management lab: ${done} of ${EXERCISES.length} exercises and ${earned.length} of ${MODS.length} badges${earned.length?' ('+earned.join(', ')+')':''}. #Cybersecurity #VulnerabilityManagement #RiskManagement`);}
+ return kind==='badge'?LG(`He conseguido la insignia «${bName(i)}» en WhiteFox, un laboratorio para practicar gestión de vulnerabilidades con un escáner estilo Nessus. Ya sé: ${(MODS[i][2].sum||[]).map(cvTx).join('; ')}. #Ciberseguridad #GestiónDeVulnerabilidades #RiskManagement ${APP_URL}`,`I earned the «${bName(i)}» badge in WhiteFox, a lab to practise vulnerability management with a Nessus-style scanner. I can now: ${(MODS[i][2].sum||[]).map(cvTx).join('; ')}. #Cybersecurity #VulnerabilityManagement #RiskManagement ${APP_URL}`)
+  :LG(`Mi progreso en WhiteFox, un laboratorio de gestión de vulnerabilidades: ${done} de ${EXERCISES.length} ejercicios y ${earned.length} de ${MODS.length} insignias${earned.length?' ('+earned.join(', ')+')':''}. #Ciberseguridad #GestiónDeVulnerabilidades #RiskManagement ${APP_URL}`,`My progress in WhiteFox, a vulnerability management lab: ${done} of ${EXERCISES.length} exercises and ${earned.length} of ${MODS.length} badges${earned.length?' ('+earned.join(', ')+')':''}. #Cybersecurity #VulnerabilityManagement #RiskManagement ${APP_URL}`);}
 function shareDl(){if(!CARD_URL)return;const a=document.createElement('a');a.href=CARD_URL;a.download=CARD_NAME;document.body.appendChild(a);a.click();a.remove();ev('cardDownload');}
 async function shareNative(){try{await navigator.share({files:[new File([CARD_BLOB],CARD_NAME,{type:'image/png'})],text:CARD_TEXT});ev('cardShare');}catch(e){if(e&&e.name!=='AbortError')toast(LG('No se ha podido abrir el menú de compartir.','The share menu could not be opened.'),'alert');}}
 async function copyShare(){try{await navigator.clipboard.writeText(CARD_TEXT);toast(LG('Texto copiado. Pégalo junto a la imagen.','Text copied. Paste it with the image.'),'copy');}catch(e){const t=document.getElementById('share-txt');if(t){t.hidden=false;t.select();}toast(LG('Selecciona el texto y cópialo con Ctrl+C.','Select the text and copy it with Ctrl+C.'),'copy');}}
@@ -1433,7 +1448,42 @@ function helpPop(){return`<p class="pop-h">Ayuda</p>
  <button class="pi" onclick="UI.menu=null;tourStart('consola')">${ic('pointer','sm')}La consola en 60 segundos</button>
  <button class="pi" onclick="UI.menu=null;UI.gl=null;toggleDrawer(true,'glossary')">${ic('book','sm')}Glosario</button>
  <button class="pi" onclick="UI.menu=null;welcome()">${ic('info','sm')}Cómo funciona</button>
- <button class="pi" onclick="UI.menu=null;shortcuts()">${ic('list','sm')}Atajos de teclado</button>`;}
+ <button class="pi" onclick="UI.menu=null;shortcuts()">${ic('list','sm')}Atajos de teclado</button>
+ <button class="pi" onclick="aboutWF()">${ic('paw','sm')}${LG('Acerca de WhiteFox','About WhiteFox')}</button>`;}
+/* ===== Acerca de WhiteFox: autor, herramienta, independencia, licencia y ecosistema ===== */
+const APP_VERSION='2.6.0',APP_URL='https://heindall92.github.io/WhiteFox/',REPO_URL='https://github.com/heindall92/WhiteFox';
+const AUTHOR={name:'Yoandy Ramírez Delgado',role:'Junior Pentester · eJPTv2 · AI Governance (ISO 42001) · SysAdmin',mail:'yoandyramirezdelgado@gmail.com',
+ links:[['GitHub','github','https://github.com/heindall92'],['LinkedIn','linkedin','https://www.linkedin.com/in/yoandyrd92/'],['Portafolio|Portfolio','globe','https://yoandyramirez.com'],['Hack The Box','target','https://profile.hackthebox.com/profile/019c5812-b4ca-7315-b12f-14db6d2b42fa']]};
+/* Webs comprobadas el 16-11-2026 (todas responden 200) */
+const ECO=[
+ ['Blue-Jr','Turnos de SOC de nivel 1 antes de tu primer empleo','SOC tier-1 shifts before your first job','Blue-Jr','https://heindall92.github.io/Blue-Jr/'],
+ ['Rosetta','Mapa multinorma: ENS, ISO/IEC 27001, NIS2, ISO/IEC 42001 y más','Multi-standard map: ENS, ISO/IEC 27001, NIS2, ISO/IEC 42001 and more','rosetta_multinorma','https://heindall92.github.io/rosetta_multinorma/'],
+ ['Atlas GRC','Aprender ISO/IEC 27001 desde cero','Learn ISO/IEC 27001 from scratch','atlas-grc','https://heindall92.github.io/atlas-grc/'],
+ ['CTEM-Nexus','Exposición y rutas de ataque hacia los activos críticos','Exposure and attack paths to critical assets','ctem-nexus','https://heindall92.github.io/ctem-nexus/'],
+ ['ARGOS','Laboratorio GRC con rutas, casos prácticos y simulacros','GRC lab with paths, case studies and drills','argos-grc','https://heindall92.github.io/argos-grc/'],
+ ['KAIROS','Continuidad de negocio: BIA, BCP y DRP','Business continuity: BIA, BCP and DRP','kairos','https://heindall92.github.io/kairos/'],
+ ['Astrolabio','Preparar entrevistas con el método STAR','Interview prep with the STAR method','astrolabio','https://heindall92.github.io/astrolabio/']];
+const xl=(href,icon,label,cls='btn sm')=>`<a class="${cls}" href="${href}" target="_blank" rel="noopener noreferrer">${ic(icon,'sm')}${label}</a>`;
+function aboutHTML(){const lbl=s=>s.includes('|')?LG(...s.split('|')):s;
+ return`<div class="about">
+ <section class="ab-author" aria-labelledby="ab-a"><span class="ab-av" aria-hidden="true">YR</span><div>
+  <p class="ab-k">${LG('Autor','Author')}</p><h3 id="ab-a">${AUTHOR.name}</h3><p class="ab-role">${AUTHOR.role}</p>
+  <div class="ab-links">${AUTHOR.links.map(([l,i,h])=>xl(h,i,lbl(l))).join('')}<a class="btn sm" href="mailto:${AUTHOR.mail}?subject=WhiteFox">${ic('mail','sm')}${LG('Correo','Email')}</a></div></div></section>
+ <section aria-labelledby="ab-t"><h3 id="ab-t" class="ab-h">${ic('paw','sm')}${LG('Sobre WhiteFox','About WhiteFox')} <span class="ab-v num">v${APP_VERSION}</span></h3>
+  <p>${LG('Laboratorio para aprender gestión de vulnerabilidades desde cero con un escáner al estilo de Nessus Essentials Plus: 9 equipos ficticios, 74 plugins, 12 plantillas, 32 ejercicios que se corrigen solos, un manual de 12 capítulos, 6 recorridos guiados y las preguntas de la entrevista para Risk Manager.','A lab to learn vulnerability management from scratch with a Nessus Essentials Plus-style scanner: 9 fictitious hosts, 74 plugins, 12 templates, 32 self-checking exercises, a 12-chapter manual, 6 guided tours and the interview questions for a Risk Manager role.')}</p>
+  <p class="muted">${LG('Un solo archivo HTML. Funciona sin conexión, sin cuenta y sin telemetría: tu progreso, tu perfil y tu foto se quedan en este navegador. Solo sale algo de aquí cuando tú pulsas un enlace o compartes.','A single HTML file. It works offline, with no account and no telemetry: your progress, profile and photo stay in this browser. Nothing leaves unless you click a link or share.')}</p>
+  <div class="ab-links">${xl(APP_URL,'arrowUR',LG('Versión publicada','Live version'))}${xl(REPO_URL,'github',LG('Código','Code'))}${xl(REPO_URL+'/blob/main/CHANGELOG.md','list',LG('Cambios','Changelog'))}</div></section>
+ <section aria-labelledby="ab-i"><h3 id="ab-i" class="ab-h">${ic('shield','sm')}${LG('Aviso de independencia','Independence notice')}</h3>
+  <p>${LG('WhiteFox es una herramienta de estudio independiente: no está afiliada, patrocinada ni respaldada por Tenable. Nessus y Tenable son marcas de sus propietarios. La interfaz se ha recreado a partir de la documentación pública, sin código, logotipos ni textos de Tenable. La empresa, los equipos y los hallazgos son inventados; los CVE son públicos.','WhiteFox is an independent study tool: it is not affiliated with, sponsored or endorsed by Tenable. Nessus and Tenable are trademarks of their owners. The interface was recreated from public documentation, without Tenable code, logos or text. The company, hosts and findings are invented; the CVEs are public.')}</p></section>
+ <section aria-labelledby="ab-l"><h3 id="ab-l" class="ab-h">${ic('lock','sm')}${LG('Licencia','Licence')}</h3>
+  <p>${LG('© 2026 Yoandy Ramírez Delgado. Todos los derechos reservados: sin permiso escrito del autor no se puede copiar, modificar ni distribuir.','© 2026 Yoandy Ramírez Delgado. All rights reserved: it may not be copied, modified or distributed without the author\'s written permission.')} ${LG('Iconos de','Icons by')} <a href="https://lucide.dev" target="_blank" rel="noopener noreferrer">Lucide</a> (ISC).</p></section>
+ <section aria-labelledby="ab-e"><h3 id="ab-e" class="ab-h">${ic('layers','sm')}${LG('Más herramientas del autor','More tools by the author')}</h3>
+  <ul class="ab-eco">${ECO.map(([n,es,en,repo,web])=>`<li><div><b>${n}</b><span class="muted">${LG(es,en)}</span></div><div class="ab-eco-a">${xl(web,'arrowUR',LG('Abrir','Open'))}${xl('https://github.com/heindall92/'+repo,'github',LG('Código','Code'))}</div></li>`).join('')}</ul></section>
+ <section class="ab-help" aria-labelledby="ab-h"><h3 id="ab-h" class="ab-h">${ic('help2','sm')}${LG('¿Sigues con dudas?','Still have questions?')}</h3>
+  <p class="muted">${LG('Si encuentras un error, algo que no se entiende o un ejercicio que no se marca, cuéntalo.','If you find a bug, something unclear or an exercise that does not get marked, tell me.')}</p>
+  <div class="ab-links">${xl(REPO_URL+'/issues/new','flag',LG('Abrir una incidencia','Open an issue'),'btn sm primary')}<a class="btn sm" href="mailto:${AUTHOR.mail}?subject=${encodeURIComponent('WhiteFox v'+APP_VERSION)}">${ic('mail','sm')}${LG('Escribir al autor','Write to the author')}</a></div></section>
+</div>`;}
+function aboutWF(){UI.menu=null;modal(LG('Acerca de WhiteFox','About WhiteFox'),aboutHTML(),`<span class="muted ab-foot">WhiteFox · ${AUTHOR.name}</span><button class="btn primary" onclick="closeModal()">${LG('Entendido','Got it')}</button>`,'about-modal');ev('about');}
 function shortcuts(){modal('Atajos de teclado',`<table class="t"><tbody>${[['?','Abrir el manual'],['Esc','Cerrar el recorrido, la ventana o el panel abierto'],['Tab / Mayús+Tab','Moverte por los botones y campos'],['Enter o Espacio','Pulsar el botón con el foco'],['↑ ↓ (en «Ordena la cola»)','Subir o bajar un hallazgo con sus botones']].map(([k,d])=>`<tr><td style="white-space:nowrap"><kbd>${k}</kbd></td><td>${d}</td></tr>`).join('')}</tbody></table>`);}
 function renderTop(){
  const done=EXERCISES.filter(e=>exDone(e)).length;
@@ -1465,7 +1515,7 @@ function moreSheet(){const r=(icon,label,act)=>`<button class="pi" onclick="clos
  modal('Más',`<div class="more">
   ${prefsGroups(';closeModal();moreSheet()')}
   <p class="grp-h">Recursos</p><div class="grp acts">${r('file','Policies',"go({top:'scans',page:'policies'})")}${r('flag','Plugin Rules',"go({top:'scans',page:'rules'})")}${r('trash','Trash',"go({top:'scans',page:'scans',folder:'trash'})")}</div>
-  <p class="grp-h">Aprender</p><div class="grp acts">${r('route','Recorridos guiados',"go({top:'scans',page:'tours'})")}${r('book','Glosario',"UI.gl=null;toggleDrawer(true,'glossary')")}${r('info','Cómo funciona','welcome()')}</div>
+  <p class="grp-h">Aprender</p><div class="grp acts">${r('route','Recorridos guiados',"go({top:'scans',page:'tours'})")}${r('book','Glosario',"UI.gl=null;toggleDrawer(true,'glossary')")}${r('info','Cómo funciona','welcome()')}${r('paw',LG('Acerca de WhiteFox','About WhiteFox'),'aboutWF()')}</div>
 </div>`,false,'sheet');sheetDrag(document.querySelector('#modal .modal.sheet'));}
 /* Barra lateral plegada (tableta): etiqueta emergente con el nombre de cada botón */
 function sideTip(e){const tip=document.getElementById('sidetip'),b=e.target.closest&&e.target.closest('#side button');
@@ -1484,7 +1534,7 @@ function renderSide0(){
  if(v.top==='settings'){
   const s=v.sub||'about';
   $('#side').innerHTML=`<h6>Settings</h6>${b(s==='about',"go({sub:'about'})",'info','About')}${b(s==='advanced',"go({sub:'advanced'})",'sliders','Advanced')}${b(s==='proxy',"go({sub:'proxy'})",'globe','Proxy Server')}${b(s==='smtp',"go({sub:'smtp'})",'bell','SMTP Server')}${b(s==='ca',"go({sub:'ca'})",'shield','Custom CA')}${b(s==='pwd',"go({sub:'pwd'})",'lock','Password Mgmt')}
-  <h6>Accounts</h6>${b(s==='account',"go({sub:'account'})",'user','My Account')}<h6>Laboratorio</h6>${b(s==='lab',"go({sub:'lab'})",'book','Simulador')}<h6>Aprender</h6>${b(v.page==='manual',"go({top:'scans',page:'manual'})",'manual','Manual')}${b(v.page==='tours',"go({top:'scans',page:'tours'})",'route','Recorridos guiados')}`;
+  <h6>Accounts</h6>${b(s==='account',"go({sub:'account'})",'user','My Account')}<h6>Laboratorio</h6>${b(s==='lab',"go({sub:'lab'})",'book','Simulador')}${b(false,'aboutWF()','paw',LG('Acerca de WhiteFox','About WhiteFox'))}<h6>Aprender</h6>${b(v.page==='manual',"go({top:'scans',page:'manual'})",'manual','Manual')}${b(v.page==='tours',"go({top:'scans',page:'tours'})",'route','Recorridos guiados')}`;
   return;
  }
  const my=S.scans.filter(s=>s.folder==='my').length,tr=S.scans.filter(s=>s.folder==='trash').length;
