@@ -10,7 +10,7 @@
 
 <p align="center">
   <img alt="Licencia: todos los derechos reservados" src="https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-1A4F8A?style=flat"/>
-  <img alt="Versión 2.5.1" src="https://img.shields.io/badge/versi%C3%B3n-2.5.1-4A97E8?style=flat"/>
+  <img alt="Versión 2.6.0" src="https://img.shields.io/badge/versi%C3%B3n-2.6.0-4A97E8?style=flat"/>
   <img alt="Idiomas ES y EN" src="https://img.shields.io/badge/idiomas-ES%20%C2%B7%20EN-7C4DFF?style=flat"/>
   <img alt="32 ejercicios" src="https://img.shields.io/badge/ejercicios-32-7C4DFF?style=flat"/>
   <img alt="Manual de 12 capítulos" src="https://img.shields.io/badge/manual-12%20cap%C3%ADtulos-4A97E8?style=flat"/>
@@ -102,6 +102,11 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 ---
 
 ## <img src="docs/assets/icons/sparkles.svg" width="20" height="20" valign="middle"/> Novedades
+
+### 2.6.0 · noviembre de 2026 · Acerca de WhiteFox y diagramas
+
+- **Acerca de WhiteFox** en la ayuda (?), en Configuración y en «Más»: autor con sus enlaces, versión, aviso de independencia, licencia, las otras 7 herramientas del autor y cómo pedir ayuda.
+- El README explica con diagramas cómo funciona: el bucle de un ejercicio, sus estados, qué pasa al lanzar un escaneo, el mapa de contenidos y la arquitectura.
 
 ### 2.5.1 · noviembre de 2026 · Tarjetas del zorro polar y compartir
 
@@ -199,6 +204,8 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 
 - [Novedades](#-novedades)
 - [Cómo se usa](#-cómo-se-usa)
+- [Cómo funciona](#-cómo-funciona)
+- [Mapa de contenidos](#-mapa-de-contenidos)
 - [Ruta de aprendizaje](#-ruta-de-aprendizaje)
 - [Manual y recorridos guiados](#-manual-y-recorridos-guiados)
 - [Qué reproduce de Nessus](#-qué-reproduce-de-nessus)
@@ -208,6 +215,7 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 - [Privacidad y seguridad](#-privacidad-y-seguridad)
 - [Pruebas](#-pruebas)
 - [Limitaciones conocidas](#-limitaciones-conocidas)
+- [Arquitectura](#-arquitectura)
 - [Estructura](#-estructura)
 - [Licencia](#-licencia)
 - [Autor](#-autor)
@@ -220,6 +228,104 @@ En una entrevista para gestión de riesgos te preguntarán por Nessus, por CVSS 
 4. Si te pierdes, mira el recuadro **Siguiente paso** (abajo a la derecha) o pulsa cualquier ⓘ.
 
 El progreso se guarda en tu navegador. Para empezar de cero: **Settings ▸ Simulador ▸ Restablecer laboratorio**. Credenciales del laboratorio (ficticias): SSH `auditor` / `Lab2026!` · Windows `LAB\svc_nessus` / `Lab2026!`, dominio `LAB`.
+
+## <img src="docs/assets/icons/workflow.svg" width="20" height="20" valign="middle"/> Cómo funciona
+
+Cada ejercicio es un bucle corto: haces algo en la consola, el simulador produce resultados y WhiteFox comprueba si has hecho lo que pedía. Si falta algo, te lo dice; si aciertas el quiz, el ejercicio queda completo y suma para la insignia del módulo.
+
+```mermaid
+flowchart TD
+  A([Tú]) --> B["Ejercicio<br/>objetivo · dónde se hace · pasos"]
+  B --> C["Consola estilo Nessus<br/>escaneos · políticas · reglas"]
+  C --> D["Simulador<br/>9 equipos · 74 plugins · 12 plantillas"]
+  D -->|"licencia, credenciales,<br/>puertos, precisión"| E["Resultados<br/>equipos · vulnerabilidades · VPR · remediaciones"]
+  E --> F{"Comprobación<br/>automática"}
+  F -->|cumple| G[Práctica hecha]
+  F -->|falta algo| H["Lista de lo que falta<br/>y «Comprobar ahora»"]
+  H --> C
+  G --> I[Quiz]
+  I -->|dos fallos| J[Pista y capítulo del manual]
+  J --> I
+  I -->|acierto| K[Ejercicio completado]
+  K --> L[(Progreso en el navegador)]
+  K -->|módulo terminado| M[Insignia]
+  M --> N["Tarjeta PNG<br/>para compartir"]
+```
+
+### Estados de un ejercicio
+
+La práctica y el quiz se pueden hacer en cualquier orden. «Continuar» te lleva al último ejercicio cuyo quiz has respondido; si está a medias, sigues en él.
+
+```mermaid
+stateDiagram-v2
+  state "Pendiente" as P
+  state "Práctica hecha · falta el quiz" as PH
+  state "Quiz hecho · falta la práctica" as QH
+  state "Completado" as C
+  [*] --> P
+  P --> PH: la comprobación automática se cumple
+  P --> QH: aciertas el quiz
+  PH --> C: aciertas el quiz
+  QH --> C: la comprobación automática se cumple
+  C --> [*]
+```
+
+### Qué pasa al lanzar un escaneo
+
+```mermaid
+sequenceDiagram
+  actor U as Tú
+  participant E as Editor
+  participant L as Licencia
+  participant S as Simulador
+  participant R as Resultados
+  participant X as Ejercicios
+  U->>E: Plantilla, objetivos y credenciales
+  E->>L: ¿Caben las IP en la licencia?
+  alt más IP que la licencia (5 o 20)
+    L-->>U: Aviso de licencia y no se lanza
+  else caben
+    L->>S: Lanzar
+    S->>S: Descubrimiento, puertos y, si las credenciales valen, comprobaciones locales
+    S->>R: Equipos y hallazgos, con las reglas de plugins y la precisión aplicadas
+    R->>X: Comprobar los ejercicios
+    X-->>U: «Comprobación superada» o la lista de lo que falta
+  end
+```
+
+## <img src="docs/assets/icons/brain-circuit.svg" width="20" height="20" valign="middle"/> Mapa de contenidos
+
+```mermaid
+mindmap
+  root((WhiteFox))
+    Consola estilo Nessus
+      Escaneos y carpetas
+      12 plantillas
+      Políticas y programación
+      Reglas de plugins
+      Informes HTML, PDF y CSV
+      Exportar .nessus y Nessus DB cifrado
+    Red del laboratorio
+      9 equipos ficticios
+      74 plugins con CVE públicos
+      Credenciales SSH y Windows
+      Licencias Essentials y Essentials Plus
+    Aprender
+      32 ejercicios en 7 módulos
+      Manual de 12 capítulos
+      6 recorridos guiados
+      Glosario de 20 términos
+      12 preguntas de entrevista
+    Logros
+      7 insignias
+      Tarjetas PNG
+      Compartir en redes
+    Tu espacio
+      Perfil y foto
+      Copia de seguridad
+      Español e inglés
+      Claro y oscuro
+```
 
 ## <img src="docs/assets/icons/graduation-cap.svg" width="20" height="20" valign="middle"/> Ruta de aprendizaje
 
@@ -352,7 +458,7 @@ Los plugins con ID 900000 o superior son inventados para el laboratorio. El rest
 
 ## <img src="docs/assets/icons/flask-conical.svg" width="20" height="20" valign="middle"/> Pruebas
 
-`pruebas/e2e.js` abre el laboratorio en Chromium y hace 177 comprobaciones:
+`pruebas/e2e.js` abre el laboratorio en Chromium y hace 183 comprobaciones:
 
 - completa los 32 ejercicios usando la aplicación, responde un quiz (mal y bien) y ordena la cola de remediación con las flechas;
 - recorre los 6 recorridos guiados de principio a fin con un conductor que pulsa o rellena solo lo que señala cada paso, y abre los 12 capítulos del manual;
@@ -380,6 +486,29 @@ GitHub Actions ejecuta lo mismo en cada push y en cada PR (`.github/workflows/pr
 - Es una simulación: no escanea redes reales ni descarga plugins. VPR y EPSS son valores fijos.
 - La programación (Schedule) se guarda, pero no lanza scans sola.
 - No importa archivos `.nessus`.
+
+## <img src="docs/assets/icons/network.svg" width="20" height="20" valign="middle"/> Arquitectura
+
+```mermaid
+flowchart LR
+  subgraph HTML["index.html · un solo archivo"]
+    DATA[("Datos y contenido<br/>9 equipos · 74 plugins · ES y EN")]
+    SIM["Simulador y<br/>comprobaciones de ejercicios"]
+    UI["Interfaz, estilos y traductor<br/>(MutationObserver)"]
+    ART["Insignias, tarjetas<br/>e imágenes del manual"]
+  end
+  HTML --> NAV((Navegador))
+  NAV <--> LS[("localStorage<br/>progreso, perfil y foto")]
+  NAV -->|descargas| OUT["Informes · CSV · .nessus<br/>PNG · copia de seguridad"]
+  NAV -. solo si pulsas un enlace .-> EXT["Redes sociales · GitHub"]
+  HTML --> CI["GitHub Actions<br/>e2e.js (Playwright y axe-core)<br/>idioma.js (1.392 pantallas)"]
+  HTML --> GP[GitHub Pages]
+```
+
+- **Un solo archivo, sin dependencias en ejecución.** HTML, CSS, JavaScript, datos, iconos e imágenes van dentro de `index.html`. Se abre con doble clic.
+- **Política de seguridad estricta.** `default-src 'none'`, `connect-src 'none'` e imágenes solo `data:` y `blob:`: la página no puede conectarse a nada.
+- **Un traductor en vez de dos interfaces.** La capa del laboratorio está en español y la imitación de Nessus en inglés; un `MutationObserver` traduce cada nodo al idioma elegido, y `idioma.js` comprueba que no queda nada sin traducir.
+- **Todo se genera en tu equipo.** Informes, exportaciones y tarjetas se crean en el navegador y se descargan; nada pasa por un servidor.
 
 ## <img src="docs/assets/icons/folder-tree.svg" width="20" height="20" valign="middle"/> Estructura
 
@@ -424,7 +553,11 @@ WhiteFox es una herramienta de estudio independiente: no está afiliada ni respa
 </tr>
 </table>
 
+En la aplicación, los datos del autor, el aviso de independencia, la licencia y el resto de herramientas están en **? ▸ Acerca de WhiteFox** (también en Configuración y en «Más» en el móvil).
+
 Otras herramientas del autor: [Blue-Jr](https://github.com/heindall92/Blue-Jr) (turnos de SOC de nivel 1), [Rosetta](https://github.com/heindall92/rosetta_multinorma) (mapa multinorma), [Atlas GRC](https://github.com/heindall92/atlas-grc) (aprender ISO/IEC 27001 desde cero), [CTEM-Nexus](https://github.com/heindall92/ctem-nexus) (exposición y rutas de ataque), [ARGOS](https://github.com/heindall92/argos-grc) (laboratorio GRC), [KAIROS](https://github.com/heindall92/kairos) (continuidad de negocio) y [Astrolabio](https://github.com/heindall92/astrolabio) (entrevistas con el método STAR).
+
+Errores, ejercicios que no se marcan o propuestas: abre una [incidencia](https://github.com/heindall92/WhiteFox/issues/new) o escribe a <a href="mailto:yoandyramirezdelgado@gmail.com">yoandyramirezdelgado@gmail.com</a>.
 
 <p align="center">
   <img src="docs/assets/whitefox-footer.svg" alt="WhiteFox · primero lo que de verdad importa" width="100%"/>

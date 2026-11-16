@@ -1,5 +1,18 @@
 # Cambios
 
+## 2.6.0 · noviembre de 2026
+
+- **Acerca de WhiteFox**, como en Rosetta y Blue-Jr, desde la ayuda (?), desde Configuración ▸ Laboratorio y desde «Más» en el móvil:
+  - autor: nombre, perfil, GitHub, LinkedIn, portafolio, Hack The Box y correo;
+  - sobre WhiteFox: versión, qué es, privacidad y enlaces a la versión publicada, el código y los cambios;
+  - aviso de independencia de Tenable;
+  - licencia y crédito de Lucide;
+  - las otras 7 herramientas del autor (Blue-Jr, Rosetta, Atlas GRC, CTEM-Nexus, ARGOS, KAIROS y Astrolabio), con su web publicada y su código (comprobadas una a una);
+  - «¿Sigues con dudas?»: abrir una incidencia o escribir al autor.
+- **Diagramas en el README**: el bucle de un ejercicio, sus estados, qué pasa al lanzar un escaneo, el mapa de contenidos y la arquitectura.
+- El texto para compartir una tarjeta incluye el enlace a la versión publicada.
+- La versión de la aplicación se comprueba en el e2e contra `pruebas/package.json`, para que no se desajusten.
+
 ## 2.5.1 · noviembre de 2026
 
 - **Tarjetas rediseñadas con el estilo del zorro polar**: blancas y limpias, sin cuadrícula, con la huella de WhiteFox, verde para lo conseguido y texto alineado a la izquierda (guía de diseño de Apple).

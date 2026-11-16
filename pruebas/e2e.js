@@ -596,6 +596,21 @@ async function axe(page, label) {
       await q.evaluate(() => { setLang('en'); go({ top: 'settings', page: 'settings', sub: 'account' }); }); await q.waitForTimeout(400);
       ok(await q.evaluate(() => /My badges/.test(document.querySelector('main').textContent) && /Network Explorer/.test(document.querySelector('main').textContent)), 'las insignias también están en inglés');
       await q.evaluate(() => { setLang('es'); toggleDrawer(false); const s = JSON.parse(window._st); Object.assign(S, { prog: s.prog, quiz: s.quiz, modDone: s.modDone, profile: s.profile }); save(); go({ top: 'scans', page: 'scans', folder: 'my' }); }); await q.waitForTimeout(300);
+      // 2.6.0 · Acerca de WhiteFox: autor, versión, independencia, licencia y ecosistema
+      await q.evaluate(() => { window._ab = JSON.stringify({ prog: S.prog, events: S.events }); });
+      const pkgVer = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8')).version;
+      ok(await q.evaluate(v => APP_VERSION === v, pkgVer), `la versión de la aplicación coincide con pruebas/package.json (${pkgVer})`);
+      await q.click('#top button[aria-label="Ayuda"]'); await q.waitForTimeout(200);
+      await q.click('#top button:has-text("Acerca de WhiteFox")'); await q.waitForTimeout(400);
+      ok(await q.evaluate(() => { const m = document.querySelector('.modal.about-modal'); if (!m) return false; const x = m.textContent; return /Yoandy Ramírez Delgado/.test(x) && /Junior Pentester · eJPTv2/.test(x) && /v2\.\d+\.\d+/.test(x) && /no está afiliada/.test(x) && /Todos los derechos reservados/.test(x) && /¿Sigues con dudas\?/.test(x); }), 'la ayuda (?) abre «Acerca de WhiteFox» con el autor, la versión, el aviso de independencia, la licencia y la ayuda');
+      ok(await q.evaluate(() => { const h = [...document.querySelectorAll('.about a')].map(a => a.href); const need = ['https://github.com/heindall92', 'https://www.linkedin.com/in/yoandyrd92/', 'https://yoandyramirez.com', 'mailto:yoandyramirezdelgado@gmail.com', 'https://heindall92.github.io/WhiteFox/', 'https://github.com/heindall92/WhiteFox/issues/new']; return need.every(n => h.some(x => x.startsWith(n))) && document.querySelectorAll('.ab-eco li').length === 7 && [...document.querySelectorAll('.about a[target]')].every(a => a.rel.includes('noopener')); }), 'tiene los enlaces del autor, la web y el código, las 7 herramientas del ecosistema y rel="noopener"');
+      await axe(q, 'Acerca de WhiteFox');
+      await q.evaluate(() => { closeModal(); go({ top: 'settings', page: 'settings', sub: 'about' }); }); await q.waitForTimeout(300);
+      await q.click('#side button:has-text("Acerca de WhiteFox")'); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => !!document.querySelector('.modal.about-modal')), 'también se abre desde Configuración ▸ Laboratorio');
+      await q.evaluate(() => { closeModal(); setLang('en'); aboutWF(); }); await q.waitForTimeout(300);
+      ok(await q.evaluate(() => /About WhiteFox/.test(document.querySelector('.modal').textContent) && /Independence notice/.test(document.querySelector('.modal').textContent)), 'y está en inglés');
+      await q.evaluate(() => { closeModal(); setLang('es'); const s = JSON.parse(window._ab); S.prog = s.prog; S.events = s.events; save(); go({ top: 'scans', page: 'scans', folder: 'my' }); }); await q.waitForTimeout(300);
       await q.evaluate(() => { S.scans = S.scans.filter(s => s.id !== 901 && s.id !== 902); UI.draft = null; save(); });
       await q.evaluate(() => { for (const k of ['sortVPR', 'sortVPRgrouped', 'groupsOff']) delete S.events[k]; delete S.prog.e7; UI.groups = true; save(); go({ top: 'scans', page: 'scans', folder: 'my' }); toggleDrawer(true, 'ex', 0); }); await q.waitForTimeout(500);
       await q.evaluate(() => { delete S.prog.e0; delete S.events.welcome; delete S.events.glossary; save(); drawerEx = 0; renderDrawer(); });
