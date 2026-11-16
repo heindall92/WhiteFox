@@ -48,7 +48,7 @@ const CAPS = [
   await page.waitForSelector('main');
   // Laboratorio con datos: descubrimiento y un scan con credenciales de los hosts vivos
   await page.evaluate(() => {
-    closeModal(); localStorage.clear(); S = fresh(); S.profile = { name: 'Laura Gómez Ruiz', user: 'laura', email: '', role: 'Analista de riesgos', asked: 1 }; seed(); S.speed = 10; S.events.welcome = Date.now(); coachHidden = true; save();
+    UI.obFirst = false; closeModal(); localStorage.clear(); S = fresh(); S.profile = { name: 'Laura Gómez Ruiz', user: 'laura', email: '', role: 'Analista de riesgos', asked: 1 }; seed(); S.speed = 10; S.events.welcome = Date.now(); coachHidden = true; save();
     const mk = (t, name, targets, creds) => { S.view.mode = 'scan'; newDraft(t); const d = UI.draft; d.name = name; d.settings.targets = targets;
       if (creds) { d.creds.ssh = { method: 'password', user: 'auditor', pass: 'Lab2026!', elev: 'sudo' }; d.creds.win = { method: 'password', user: 'svc_nessus', pass: 'Lab2026!', domain: 'LAB' }; }
       saveDraft(true); return S.scans[S.scans.length - 1].id; };

@@ -38,7 +38,10 @@ async function axe(page, label) {
       ok(await page.isVisible('text=Escribe tu nombre o pulsa «Ahora no»'), 'sin nombre no se guarda y lo explica');
     }
     await page.fill('#ob-name', 'Laura Gómez Ruiz'); await page.fill('#ob-role', 'Analista de riesgos'); await page.press('#ob-role', 'Enter'); await page.waitForTimeout(400);
-    ok(await page.evaluate(() => S.profile.name === 'Laura Gómez Ruiz' && S.profile.user === 'laura' && S.profile.role === 'Analista de riesgos' && !document.querySelector('#modal .modal')), 'con Enter se guarda tu perfil y el usuario se deduce del nombre (laura)');
+    ok(await page.evaluate(() => S.profile.name === 'Laura Gómez Ruiz' && S.profile.user === 'laura' && S.profile.role === 'Analista de riesgos' && !document.querySelector('#modal .ob-modal')), 'con Enter se guarda tu perfil y el usuario se deduce del nombre (laura)');
+    await page.waitForSelector('#modal >> text=Bienvenido a WhiteFox');
+    ok(await page.evaluate(() => S.view.page === 'scans' && /Bienvenido a WhiteFox/.test(document.querySelector('#modal').textContent)), 'después de los datos se abre la bienvenida, en la portada');
+    await page.keyboard.press('Escape'); await page.waitForTimeout(300);
     ok(!(await page.isVisible('.modal')), 'la portada se ve sin modales al entrar');
     await page.waitForTimeout(900);
     await page.screenshot({ path: `${SHOTS}/${vp.n}-00-portada.png` });
@@ -506,7 +509,9 @@ async function axe(page, label) {
       const c2 = await browser.newContext({ viewport: { width: 1440, height: 900 }, locale: 'es-ES', acceptDownloads: true });
       const q = await c2.newPage(); q.on('pageerror', e => errors.push(String(e)));
       await q.goto(FILE); await q.waitForTimeout(900);
-      await q.click('.modal.ob-modal button:has-text("Ahora no")'); await q.waitForTimeout(300);
+      await q.click('.modal.ob-modal button:has-text("Ahora no")'); await q.waitForSelector('#modal >> text=Bienvenido a WhiteFox');
+      ok(await q.evaluate(() => /Bienvenido a WhiteFox/.test(document.querySelector('#modal').textContent)), '«Ahora no» también da paso a la bienvenida');
+      await q.keyboard.press('Escape'); await q.waitForTimeout(300); await q.evaluate(() => { delete S.events.welcome; save(); });
       ok(await q.evaluate(() => S.profile.name === '' && S.profile.asked && /invitado/.test(document.querySelector('#top .user').textContent) && !!document.querySelector('#top .user .avatar svg')), '«Ahora no» deja un perfil de invitado, con icono genérico, y no vuelve a preguntar');
       await q.evaluate(() => cardModal('all')); await q.waitForTimeout(300);
       ok(await q.isVisible('.modal.ob-modal >> text=Tu tarjeta lleva tu nombre'), 'sin nombre, la tarjeta de logros pide primero tu nombre');

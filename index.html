@@ -1465,7 +1465,7 @@ function helpPop(){return`<p class="pop-h">Ayuda</p>
  <button class="pi" onclick="UI.menu=null;shortcuts()">${ic('list','sm')}Atajos de teclado</button>
  <button class="pi" onclick="aboutWF()">${ic('paw','sm')}${LG('Acerca de WhiteFox','About WhiteFox')}</button>`;}
 /* ===== Acerca de WhiteFox: autor, herramienta, independencia, licencia y ecosistema ===== */
-const APP_VERSION='2.6.1',APP_URL='https://heindall92.github.io/WhiteFox/',REPO_URL='https://github.com/heindall92/WhiteFox';
+const APP_VERSION='2.6.2',APP_URL='https://heindall92.github.io/WhiteFox/',REPO_URL='https://github.com/heindall92/WhiteFox';
 const AUTHOR={name:'Yoandy Ramírez Delgado',role:'Junior Pentester · eJPTv2 · AI Governance (ISO 42001) · SysAdmin',mail:'yoandyramirezdelgado@gmail.com',
  links:[['GitHub','github','https://github.com/heindall92'],['LinkedIn','linkedin','https://www.linkedin.com/in/yoandyrd92/'],['Portafolio|Portfolio','globe','https://yoandyramirez.com'],['Hack The Box','target','https://profile.hackthebox.com/profile/019c5812-b4ca-7315-b12f-14db6d2b42fa']]};
 /* Webs comprobadas el 16-11-2026 (todas responden 200) */
@@ -1985,7 +1985,9 @@ function modal(title,body,footer,cls=''){
  m.innerHTML=`<div class="scrim" onclick="if(event.target===this)closeModal()"><div class="modal ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title.replace(/<[^>]+>/g,''))}"><header><h2>${title}</h2><span style="margin-left:auto"></span><button class="btn ghost sm" onclick="closeModal()" aria-label="Close">${ic('x','sm')}</button></header><div class="mb">${body}</div>${footer===false?'':`<footer>${footer||'<button class="btn primary" onclick="closeModal()">OK</button>'}</footer>`}</div></div>`;
  setTimeout(()=>{const f=m.querySelector('.mb input,.mb select,.mb textarea')||m.querySelector('footer .btn.primary');if(f)f.focus({preventScroll:true});},30);renderCoach();
 }
-function closeModal(){document.getElementById('modal').innerHTML='';renderCoach();}
+function closeModal(){const ob=UI.obFirst&&document.querySelector('#modal .ob-modal');document.getElementById('modal').innerHTML='';renderCoach();
+ /* primera visita: al guardar o saltar los datos, se abre la bienvenida en la portada */
+ if(ob){UI.obFirst=false;setTimeout(()=>{if(document.querySelector('#modal .modal'))return;if(S.view.page!=='scans'||S.view.folder!=='my')go({top:'scans',page:'scans',folder:'my'});welcome();},220);}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&UI.menu){const id=UI.menu;UI.menu=null;document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));const b=document.querySelector(`[onclick*="toggleMenu('${id}')"]`);if(b){b.setAttribute('aria-expanded','false');b.focus();}return;}if(e.key==='?'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){const a=document.activeElement;if(!(a&&/INPUT|SELECT|TEXTAREA/.test(a.tagName))&&!document.getElementById('modal').innerHTML&&!TOUR){e.preventDefault();if(drawerOpen)toggleDrawer(false);manOpen(S.view.man||'consola');return;}}if(e.key==='Escape'){if(TOUR){e.preventDefault();tourEnd(false);return;}if(document.getElementById('modal').innerHTML)closeModal();else toggleDrawer(false);}});
 function customTargets(id){modal('Custom Targets',`<p class="muted">Lanza el escaneo una vez contra otros objetivos sin cambiar su configuración.</p><textarea class="in" id="ct" placeholder="192.168.56.30"></textarea>`,`<button class="btn" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="const v=document.getElementById('ct').value;closeModal();launch(${id},v)">Launch</button>`);}
 function auditTrail(id){const s=S.scans.find(x=>x.id===id);const run=curRun(s);
@@ -3410,7 +3412,7 @@ function init(){
  document.getElementById('drawer').inert=true;
  S.scans.forEach(s=>s.runs.forEach(r=>{if(r.status==='running'||r.status==='paused'){r.status='completed';r.progress=100;r.end=r.start+r.simMs;}}));
  render();checkExercises();
- if(!S.profile.asked&&!S.profile.name)setTimeout(()=>{if(!document.querySelector('#modal .modal'))profileSetup();},350);
+ if(!S.profile.asked&&!S.profile.name)setTimeout(()=>{if(document.querySelector('#modal .modal'))return;if(S.view.page!=='scans'||S.view.folder!=='my')go({top:'scans',page:'scans',folder:'my'});UI.obFirst=true;profileSetup();},350);
 }
 init();
 </script>
