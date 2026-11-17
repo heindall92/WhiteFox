@@ -1,18 +1,34 @@
 {
   "extraKnownMarketplaces": {
     "egm": {
-      "source": { "source": "github", "repo": "google/elephant-goldfish-model" }
+      "source": {
+        "source": "github",
+        "repo": "google/elephant-goldfish-model"
+      }
     },
     "heydamir": {
-      "source": { "source": "github", "repo": "heydamir/unslop" }
+      "source": {
+        "source": "github",
+        "repo": "heydamir/unslop"
+      }
     },
     "humanizer": {
-      "source": { "source": "github", "repo": "blader/humanizer" }
+      "source": {
+        "source": "github",
+        "repo": "blader/humanizer"
+      }
+    },
+    "googlechrome": {
+      "source": {
+        "source": "github",
+        "repo": "GoogleChrome/modern-web-guidance"
+      }
     }
   },
   "enabledPlugins": {
     "egm@egm": true,
     "unslop@heydamir": true,
-    "humanizer@humanizer": true
+    "humanizer@humanizer": true,
+    "modern-web-guidance@googlechrome": true
   }
 }
